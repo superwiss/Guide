@@ -8,6 +8,7 @@ import bwapi.Unit;
 public class MagiCommander extends GameCommander {
     private TrainingManager trainingManager = TrainingManager.Instance();
     private MicroControlManager microControlManager = MicroControlManager.Instance();
+    private GameData gameData = new GameData();
 
     /// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
     public void onStart() {
@@ -25,21 +26,27 @@ public class MagiCommander extends GameCommander {
 
     /// 경기 진행 중 매 프레임마다 발생하는 이벤트를 처리합니다
     public void onFrame() {
-	if (MyBotModule.Broodwar.isPaused() || MyBotModule.Broodwar.self() == null || MyBotModule.Broodwar.self().isDefeated() || MyBotModule.Broodwar.self().leftGame()
-		|| MyBotModule.Broodwar.enemy() == null || MyBotModule.Broodwar.enemy().isDefeated() || MyBotModule.Broodwar.enemy().leftGame()) {
-	    return;
-	}
+	if (trainingManager.isTrainingMode()) {
+	    if (MyBotModule.Broodwar.isPaused() || MyBotModule.Broodwar.self() == null || MyBotModule.Broodwar.self().isDefeated() || MyBotModule.Broodwar.self().leftGame()
+		    || MyBotModule.Broodwar.enemy() == null || MyBotModule.Broodwar.enemy().isDefeated() || MyBotModule.Broodwar.enemy().leftGame()) {
+		return;
+	    }
 
-	// 아군 베이스 위치. 적군 베이스 위치. 각 유닛들의 상태정보 등을 Map 자료구조에 저장/업데이트
-	InformationManager.Instance().update();
+	    // 아군 베이스 위치. 적군 베이스 위치. 각 유닛들의 상태정보 등을 Map 자료구조에 저장/업데이트
+	    InformationManager.Instance().update();
 
-	// 각 유닛의 위치를 자체 MapGrid 자료구조에 저장
-	MapGrid.Instance().update();
+	    // 각 유닛의 위치를 자체 MapGrid 자료구조에 저장
+	    MapGrid.Instance().update();
 
-	Log.info("onFrame() started");
+	    Log.info("onFrame() started");
 
-	if (true == trainingManager.isFinished()) {
-	    System.exit(0);
+	    microControlManager.onFrame(gameData);
+
+	    if (true == trainingManager.isFinished()) {
+		System.exit(0);
+	    }
+	} else {
+	    super.onFrame();
 	}
     }
 
@@ -51,6 +58,8 @@ public class MagiCommander extends GameCommander {
     ///  유닛(건물/지상유닛/공중유닛)이 Destroy 될 때 발생하는 이벤트를 처리합니다
     public void onUnitDestroy(Unit unit) {
 	super.onUnitDestroy(unit);
+	gameData.removeUnit(unit);
+	Log.info("onUnitDestroy: %s", UnitUtil.getUnitAsString(unit));
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Morph 될 때 발생하는 이벤트를 처리합니다<br>
@@ -74,13 +83,17 @@ public class MagiCommander extends GameCommander {
     /// 아군 유닛이 Create 되었을 때 라든가, 적군 유닛이 Discover 되었을 때 발생합니다
     public void onUnitDiscover(Unit unit) {
 	super.onUnitDiscover(unit);
+	gameData.addUnit(unit);
+	Log.info("onUnitDiscover: %s", UnitUtil.getUnitAsString(unit));
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Evade 될 때 발생하는 이벤트를 처리합니다<br>
     /// 유닛이 Destroy 될 때 발생합니다
     public void onUnitEvade(Unit unit) {
 	super.onUnitEvade(unit);
-	trainingManager.onUnitEvade(unit);
+	if (trainingManager.isTrainingMode()) {
+	    trainingManager.onUnitEvade(unit);
+	}
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Show 될 때 발생하는 이벤트를 처리합니다<br>

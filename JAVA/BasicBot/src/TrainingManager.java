@@ -16,6 +16,8 @@ public class TrainingManager {
 
     private TrainingData trainingData;
 
+    private boolean isTrainingMode = true;
+
     // 아군 유닛의 전체 HP
     private long allianceUnitHp = 0;
     // 적군 유닛의 전체 HP
@@ -40,6 +42,7 @@ public class TrainingManager {
 		    .scoreType(TrainingData.SCORE_TYPE.ALLIANCE_HP_AND_TIME);
 	    break;
 	default:
+	    isTrainingMode = false;
 	    break;
 	}
 	trainingData = builder.build();
@@ -176,5 +179,10 @@ public class TrainingManager {
 	}
 
 	return result;
+    }
+
+    // 지도 이름을 기반으로 트레이닝 모드 여부를 리턴한다.
+    public boolean isTrainingMode() {
+	return isTrainingMode;
     }
 }
