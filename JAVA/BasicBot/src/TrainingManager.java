@@ -33,7 +33,7 @@ public class TrainingManager {
 	String mapName = game.mapFileName();
 	TrainingData.TrainingDataBuilder builder = TrainingData.builder();
 	switch (mapName) {
-	case "Marine1_vs_Zergling1.scm":
+	case "Marine1_vs_Zergling1.scx":
 	    // 마린 1마리 vs 저글링 1마리 전투. 저글링이 Attack Move Location 으로 이동하던 도중에 마린을 만난 상황.
 	    // 500 프레임 이내에 아군 마린은 죽지 않고 적 저글링을 죽여야 한다.
 	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Zerg_Zergling).frameLimitFrom(50).frameLimitTo(500).allianceKillCount(0).enemyKillCount(1)

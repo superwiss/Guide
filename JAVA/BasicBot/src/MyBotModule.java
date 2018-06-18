@@ -70,7 +70,7 @@ public class MyBotModule extends DefaultBWListener {
 
 	/// 실제 봇프로그램
 	/// @see GameCommander			
-	private Commander gameCommander;
+	private MagiCommander gameCommander;
 
 	
 	
@@ -116,7 +116,7 @@ public class MyBotModule extends DefaultBWListener {
 
 		Broodwar = mirror.getGame();
 		
-		gameCommander = new Commander();
+		gameCommander = new MagiCommander();
 
 		if (Broodwar.isReplay()) {
 			return;
