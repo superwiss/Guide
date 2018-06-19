@@ -58,8 +58,16 @@ public class MagiCommander extends GameCommander {
     ///  유닛(건물/지상유닛/공중유닛)이 Destroy 될 때 발생하는 이벤트를 처리합니다
     public void onUnitDestroy(Unit unit) {
 	super.onUnitDestroy(unit);
-	gameData.removeUnit(unit);
-	Log.info("onUnitDestroy: %s", UnitUtil.getUnitAsString(unit));
+
+	if (true == UnitUtil.isAllianceUnit(unit)) {
+	    gameData.getAllianceUnitManager().remove(unit);
+	} else if (true == UnitUtil.isEnemyUnit(unit)) {
+	    gameData.getEnemyUnitManager().remove(unit);
+	} else {
+	    // else 상황 = 즉 중립 건물, 중립 동물에 대해서는 아무런 처리도 하지 않는다.
+	}
+
+	Log.info("onUnitDestroy: %s", UnitUtil.toString(unit));
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Morph 될 때 발생하는 이벤트를 처리합니다<br>
@@ -83,8 +91,16 @@ public class MagiCommander extends GameCommander {
     /// 아군 유닛이 Create 되었을 때 라든가, 적군 유닛이 Discover 되었을 때 발생합니다
     public void onUnitDiscover(Unit unit) {
 	super.onUnitDiscover(unit);
-	gameData.addUnit(unit);
-	Log.info("onUnitDiscover: %s", UnitUtil.getUnitAsString(unit));
+
+	if (true == UnitUtil.isAllianceUnit(unit)) {
+	    gameData.getAllianceUnitManager().add(unit);
+	} else if (true == UnitUtil.isEnemyUnit(unit)) {
+	    gameData.getEnemyUnitManager().add(unit);
+	} else {
+	    // else 상황 = 즉 중립 건물, 중립 동물에 대해서는 아무런 처리도 하지 않는다.
+	}
+
+	Log.info("onUnitDiscover: %s", UnitUtil.toString(unit));
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Evade 될 때 발생하는 이벤트를 처리합니다<br>

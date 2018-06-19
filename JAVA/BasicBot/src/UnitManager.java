@@ -1,75 +1,109 @@
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import bwapi.Unit;
 
 public class UnitManager {
-    private List<Unit> unitList = new LinkedList<>();
-    private Map<Integer, Unit> unitIdMap = new HashMap<>();
-    private Map<Integer, UnitStatus> unitCurrentStatusMap = new HashMap<>();
-    private Map<Integer, UnitStatus> unitBeforeStatusMap = new HashMap<>();
-    private Map<Unit, Unit> enemyUnitTargetmap = new HashMap<>();
 
-    public boolean add(Unit unit) {
-	unitIdMap.put(unit.getID(), unit);
-	unitCurrentStatusMap.put(unit.getID(), UnitStatus.IDLE);
-	unitBeforeStatusMap.put(unit.getID(), UnitStatus.IDLE);
-	return getUnitList().add(unit);
+    // 모든 유닛 목록
+    private List<Unit> unitList = new ArrayList<>();
+
+    // Unit ID - Unit 매핑
+    private Map<Integer, Unit> idUnitMap = new HashMap<>();
+
+    // Unit ID - Unit 현재 Status 매핑
+    private Map<Integer, UnitStatus> idCurrentStatusMap = new HashMap<>();
+
+    // Unit ID - Unit 과거 Status 매핑
+    private Map<Integer, UnitStatus> idBeforeStatusMap = new HashMap<>();
+
+    // Unit Kind : Attackable - Unit ID 매핑
+    private List<Integer> attackableUnitList = new ArrayList<>();
+
+    // Unit Kind : Building - Unit ID 매핑
+    private List<Integer> buildingUnitList = new ArrayList<>();
+
+    // 유닛을 추가한다.
+    public void add(Unit unit) {
+	addOrRemove(unit, true);
     }
 
-    public boolean remove(Unit unit) {
-	unitIdMap.remove(unit.getID());
-	unitCurrentStatusMap.remove(unit.getID());
-	unitBeforeStatusMap.remove(unit.getID());
-	return getUnitList().remove(unit);
+    // 유닛을 삭제한다.
+    public void remove(Unit unit) {
+	addOrRemove(unit, false);
     }
 
-    public Unit getUnitById(int id) {
-	return unitIdMap.get(id);
+    // Unit ID에 해당하는 유닛 객체를 리턴한다.
+    public Unit getUnit(int id) {
+	return idUnitMap.get(id);
     }
 
+    // 유닛의 현재 상태를 리턴한다.
     public UnitStatus getUnitCurrentStatus(Unit unit) {
-	return unitCurrentStatusMap.get(unit.getID());
+	return idCurrentStatusMap.get(unit.getID());
     }
 
+    // 유닛의 이전 상태를 리턴한다.
     public UnitStatus getUnitBeforeStatus(Unit unit) {
-	return unitBeforeStatusMap.get(unit.getID());
+	return idBeforeStatusMap.get(unit.getID());
     }
 
+    // 유닛의 현재 상태를 업데이트 한다.
     public void setUnitStatus(Unit unit, UnitStatus unitStatus) {
-	unitBeforeStatusMap.put(unit.getID(), getUnitCurrentStatus(unit));
-	unitCurrentStatusMap.put(unit.getID(), unitStatus);
+	int id = unit.getID();
+	idBeforeStatusMap.put(id, getUnitCurrentStatus(unit));
+	idCurrentStatusMap.put(id, unitStatus);
     }
 
-    public Unit getEnemy(Unit myUnit) {
-	return enemyUnitTargetmap.get(myUnit);
+    // 공격 가능한 타입의 유닛을 리턴한다.
+    public List<Integer> getAttackableUnitList() {
+	return attackableUnitList;
     }
 
-    public Unit setEnemy(Unit myUnit, Unit enemyUnit) {
-	return enemyUnitTargetmap.put(myUnit, enemyUnit);
-    }
+    private void addOrRemove(Unit unit, boolean isAddMode) {
+	Integer id = unit.getID();
+	boolean isAttackableTypeUnit = UnitUtil.isAttackableTypeUnit(unit);
+	boolean isBuildingTypeUnit = UnitUtil.isBuildingTypeUnit(unit);
 
-    // /////////////////////////
-    // Getter & Setter
-    // /////////////////////////
+	if (true == isAddMode) {
+	    idUnitMap.put(id, unit);
+	    idCurrentStatusMap.put(id, UnitStatus.IDLE);
+	    idBeforeStatusMap.put(id, UnitStatus.IDLE);
 
-    public List<Unit> getUnitList() {
-	return unitList;
-    }
+	    if (isAttackableTypeUnit) {
+		attackableUnitList.add(id);
+	    }
+	    if (isBuildingTypeUnit) {
+		buildingUnitList.add(id);
+	    }
 
-    public void setUnitList(List<Unit> unitList) {
-	this.unitList = unitList;
+	    unitList.add(unit);
+	} else {
+	    idUnitMap.remove(id);
+	    idCurrentStatusMap.remove(id);
+	    idBeforeStatusMap.remove(id);
+
+	    if (isAttackableTypeUnit) {
+		attackableUnitList.remove(id);
+	    }
+	    if (isBuildingTypeUnit) {
+		buildingUnitList.remove(id);
+	    }
+
+	    unitList.remove(unit);
+
+	}
     }
 
     @Override
     public String toString() {
 	String result = "";
 
-	for (Unit unit : getUnitList()) {
-	    result += "(" + UnitUtil.getUnitAsString(unit) + ") ";
+	for (Unit unit : unitList) {
+	    result += "(" + UnitUtil.toString(unit) + ") ";
 	}
 
 	return result;

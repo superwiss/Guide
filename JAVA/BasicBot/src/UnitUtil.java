@@ -1,15 +1,16 @@
 import java.util.LinkedList;
 import java.util.List;
 
+import bwapi.Game;
 import bwapi.Unit;
 import bwapi.UnitType;
 
 public class UnitUtil {
 
-    private static UnitSpec marineData = new MarineSpec();
+    private static Game game = MyBotModule.Broodwar;
 
     // Unit의 정보를 출력한다.
-    public static String getUnitAsString(Unit unit) {
+    public static String toString(Unit unit) {
 	if (null != unit) {
 	    return String.format("Unit[id=%d, type=%s, hp=%d, angle=%f, position=%s]", unit.getID(), unit.getType().toString(), unit.getHitPoints(), unit.getAngle(),
 		    unit.getPosition().toString());
@@ -18,12 +19,51 @@ public class UnitUtil {
 	return "unit is null";
     }
 
+    // Unit이 alliance인지 판단한다. alliance면 true를 리턴한다.
+    public static boolean isAllianceUnit(Unit unit) {
+	return unit.getPlayer().isAlly(game.self());
+    }
+
+    // Unit이 enemy 인지 판단한다. enemy면 true를 리턴한다.
+    public static boolean isEnemyUnit(Unit unit) {
+	return unit.getPlayer().isEnemy(game.self());
+    }
+
+    // Unit이 공격 가능한 타입인지 리턴한다.
+    public static boolean isAttackableTypeUnit(Unit unit) {
+	boolean result = false;
+
+	String strUnitType = unit.getType().toString();
+
+	switch (strUnitType) {
+	case "Terran_Marine":
+	case "Zerg_Zergling":
+	    result = true;
+	    break;
+	default:
+	    result = false;
+	}
+
+	return result;
+    }
+
+    // Unit이 빌딩 타입인지 리턴한다.
+    public static boolean isBuildingTypeUnit(Unit unit) {
+	boolean result = false;
+
+	if (true == unit.getType().isBuilding()) {
+	    result = true;
+	}
+
+	return result;
+    }
+
     // 유닛의 타입을 판별해서 스펙을 리턴한다.
     public static UnitSpec getUnitSpec(Unit unit) {
 	UnitType unitType = unit.getType();
 
 	if (UnitType.Terran_Marine == unitType) {
-	    return marineData;
+	    return new MarineSpec();
 	}
 
 	Log.warn("Can not found CombatData because of undefined unit type: {}", unit.getType());
@@ -33,14 +73,16 @@ public class UnitUtil {
 
     // 파라메터로 전달 받은 내 유닛이 공격해야 할 가장 적당한 적 유닛을 선택한다.
     // 적당한 유닛이 없으면 null을 리턴한다.
-    public static Unit selectEnemyTargetUnit(Unit myUnit, UnitManager enemyUnitManager) {
+    public static Unit selectEnemyTargetUnit(Unit allianceUnit, UnitManager enemyUnitManager) {
 	List<Unit> combatDistanceList = new LinkedList<>();
 	List<Unit> attackDistanceList = new LinkedList<>();
-	UnitSpec unitSpec = UnitUtil.getUnitSpec(myUnit);
+	UnitSpec unitSpec = UnitUtil.getUnitSpec(allianceUnit);
 
 	// 전투 반경 내의 유닛이 대상이다.
-	for (Unit enemyUnit : enemyUnitManager.getUnitList()) {
-	    int distance = myUnit.getDistance(enemyUnit);
+	// TODO: Unit.getUnitsInRadius(arg0)을 활용해 보자. 
+	for (Integer enemyUnitId : enemyUnitManager.getAttackableUnitList()) {
+	    Unit enemyUnit = enemyUnitManager.getUnit(enemyUnitId);
+	    int distance = allianceUnit.getDistance(enemyUnit);
 	    if (distance <= unitSpec.getCombatDistance()) {
 		combatDistanceList.add(enemyUnit);
 	    }

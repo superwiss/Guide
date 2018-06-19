@@ -10,34 +10,35 @@ public class MicroControlManager {
     }
 
     public void onFrame(GameData gameData) {
-	UnitManager myUnitManager = gameData.getMyUnitManager();
+	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
 	UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
-	for (Unit myUnit : myUnitManager.getUnitList()) {
 
-	    printUnitInfo(myUnit);
+	for (Integer allianceUnitId : allianceUnitManager.getAttackableUnitList()) {
 
-	    Unit enemyUnit = UnitUtil.selectEnemyTargetUnit(myUnit, enemyUnitManager);
+	    Unit allianceUnit = allianceUnitManager.getUnit(allianceUnitId);
+
+	    printUnitInfo(allianceUnit);
+
+	    Unit enemyUnit = UnitUtil.selectEnemyTargetUnit(allianceUnit, enemyUnitManager);
 	    int distance = -1;
 	    if (null != enemyUnit) {
-		distance = myUnit.getDistance(enemyUnit);
-		Log.debug("Distance: %d, Cooldown: %d, isInWeaponRange: %b, MyHp: %d, EnemyHp: %d, CurrentStatus: %s, BeforeStatus: %s", distance, myUnit.getGroundWeaponCooldown(),
-			myUnit.isInWeaponRange(enemyUnit), myUnit.getHitPoints(), enemyUnit.getHitPoints(), myUnitManager.getUnitCurrentStatus(myUnit),
-			myUnitManager.getUnitBeforeStatus(myUnit));
+		distance = allianceUnit.getDistance(enemyUnit);
+		Log.debug("Distance: %d, Cooldown: %d, isInWeaponRange: %b, MyHp: %d, EnemyHp: %d, CurrentStatus: %s, BeforeStatus: %s", distance,
+			allianceUnit.getGroundWeaponCooldown(), allianceUnit.isInWeaponRange(enemyUnit), allianceUnit.getHitPoints(), enemyUnit.getHitPoints(),
+			allianceUnitManager.getUnitCurrentStatus(allianceUnit), allianceUnitManager.getUnitBeforeStatus(allianceUnit));
 	    } else {
 		return;
 	    }
 	    // printUnitInfo(enemyUnit);
 
-	    boolean isEnemyUnitLookingMyUnit = UnitUtil.isEnemyUnitLookingMyUnit(myUnit, enemyUnit, Math.PI);
+	    boolean isEnemyUnitLookingMyUnit = UnitUtil.isEnemyUnitLookingMyUnit(allianceUnit, enemyUnit, Math.PI);
 
-	    switch (myUnitManager.getUnitCurrentStatus(myUnit)) {
+	    switch (allianceUnitManager.getUnitCurrentStatus(allianceUnit)) {
 	    case IDLE:
 		// 공격 대상을 찾는다.
 		if (null != enemyUnit) {
-		    Log.debug("\tFound Enemy. %s will atack %s", UnitUtil.getUnitAsString(myUnit), UnitUtil.getUnitAsString(enemyUnit));
-		    myUnitManager.setEnemy(myUnit, enemyUnit);
-
-		    actionMoveToEnemyUnit(myUnitManager, myUnit, enemyUnit);
+		    Log.debug("\tFound Enemy. %s will atack %s", UnitUtil.toString(allianceUnit), UnitUtil.toString(enemyUnit));
+		    actionMoveToEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 		    onFrame(gameData);
 		}
 		break;
@@ -47,11 +48,11 @@ public class MicroControlManager {
 		    // 적이 나를 바라보고 있다.
 		    if (enemyUnit.isMoving()) {
 			// 적이 이동 중이다.
-			if (0 == myUnit.getGroundWeaponCooldown()) {
+			if (0 == allianceUnit.getGroundWeaponCooldown()) {
 			    // 무기가 준비 되었다.
-			    if (myUnit.isInWeaponRange(enemyUnit)) {
+			    if (allianceUnit.isInWeaponRange(enemyUnit)) {
 				Log.debug("적이 나를 향해 달려오고 있고, 무기는 준비 되었고, 사거리 이내라면 공격한다.");
-				actionAttackEnemyUnit(myUnitManager, myUnit, enemyUnit);
+				actionAttackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 			    } else {
 				Log.debug("적이 나를 향해 달려오고 있고, 무기는 준비 되었지만, 사거리 밖이라면 계속 대기한다.");
 			    }
@@ -60,7 +61,7 @@ public class MicroControlManager {
 			    // 무기가 준비되지 않았다.
 			    if (distance < 100) {
 				Log.debug("적이 나를 향해 달려오고 있고, 무기는 준비되지 않았고, 적이 너무 가까이 있으면 도망간다.");
-				actionRunAway(myUnitManager, myUnit, enemyUnit);
+				actionRunAway(allianceUnitManager, allianceUnit, enemyUnit);
 			    } else {
 				Log.debug("적이 나를 향해 달려오고 있고, 무기는 준비되지 않았지만, 적이 멀리 떨어져 있으면 계속 대기한다.");
 			    }
@@ -68,14 +69,14 @@ public class MicroControlManager {
 			}
 		    } else {
 			// 적이 대기 중이다.
-			if (0 == myUnit.getGroundWeaponCooldown()) {
+			if (0 == allianceUnit.getGroundWeaponCooldown()) {
 			    // 무기가 준비 되었다.
-			    if (myUnit.isInWeaponRange(enemyUnit)) {
+			    if (allianceUnit.isInWeaponRange(enemyUnit)) {
 				Log.debug("적이 대기 중이고, 무기는 준비 되었고, 사거리 이내라면 공격한다.");
-				actionAttackEnemyUnit(myUnitManager, myUnit, enemyUnit);
+				actionAttackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 			    } else {
 				Log.debug("적이 대기 중이고, 무기는 준비 되었지만, 사거리 밖이라면 적에게 다가간다.");
-				actionMoveToEnemyUnit(myUnitManager, myUnit, enemyUnit);
+				actionMoveToEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 			    }
 			    break;
 			} else {
@@ -84,7 +85,7 @@ public class MicroControlManager {
 				Log.debug("적이 대기 중이고, 무기는 준비되지 않았고, 적이 너무 가까이 있으면 대기한다.");
 			    } else {
 				Log.debug("적이 대기 중이고, 무기는 준비되지 않았지만, 적이 멀리 떨어져 있으면 적에게 다가간다.");
-				actionMoveToEnemyUnit(myUnitManager, myUnit, enemyUnit);
+				actionMoveToEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 			    }
 			    break;
 			}
@@ -93,14 +94,14 @@ public class MicroControlManager {
 		    // 적이 나를 바라보고 있지 않다.
 		    if (enemyUnit.isMoving()) {
 			// 적이 이동 중이다.
-			if (0 == myUnit.getGroundWeaponCooldown()) {
+			if (0 == allianceUnit.getGroundWeaponCooldown()) {
 			    // 무기가 준비 되었다.
-			    if (myUnit.isInWeaponRange(enemyUnit)) {
+			    if (allianceUnit.isInWeaponRange(enemyUnit)) {
 				Log.debug("적이 도망중이고, 무기는 준비 되었고, 사거리 이내라면 공격한다.");
-				actionAttackEnemyUnit(myUnitManager, myUnit, enemyUnit);
+				actionAttackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 			    } else {
 				Log.debug("적이 도망중이고, 무기는 준비 되었지만, 사거리 밖이라면 적에게 다가간다.");
-				actionMoveToEnemyUnit(myUnitManager, myUnit, enemyUnit);
+				actionMoveToEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 			    }
 			    break;
 			} else {
@@ -109,20 +110,20 @@ public class MicroControlManager {
 				Log.debug("적이 도망중이고, 무기는 준비되지 않았고, 적이 너무 가까이 있으면 대기한다.");
 			    } else {
 				Log.debug("적이 도망중이고, 무기는 준비되지 않았지만, 적이 멀리 떨어져 있으면 적에게 다가간다.");
-				actionMoveToEnemyUnit(myUnitManager, myUnit, enemyUnit);
+				actionMoveToEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 			    }
 			    break;
 			}
 		    } else {
 			// 적이 대기 중이다.
-			if (0 == myUnit.getGroundWeaponCooldown()) {
+			if (0 == allianceUnit.getGroundWeaponCooldown()) {
 			    // 무기가 준비 되었다.
-			    if (myUnit.isInWeaponRange(enemyUnit)) {
+			    if (allianceUnit.isInWeaponRange(enemyUnit)) {
 				Log.debug("적이 대기 중이고, 무기는 준비 되었고, 사거리 이내라면 공격한다.");
-				actionAttackEnemyUnit(myUnitManager, myUnit, enemyUnit);
+				actionAttackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 			    } else {
 				Log.debug("적이 대기 중이고, 무기는 준비 되었지만, 사거리 밖이라면 적에게 다가간다.");
-				actionMoveToEnemyUnit(myUnitManager, myUnit, enemyUnit);
+				actionMoveToEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 			    }
 			    break;
 			} else {
@@ -131,24 +132,24 @@ public class MicroControlManager {
 				Log.debug("적이 대기 중이고, 무기는 준비되지 않았고, 적이 너무 가까이 있으면 대기한다.");
 			    } else {
 				Log.debug("적이 대기 중이고, 무기는 준비되지 않았지만, 적이 멀리 떨어져 있으면 적에게 다가간다.");
-				actionMoveToEnemyUnit(myUnitManager, myUnit, enemyUnit);
+				actionMoveToEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 			    }
 			    break;
 			}
 		    }
 		}
 	    case ATTACK_ENEMY_UNIT:
-		if (0 != myUnit.getGroundWeaponCooldown()) {
+		if (0 != allianceUnit.getGroundWeaponCooldown()) {
 		    if (distance < 100) {
 			Log.debug("공격이 완료되었다. 거리가 너무 가까우므로 도망가자.");
-			actionRunAway(myUnitManager, myUnit, enemyUnit);
+			actionRunAway(allianceUnitManager, allianceUnit, enemyUnit);
 		    } else {
 			Log.debug("공격이 완료되었다. 거리가 적당히 떨어져 있으니, 적의 반응을 기다리며 대기한다.");
-			actionWait(myUnitManager, myUnit);
+			actionWait(allianceUnitManager, allianceUnit);
 		    }
 		    break;
 		}
-		if (myUnit.isAttackFrame()) {
+		if (allianceUnit.isAttackFrame()) {
 		    Log.debug("Skip: 아직 공격 모션 중이다.");
 		    break;
 		}
@@ -158,10 +159,10 @@ public class MicroControlManager {
 	    case MOVE_TO_EMEMY_UNIT:
 		if (distance > 150) {
 		    Log.debug("적이 너무 멀리 떨어져 있다. 적에게 다가가자.");
-		    actionMoveToEnemyUnit(myUnitManager, myUnit, enemyUnit);
+		    actionMoveToEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 		} else {
 		    Log.debug("적이 충분히 가까이 왔으므로 대기하자.");
-		    actionWait(myUnitManager, myUnit);
+		    actionWait(allianceUnitManager, allianceUnit);
 		    onFrame(gameData);
 		}
 		break;
@@ -169,14 +170,14 @@ public class MicroControlManager {
 		if (isEnemyUnitLookingMyUnit) {
 		    if (distance < 100) {
 			Log.debug("적이 나를 보고 있고, 너무 가까우면 계속 도망간다.");
-			actionRunAway(myUnitManager, myUnit, enemyUnit);
+			actionRunAway(allianceUnitManager, allianceUnit, enemyUnit);
 		    } else {
 			Log.debug("적이 나를 보고 있지만 거리가 떨어져 있으면 기다린다.");
-			actionWait(myUnitManager, myUnit);
+			actionWait(allianceUnitManager, allianceUnit);
 		    }
 		} else {
 		    Log.debug("적이 나를 보고 있지 않으므로 기다린다.");
-		    actionWait(myUnitManager, myUnit);
+		    actionWait(allianceUnitManager, allianceUnit);
 		}
 		break;
 	    }
