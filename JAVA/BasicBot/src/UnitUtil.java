@@ -1,5 +1,7 @@
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import bwapi.Game;
 import bwapi.Unit;
@@ -29,30 +31,28 @@ public class UnitUtil {
 	return unit.getPlayer().isEnemy(game.self());
     }
 
-    // Unit이 공격 가능한 타입인지 리턴한다.
-    public static boolean isAttackableTypeUnit(Unit unit) {
-	boolean result = false;
+    // Filter를 위해서 유닛의 종류를 리턴한다.
+    public static Set<UnitKind> getUnitKinds(Unit unit) {
+	Set<UnitKind> result = new HashSet<>();
 
-	String strUnitType = unit.getType().toString();
+	UnitType unitType = unit.getType();
+	String strUnitType = unitType.toString();
+
+	// UnitType test = UnitType.Zerg_Zergling;
 
 	switch (strUnitType) {
 	case "Terran_Marine":
-	case "Zerg_Zergling":
-	    result = true;
+	    result.add(UnitKind.ATTACKABLE_NORMAL);
 	    break;
+	case "Zerg_Zergling":
+	    result.add(UnitKind.ATTACKABLE_NORMAL);
 	default:
-	    result = false;
+	    break;
 	}
 
-	return result;
-    }
-
-    // Unit이 빌딩 타입인지 리턴한다.
-    public static boolean isBuildingTypeUnit(Unit unit) {
-	boolean result = false;
-
-	if (true == unit.getType().isBuilding()) {
-	    result = true;
+	// 빌딩 여부를 확인
+	if (unitType.isBuilding()) {
+	    result.add(UnitKind.ALL_BUILDING);
 	}
 
 	return result;

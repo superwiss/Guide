@@ -1,8 +1,10 @@
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import bwapi.Unit;
 
@@ -14,17 +16,23 @@ public class UnitManager {
     // Unit ID - Unit 매핑
     private Map<Integer, Unit> idUnitMap = new HashMap<>();
 
-    // Unit ID - Unit 현재 Status 매핑
-    private Map<Integer, UnitStatus> idCurrentStatusMap = new HashMap<>();
+    // 유닛의 종류
+    private Map<UnitKind, Set<Integer>> unitFilterMap = new HashMap<>();
 
-    // Unit ID - Unit 과거 Status 매핑
-    private Map<Integer, UnitStatus> idBeforeStatusMap = new HashMap<>();
+    // 유닛의 마지막 명령
+    private Map<Integer, String> lastActionMap = new HashMap<>();
 
-    // Unit Kind : Attackable - Unit ID 매핑
-    private List<Integer> attackableUnitList = new ArrayList<>();
+    // 유닛의 마지막 상태
+    private Map<Integer, UnitStatus> lastStatusMap = new HashMap<>();
 
-    // Unit Kind : Building - Unit ID 매핑
-    private List<Integer> buildingUnitList = new ArrayList<>();
+    // 생성자
+    public UnitManager() {
+	// unitFilter를 초기화 한다.
+	for (UnitKind unitFilter : UnitKind.values()) {
+	    Set<Integer> set = new HashSet<>();
+	    unitFilterMap.put(unitFilter, set);
+	}
+    }
 
     // 유닛을 추가한다.
     public void add(Unit unit) {
@@ -41,57 +49,55 @@ public class UnitManager {
 	return idUnitMap.get(id);
     }
 
-    // 유닛의 현재 상태를 리턴한다.
-    public UnitStatus getUnitCurrentStatus(Unit unit) {
-	return idCurrentStatusMap.get(unit.getID());
-    }
-
-    // 유닛의 이전 상태를 리턴한다.
-    public UnitStatus getUnitBeforeStatus(Unit unit) {
-	return idBeforeStatusMap.get(unit.getID());
-    }
-
-    // 유닛의 현재 상태를 업데이트 한다.
-    public void setUnitStatus(Unit unit, UnitStatus unitStatus) {
-	int id = unit.getID();
-	idBeforeStatusMap.put(id, getUnitCurrentStatus(unit));
-	idCurrentStatusMap.put(id, unitStatus);
-    }
-
     // 공격 가능한 타입의 유닛을 리턴한다.
-    public List<Integer> getAttackableUnitList() {
-	return attackableUnitList;
+    public Set<Integer> getAttackableUnitList() {
+	return unitFilterMap.get(UnitKind.ATTACKABLE_NORMAL);
+    }
+
+    // 유닛의 마지막 Action 정보를 리틴한다.
+    public String getLastAction(Unit unit) {
+	return lastActionMap.get(unit.getID());
+    }
+
+    // 유닛의 Action 정보를 Update 한다.
+    public void updateLastAction(Unit unit, String lastAction) {
+	lastActionMap.put(unit.getID(), lastAction);
+    }
+
+    // 유닛의 마지막 Status 정보를 리틴한다.
+    public UnitStatus getLastStatus(Unit unit) {
+	return lastStatusMap.get(unit.getID());
+    }
+
+    // 유닛의 Status 정보를 Update 한다.
+    public void updateLastStatus(Unit unit, UnitStatus status) {
+	lastStatusMap.put(unit.getID(), status);
     }
 
     private void addOrRemove(Unit unit, boolean isAddMode) {
 	Integer id = unit.getID();
-	boolean isAttackableTypeUnit = UnitUtil.isAttackableTypeUnit(unit);
-	boolean isBuildingTypeUnit = UnitUtil.isBuildingTypeUnit(unit);
+	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
 
 	if (true == isAddMode) {
 	    idUnitMap.put(id, unit);
-	    idCurrentStatusMap.put(id, UnitStatus.IDLE);
-	    idBeforeStatusMap.put(id, UnitStatus.IDLE);
 
-	    if (isAttackableTypeUnit) {
-		attackableUnitList.add(id);
+	    for (UnitKind unitKind : unitKinds) {
+		unitFilterMap.get(unitKind).add(id);
 	    }
-	    if (isBuildingTypeUnit) {
-		buildingUnitList.add(id);
-	    }
+
+	    // 유닛의 초기 상태는 Idle이다.
+	    lastStatusMap.put(id, UnitStatus.IDLE);
 
 	    unitList.add(unit);
 	} else {
 	    idUnitMap.remove(id);
-	    idCurrentStatusMap.remove(id);
-	    idBeforeStatusMap.remove(id);
 
-	    if (isAttackableTypeUnit) {
-		attackableUnitList.remove(id);
+	    for (UnitKind unitKind : unitKinds) {
+		unitFilterMap.get(unitKind).remove(id);
 	    }
-	    if (isBuildingTypeUnit) {
-		buildingUnitList.remove(id);
-	    }
+
+	    lastActionMap.remove(id);
+	    lastStatusMap.remove(id);
 
 	    unitList.remove(unit);
 

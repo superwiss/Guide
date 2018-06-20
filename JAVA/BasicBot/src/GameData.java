@@ -1,8 +1,4 @@
-
-import bwapi.Game;
-
 public class GameData {
-    private static Game game = MyBotModule.Broodwar;
     private UnitManager myUnitManager = new UnitManager();
     private UnitManager enemyUnitManager = new UnitManager();
 
