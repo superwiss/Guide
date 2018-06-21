@@ -2,6 +2,9 @@ import bwapi.UnitType;
 
 public class MarineSpec implements UnitSpec {
 
+    private int closeDistance = 70;
+    private int farDistance = 20;
+
     @Override
     public int getSight() {
 	return 268;
@@ -22,4 +25,13 @@ public class MarineSpec implements UnitSpec {
 	return UnitType.Terran_Marine.groundWeapon().damageAmount();
     }
 
+    @Override
+    public int getCloseDistance() {
+	return closeDistance;
+    }
+
+    @Override
+    public int getFarDistance() {
+	return getWeaponMaxRange() + farDistance;
+    }
 }

@@ -1,4 +1,5 @@
 
+import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Unit;
@@ -6,13 +7,19 @@ import bwapi.Unit;
 /// 실제 봇프로그램의 본체가 되는 class<br>
 /// 스타크래프트 경기 도중 발생하는 이벤트들이 적절하게 처리되도록 해당 Manager 객체에게 이벤트를 전달하는 관리자 Controller 역할을 합니다
 public class MagiCommander extends GameCommander {
+    private Game broodwar;
     private TrainingManager trainingManager = TrainingManager.Instance();
     private MicroControlManager microControlManager = MicroControlManager.Instance();
-    private GameData gameData = new GameData();
+    private GameData gameData;
+
+    public MagiCommander(Game broodwar) {
+	this.broodwar = broodwar;
+    }
 
     /// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
     public void onStart() {
 	super.onStart();
+	gameData = new GameData(broodwar);
 	Log.setLogLevel(Log.Level.TRACE);
 	Log.info("Game has started");
 	trainingManager.init();
@@ -38,7 +45,7 @@ public class MagiCommander extends GameCommander {
 	    // 각 유닛의 위치를 자체 MapGrid 자료구조에 저장
 	    MapGrid.Instance().update();
 
-	    Log.info("onFrame() started");
+	    Log.info("\nonFrame() started");
 
 	    microControlManager.onFrame(gameData);
 
@@ -68,6 +75,7 @@ public class MagiCommander extends GameCommander {
 		// else 상황 = 즉 중립 건물, 중립 동물에 대해서는 아무런 처리도 하지 않는다.
 	    }
 	} catch (Exception e) {
+	    Log.error("Exception: %s", e.toString());
 	    e.printStackTrace();
 	}
 
@@ -105,6 +113,7 @@ public class MagiCommander extends GameCommander {
 		// else 상황 = 즉 중립 건물, 중립 동물에 대해서는 아무런 처리도 하지 않는다.
 	    }
 	} catch (Exception e) {
+	    Log.error("Exception: %s", e.toString());
 	    e.printStackTrace();
 	}
 

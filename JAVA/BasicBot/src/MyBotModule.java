@@ -116,7 +116,7 @@ public class MyBotModule extends DefaultBWListener {
 
 		Broodwar = mirror.getGame();
 		
-		gameCommander = new MagiCommander();
+		gameCommander = new MagiCommander(Broodwar);
 
 		if (Broodwar.isReplay()) {
 			return;
@@ -206,6 +206,7 @@ public class MyBotModule extends DefaultBWListener {
 			} 
 			catch (Exception e) {
 				
+			    	Log.error("Exception: %s", e.toString());
 				Broodwar.sendText("[Error Stack Trace]");
 				System.out.println("[Error Stack Trace]");
 				for (StackTraceElement ste : e.getStackTrace()) {

@@ -3,13 +3,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import bwapi.Color;
 import bwapi.Game;
+import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
 
 public class UnitUtil {
 
     private static Game game = MyBotModule.Broodwar;
+
+    public static enum DistanceType {
+	CLOSE, NEAR_IN, NEAR_OUT, FAR
+    }
 
     // Unit의 정보를 출력한다.
     public static String toString(Unit unit) {
@@ -105,21 +111,21 @@ public class UnitUtil {
     }
 
     // 내 유닛과 적 유닛의 각도를 구한다.
-    public static double getAnagleFromMyUnitToEnemyUnit(Unit myUnit, Unit enemyUnit) {
+    public static double getAnagleFromBaseUnitToAnotherUnit(Unit baseUnit, Unit targetUnit) {
 	double ret = -1.0;
 
-	if (null != myUnit && null != enemyUnit) {
+	if (null != baseUnit && null != targetUnit) {
 
-	    int x1 = myUnit.getPosition().getX();
-	    int y1 = myUnit.getPosition().getY();
+	    int x1 = baseUnit.getPosition().getX();
+	    int y1 = baseUnit.getPosition().getY();
 
-	    int x2 = enemyUnit.getPosition().getX();
-	    int y2 = enemyUnit.getPosition().getY();
+	    int x2 = targetUnit.getPosition().getX();
+	    int y2 = targetUnit.getPosition().getY();
 
 	    int dx = x2 - x1;
 	    int dy = y2 - y1;
 
-	    ret = -Math.atan2(dy, dx);
+	    ret = Math.atan2(dy, dx);
 
 	    if (ret < 0) {
 		ret = Math.PI * 2 + ret;
@@ -129,34 +135,184 @@ public class UnitUtil {
 	return ret;
     }
 
-    // 적 유닛이 나를 바라보고 있는지 구한다.
-    public static boolean isEnemyUnitLookingMyUnit(Unit myUnit, Unit enemyUnit, double rad) {
-	// 나와 적의 방향
-	double angleFromMe = getAnagleFromMyUnitToEnemyUnit(myUnit, enemyUnit);
-	if (0 > angleFromMe) {
+    // rad1 - (diff / 2) ~ rad1 + (diff / 2) 범위에 rad2가 위치하면 true를 리턴.
+    public static boolean inRangeRadius(double rad1, double rad2, double diff) {
+	boolean result = false;
+
+	double from = rad1 - (diff / 2);
+	double to = rad1 + (diff / 2);
+
+	if (rad2 >= from && rad2 <= to) {
+	    result = true;
+	} else {
+	    rad2 += Math.PI * 2;
+
+	    if (rad2 >= from && rad2 <= to) {
+		result = true;
+	    }
+	}
+
+	return result;
+    }
+
+    // baseUnit이 anotherUnit을 바라보고 있는지 여부를 리턴
+    public static boolean isBaseUnitLookingAnotherUnit(Unit baseUnit, Unit anotherUnit) {
+	boolean result = false;
+
+	double baseUnitAngle = baseUnit.getAngle();
+	double angleBetweenBaseAndOnother = UnitUtil.getAnagleFromBaseUnitToAnotherUnit(baseUnit, anotherUnit);
+	result = UnitUtil.inRangeRadius(baseUnitAngle, angleBetweenBaseAndOnother, Math.PI * 2 / 3);
+
+	return result;
+    }
+
+    // 적 유닛이 나를 바라보고 있는지 구한다. (target position 기반)
+    public static boolean isEnemyUnitLookingMyUnit2(Unit allianceUnit, Unit enemyUnit) {
+	boolean result = false;
+
+	Position enemyTargetPosition = enemyUnit.getTargetPosition();
+	if (allianceUnit.getDistance(enemyTargetPosition) < 100) {
+	    result = true;
+	}
+
+	return result;
+    }
+
+    // 상대방과 나의 거리를 4단계로 리턴한다.
+    public static DistanceType getDistanceType(Unit baseUnit, Unit targetUnit) {
+	DistanceType result;
+
+	int distance = baseUnit.getDistance(targetUnit);
+	UnitSpec unitSpec = getUnitSpec(baseUnit);
+
+	if (distance < unitSpec.getCloseDistance()) {
+	    result = DistanceType.CLOSE;
+	} else if (distance >= unitSpec.getCloseDistance() && distance <= unitSpec.getWeaponMaxRange()) {
+	    result = DistanceType.NEAR_IN;
+	} else if (distance > unitSpec.getWeaponMaxRange() && distance <= unitSpec.getFarDistance()) {
+	    result = DistanceType.NEAR_OUT;
+	} else {
+	    result = DistanceType.FAR;
+	}
+
+	return result;
+    }
+
+    // 한방에 적을 죽일 수 있는지 판단한다.
+    public static boolean canKillSingleShoot(Unit allianceUnit, Unit enemyUnit) {
+	// 무기를 사용할 수 없으면 false
+	if (0 != allianceUnit.getGroundWeaponCooldown()) {
 	    return false;
 	}
-	double angleFromEnemy = enemyUnit.getAngle();
-	double diff = Math.abs(angleFromMe - angleFromEnemy);
-	if (diff < rad) {
+	// 사거리 밖이면 false
+	if (!allianceUnit.isInWeaponRange(enemyUnit)) {
+	    return false;
+	}
+	if (enemyUnit.getHitPoints() <= allianceUnit.getType().groundWeapon().damageAmount()) {
 	    return true;
 	}
 	return false;
     }
 
-    // 한방에 적을 죽일 수 있는지 판단한다.
-    public static boolean canKillSingleShoot(Unit myUnit, Unit enemyUnit) {
-	// 무기를 사용할 수 없으면 false
-	if (0 != myUnit.getGroundWeaponCooldown()) {
-	    return false;
+    // 적이 바라보고 있는 target position을 화면에 표시한다.
+    public static void drawTargetPosition(Unit unit) {
+	Position targetPosition = unit.getTargetPosition();
+	if (null != targetPosition) {
+	    game.drawCircleMap(targetPosition, 2, Color.Purple, true);
+	    game.drawLineMap(unit.getPosition(), targetPosition, Color.Purple);
 	}
-	// 사거리 밖이면 false
-	if (!myUnit.isInWeaponRange(enemyUnit)) {
-	    return false;
+    }
+
+    // 유닛의 정보를 엄청 자세히 로그로 남긴다.
+    public static void loggingDetailUnitInfo(Unit unit) {
+	if (null != unit) {
+	    String unitId = "[" + unit.getID() + "] ";
+
+	    // 현재 수행 가능한 액션을 로깅
+	    String posibility = unitId + "Possible action: ";
+	    if (unit.canStop()) {
+		posibility += "[Stop] ";
+	    }
+	    if (unit.canMove()) {
+		posibility += "[Move] ";
+	    }
+	    if (unit.canAttackMove()) {
+		posibility += "[Attack Move] ";
+	    }
+	    if (unit.canHoldPosition()) {
+		posibility += "[Hold] ";
+	    }
+	    if (unit.canPatrol()) {
+		posibility += "[Patrol] ";
+	    }
+	    // 큰 의미가 없어서 Trace Level
+	    Log.trace(posibility);
+
+	    // 현재 동작 중인 액션을 로깅
+	    String currentAction = unitId + "Current action: ";
+	    if (unit.isIdle()) {
+		currentAction += "[Idle] ";
+	    }
+	    if (unit.isAccelerating()) {
+		currentAction += "[Accelerating] ";
+	    }
+	    if (unit.isMoving()) {
+		currentAction += "[Moving] ";
+	    }
+	    if (unit.isBraking()) {
+		currentAction += "[Braking] ";
+	    }
+	    if (unit.isAttacking()) {
+		currentAction += "[Attacking] ";
+	    }
+	    if (unit.isAttackFrame()) {
+		currentAction += "[Attack Frame] ";
+	    }
+	    if (unit.isHoldingPosition()) {
+		currentAction += "[Holding] ";
+	    }
+	    if (unit.isFollowing()) {
+		currentAction += "[Following] ";
+	    }
+	    if (unit.isSelected()) {
+		currentAction += "[Selected] ";
+	    }
+	    if (unit.isStuck()) {
+		currentAction += "[Stuck] ";
+	    }
+	    /*
+	    if (unit.isInterruptible()) {
+	    currentAction += "[Interruptible] ";
+	    }
+	    if (unit.isCompleted()) {
+	    currentAction += "[Completed] ";
+	    }
+	    */
+	    Log.trace(currentAction);
+
+	    // 기타 정보: Target과 Order 정보를 로깅
+	    String etcInfo = unitId + "Etc Info: ";
+	    if (null != unit.getTarget()) {
+		etcInfo += "[Target:" + unit.getTarget().getID() + "] ";
+	    }
+	    if (null != unit.getTargetPosition()) {
+		etcInfo += "[TargetPosition:" + unit.getTargetPosition() + "] ";
+	    }
+	    if (null != unit.getOrder()) {
+		etcInfo += "[Order:" + unit.getOrder() + "] ";
+	    }
+	    if (null != unit.getOrderTarget()) {
+		etcInfo += "[OrderTarget:" + unit.getOrderTarget().getID() + "] ";
+	    }
+	    if (null != unit.getOrderTargetPosition()) {
+		etcInfo += "[OrderTargetPosition:" + unit.getOrderTargetPosition() + "] ";
+	    }
+	    etcInfo += "[OrderTimer:" + unit.getOrderTimer() + "] ";
+	    if (null != unit.getSecondaryOrder()) {
+		etcInfo += "[SecondaryOrder:" + unit.getSecondaryOrder() + "] ";
+	    }
+
+	    Log.trace(etcInfo);
 	}
-	if (enemyUnit.getHitPoints() <= myUnit.getType().groundWeapon().damageAmount()) {
-	    return true;
-	}
-	return false;
     }
 }
