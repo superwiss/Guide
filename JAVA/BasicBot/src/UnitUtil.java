@@ -44,13 +44,15 @@ public class UnitUtil {
 	UnitType unitType = unit.getType();
 	String strUnitType = unitType.toString();
 
-	// UnitType test = UnitType.Zerg_Zergling;
+	// UnitType.Protoss_Zealot;
 
 	switch (strUnitType) {
 	case "Terran_Marine":
 	    result.add(UnitKind.ATTACKABLE_NORMAL);
 	    break;
 	case "Zerg_Zergling":
+	    result.add(UnitKind.ATTACKABLE_NORMAL);
+	case "Protoss_Zealot":
 	    result.add(UnitKind.ATTACKABLE_NORMAL);
 	default:
 	    break;
