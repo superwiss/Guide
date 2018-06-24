@@ -17,6 +17,7 @@ public class TrainingManager {
     private TrainingData trainingData;
 
     private boolean isTrainingMode = true;
+    private int exitFrame = -1;
 
     // 아군 유닛의 전체 HP
     private long allianceUnitHp = 0;
@@ -45,6 +46,12 @@ public class TrainingManager {
 	    // 마린 1마리 vs 질럿 1마리 전투. 질럿이 Attack Move Location 으로 이동하던 도중에 마린을 만난 상황.
 	    // 1500 프레임 이내에 아군 마린은 죽지 않고 적 질럿을 죽여야 한다.
 	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Protoss_Zealot).frameLimitFrom(50).frameLimitTo(1500).allianceKillCount(0)
+		    .enemyKillCount(1).scoreType(TrainingData.SCORE_TYPE.ALLIANCE_HP_AND_TIME);
+	    break;
+	case "Zerg_Test.scx":
+	    // 마린 1마리 vs 질럿 1마리 전투. 질럿이 Attack Move Location 으로 이동하던 도중에 마린을 만난 상황.
+	    // 1500 프레임 이내에 아군 마린은 죽지 않고 적 질럿을 죽여야 한다.
+	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Protoss_Zealot).frameLimitFrom(50).frameLimitTo(1000000).allianceKillCount(0)
 		    .enemyKillCount(1).scoreType(TrainingData.SCORE_TYPE.ALLIANCE_HP_AND_TIME);
 	    break;
 	default:
@@ -78,10 +85,6 @@ public class TrainingManager {
 	    }
 	}
 
-	if (true == result) {
-	    printResult();
-	}
-
 	return result;
     }
 
@@ -105,7 +108,7 @@ public class TrainingManager {
     }
 
     // 미션 결과를 출력한다.
-    private void printResult() {
+    public void printResult() {
 	Log.info("Traning finished.");
 	Log.info("\t Result: %s", isSuccess ? "Success" : "Failed");
 	Log.info("\t Score: %d", getScore());
@@ -114,6 +117,7 @@ public class TrainingManager {
 	Log.info("\t Remain enemy HP: %d", enemyUnitHp);
 	Log.info("\t Killed alliance units count: %d", allianceUnitKilledCount);
 	Log.info("\t Killed enemy units count: %d", enemyUnitKilledCount);
+	Util.writeTrainingResultToFile(game.mapFileName(), isSuccess, getScore(), currentFrameCount, allianceUnitHp, enemyUnitHp, allianceUnitKilledCount, enemyUnitKilledCount);
     }
 
     // 점수를 계산한다.
@@ -165,14 +169,6 @@ public class TrainingManager {
 	}
     }
 
-    // unit의 타입이 targetUnitTypeList 중의 하나와 일치하면, result + unit의 hp를 리턴한다. 
-    private long getHp(long result, List<UnitType> targetUnitTypeList, Unit unit) {
-	if (true == isTargetUnitType(targetUnitTypeList, unit)) {
-	    result += unit.getHitPoints();
-	}
-	return result;
-    }
-
     // unit의 타입이 targetUnitTypeList 중의 하나와 일치하면 true를 리턴.
     private boolean isTargetUnitType(List<UnitType> targetUnitTypeList, Unit unit) {
 	boolean result = false;
@@ -190,5 +186,13 @@ public class TrainingManager {
     // 지도 이름을 기반으로 트레이닝 모드 여부를 리턴한다.
     public boolean isTrainingMode() {
 	return isTrainingMode;
+    }
+
+    public int getExitFrame() {
+	return exitFrame;
+    }
+
+    public void setExitFrame(int exitFrame) {
+	this.exitFrame = exitFrame;
     }
 }

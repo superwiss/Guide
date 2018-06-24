@@ -11,9 +11,13 @@ public interface UnitSpec {
     // 지상 무기 공격력
     public int getGroundWeaponDamage();
 
-    // 사거리 - colseDistance (적과 거리가 너무 가깝다는 의미)
-    public int getCloseDistance();
+    int getSameDirectionCloseDistance();
 
-    // 사거리 + farDistance (적과 거리가 너무 멀다는 의미)
-    public int getFarDistance();
+    int getSameDirectionFarDistance();
+
+    int getDifferenceDirectionCloseDistance();
+
+    int getDifferenceDirectionFarDistance();
+
+    int getNearMoveDistance();
 }

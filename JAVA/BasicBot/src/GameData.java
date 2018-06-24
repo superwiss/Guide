@@ -1,4 +1,5 @@
 import bwapi.Game;
+import bwapi.Position;
 
 public class GameData {
 
@@ -22,8 +23,22 @@ public class GameData {
 	return enemyUnitManager;
     }
 
+    public int getFrameCount() {
+	return broodwar.getFrameCount();
+    }
+
     public Game getGame() {
 	return broodwar;
+    }
+
+    public void leaveGame() {
+	broodwar.leaveGame();
+    }
+
+    public void setScreen(Position position) {
+	// 화면 하단의 게임 인터페이스 공간을 고려해서, y 좌표는 64 pixel만큼 더해서 계산한다. 
+	broodwar.setScreenPosition(position.getX() - 320, position.getY() - 240 + 64);
+
     }
 
     @Override

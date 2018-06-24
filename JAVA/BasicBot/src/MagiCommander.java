@@ -50,7 +50,15 @@ public class MagiCommander extends GameCommander {
 	    microControlManager.onFrame(gameData);
 
 	    if (true == trainingManager.isFinished()) {
-		System.exit(0);
+		if (-1 == trainingManager.getExitFrame()) {
+		    trainingManager.setExitFrame(gameData.getFrameCount() + 24);
+		    trainingManager.printResult();
+		    Log.setLogLevel(Log.Level.NONE);
+		}
+		if (gameData.getFrameCount() >= trainingManager.getExitFrame()) {
+		    gameData.leaveGame();
+		    System.exit(0);
+		}
 	    }
 	} else {
 	    super.onFrame();

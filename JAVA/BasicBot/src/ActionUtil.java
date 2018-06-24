@@ -1,8 +1,13 @@
+import java.util.HashSet;
+import java.util.Set;
+
 import bwapi.Position;
 import bwapi.Unit;
 
 // 유닛의 Command(Action)에 대한 유틸리티
 public class ActionUtil {
+
+    private static Set<Integer> forceAttackUnitIdSet = new HashSet<>();
 
     public static void patrolToEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
 	String currnetCommand = getCommand("PATROL_TO_UNIT", allianceUnit, enemyUnit);
@@ -35,6 +40,29 @@ public class ActionUtil {
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.attack(enemyUnit);
 	}
+    }
+
+    public static void attackEnemyUnitForcibly(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+	String currnetCommand = getCommand("ATTACK_TO_UNIT_Forcibly", allianceUnit, enemyUnit);
+
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	    allianceUnit.attack(enemyUnit);
+	    forceAttackUnitIdSet.add(allianceUnit.getID());
+	}
+    }
+
+    public static void attackFinished(Unit allianceUnit) {
+	forceAttackUnitIdSet.remove(Integer.valueOf(allianceUnit.getID()));
+    }
+
+    public static boolean isAttackingForcibly(Unit allianceUnit) {
+	boolean result = false;
+
+	if (forceAttackUnitIdSet.contains(Integer.valueOf(allianceUnit.getID()))) {
+	    result = true;
+	}
+
+	return result;
     }
 
     public static void stop(UnitManager allianceUnitManager, Unit allianceUnit) {
@@ -124,15 +152,17 @@ public class ActionUtil {
     }
 
     // 유닛의 액션을 수행할지 말지 결정한다. 이전과 동일한 액션이 들어오면 skip할 수 있도록 false를 리턴한다.
-    private static boolean isAcceptedAction(String currnetCommand, Unit unit, UnitManager allianceUnitManager) {
+    private static boolean isAcceptedAction(String currnetCommand, Unit allianceUnit, UnitManager allianceUnitManager) {
 	boolean result = false;
 
-	String lastCommand = allianceUnitManager.getLastAction(unit);
+	String lastCommand = allianceUnitManager.getLastAction(allianceUnit);
 
-	if (currnetCommand.equals(lastCommand)) {
+	if (forceAttackUnitIdSet.contains(Integer.valueOf(allianceUnit.getID()))) {
+	    Log.trace("Action Rejected: " + currnetCommand);
+	} else if (currnetCommand.equals(lastCommand)) {
 	    Log.trace("Action Rejected: " + currnetCommand);
 	} else {
-	    allianceUnitManager.updateLastAction(unit, currnetCommand);
+	    allianceUnitManager.updateLastAction(allianceUnit, currnetCommand);
 	    result = true;
 	    Log.trace("Action Accepted: " + currnetCommand);
 	}

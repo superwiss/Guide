@@ -1,6 +1,3 @@
-import java.util.HashMap;
-import java.util.Map;
-
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
@@ -13,29 +10,7 @@ public class MicroControlManager {
 	return instance;
     }
 
-    private Map<StateTableKey, UnitStatus> stateTable = new HashMap<>();
-
     private MicroControlManager() {
-
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.CLOSE, true, true), UnitStatus.RUNAWAY_FROM_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.NEAR_IN, true, true), UnitStatus.ATTACK_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.NEAR_OUT, true, true), UnitStatus.WAIT_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.FAR, true, true), UnitStatus.MOVE_TO_ENEMY);
-
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.CLOSE, true, false), UnitStatus.WAIT_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.NEAR_IN, true, false), UnitStatus.ATTACK_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.NEAR_OUT, true, false), UnitStatus.MOVE_TO_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.FAR, true, false), UnitStatus.MOVE_TO_ENEMY);
-
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.CLOSE, false, true), UnitStatus.RUNAWAY_FROM_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.NEAR_IN, false, true), UnitStatus.RUNAWAY_FROM_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.NEAR_OUT, false, true), UnitStatus.TURN_TO_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.FAR, false, true), UnitStatus.MOVE_TO_ENEMY);
-
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.CLOSE, false, false), UnitStatus.RUNAWAY_FROM_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.NEAR_IN, false, false), UnitStatus.ATTACK_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.NEAR_OUT, false, false), UnitStatus.TURN_TO_ENEMY);
-	stateTable.put(new StateTableKey(UnitUtil.DistanceType.FAR, false, false), UnitStatus.TURN_TO_ENEMY);
     }
 
     public void onFrame(GameData gameData) {
@@ -47,6 +22,13 @@ public class MicroControlManager {
 
 	    Unit allianceUnit = allianceUnitManager.getUnit(allianceUnitId);
 
+	    // 속도 테스트
+	    /*
+	    if (false == speedTest(gameData, allianceUnit)) {
+	    return;
+	    }
+	    */
+
 	    // 공격할 적 유닛을 선택한다.
 	    Unit enemyUnit = UnitUtil.selectEnemyTargetUnit(allianceUnit, enemyUnitManager);
 	    if (null == enemyUnit) {
@@ -57,50 +39,60 @@ public class MicroControlManager {
 	    UnitUtil.loggingDetailUnitInfo(enemyUnit);
 	    UnitUtil.drawTargetPosition(enemyUnit);
 
+	    Log.debug("Distance between alliance unit and enemy unit: %d", allianceUnit.getDistance(enemyUnit));
+
 	    // 도망칠 때 집결 장소. ex) first chockpoint
 	    Position backPosition = new Position(0, 0);
-
-	    // 아군과 적의 거리 종류
-	    UnitUtil.DistanceType distanceType = UnitUtil.getDistanceType(allianceUnit, enemyUnit);
-	    // 아군 유닛이 적 유닛을 바라보고 있는가?
-	    boolean allianceDirection = UnitUtil.isBaseUnitLookingAnotherUnit(allianceUnit, enemyUnit);
-	    // 적 유닛이 아군 유닛을 바라보고 있는가?
-	    boolean enemyDirection = UnitUtil.isBaseUnitLookingAnotherUnit(enemyUnit, allianceUnit);
 
 	    // 게임 속도 제어
 	    if (false == speedControl(gameData, allianceUnit, enemyUnit)) {
 		return;
 	    }
 
-	    int weaponCooldown = allianceUnit.getGroundWeaponCooldown();
-	    StateTableKey stateTableKey = new StateTableKey(distanceType, allianceDirection, enemyDirection);
-	    UnitStatus action = stateTable.get(stateTableKey);
-	    Log.debug("stateTableKey: %s, weaponCooldown: %d, action: %s", stateTableKey, weaponCooldown, action);
-	    switch (action) {
-	    case MOVE_TO_ENEMY:
-		Log.debug(":::::::: 적에게 이동");
-		ActionUtil.moveToUnit(allianceUnitManager, allianceUnit, enemyUnit);
+	    // 강제 공격을 처리한다.
+	    if (ActionUtil.isAttackingForcibly(allianceUnit)) {
+		if (allianceUnit.isAttackFrame() && 0 != allianceUnit.getGroundWeaponCooldown()) {
+		    Log.debug(":::::::: 공격 완료");
+		    ActionUtil.attackFinished(allianceUnit);
+		} else {
+		    Log.debug(":::::::: 강제 공격 중이다.");
+		    return;
+		}
+	    }
+
+	    // 적 유닛의 상태를 기반으로 아군 유닛에게 다음 행동에 대한 명령을 내린다.
+	    EnemyUnitStatus unitCombatStatus = UnitUtil.getUnitCombatStatus(allianceUnit, enemyUnit);
+	    switch (unitCombatStatus) {
+	    case NEAR_MOVE:
+		Log.debug(":::::::: 적이 내 근처로 Attack Move 중이다. 이전 동작을 계속하자.");
 		break;
-	    case WAIT_ENEMY:
-		Log.debug(":::::::: 대기한다.");
+	    case DIFFERENCE_DIR_CLOSE:
+		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 가깝다. 이전 동작을 계속하자.");
+		break;
+	    case DIFFERENCE_DIR_MIDDLE:
+		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 애매하다. Stop 하자.");
 		ActionUtil.stop(allianceUnitManager, allianceUnit);
 		break;
-	    case RUNAWAY_FROM_ENEMY:
-		Log.debug(":::::::: 도망");
+	    case DIFFERENCE_DIR_FAR:
+		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 멀다. 강제 공격하자.");
+		ActionUtil.attackEnemyUnitForcibly(allianceUnitManager, allianceUnit, enemyUnit);
+		break;
+	    case SAME_DIR_CLOSE:
+		Log.debug(":::::::: 적이 나와 같은 방향으로 이동 중이다. 거리가 가깝다. 도망가자.");
 		ActionUtil.moveToPosition(allianceUnitManager, allianceUnit, backPosition);
 		break;
-	    case TURN_TO_ENEMY:
-		Log.debug(":::::::: 적을 바라본다");
-		ActionUtil.turn(allianceUnitManager, allianceUnit, enemyUnit);
+	    case SAME_DIR_MIDDLE:
+		Log.debug(":::::::: 적이 나와 같은 방향으로 이동 중이다. 거리가 애매하다. Stop 하자");
+		ActionUtil.stop(allianceUnitManager, allianceUnit);
 		break;
-	    case ATTACK_ENEMY:
-		Log.debug(":::::::: 적을 공격한다.");
+	    case SAME_DIR_FAR:
+		Log.debug(":::::::: 적이 나와 같은 방향으로 이동 중이다. 거리가 멀다. 공격하자.");
 		ActionUtil.attackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 		break;
 	    default:
+		Log.error(":::::::: 추가 예외 처리가 필요한 상황.");
 		break;
 	    }
-	    break;
 	}
     }
 
@@ -109,16 +101,23 @@ public class MicroControlManager {
 	boolean result = true;
 
 	Game game = gameData.getGame();
+	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+
+	// 24프레임에 한 번씩 아군 유닛을 중심으로 화면을 이동한다.
+	if (0 == gameData.getFrameCount() % 24) {
+	    gameData.setScreen(allianceUnit.getPosition());
+	}
 
 	switch (game.getFrameCount()) {
 	case 17:
-	    game.setLocalSpeed(42);
+	    //game.setLocalSpeed(42);
+	    ActionUtil.attackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 	    break;
 	case 50:
 	    //game.setLocalSpeed(20);
 	    break;
-	case 140:
-	    //game.setLocalSpeed(1000);
+	case 130:
+	    //game.setLocalSpeed(2000);
 	    break;
 	default:
 	    break;
@@ -126,4 +125,40 @@ public class MicroControlManager {
 
 	return result;
     }
+
+    // 유닛의 이동 거리를 측정하기 위한 테스트용 메서드
+    /*
+    private boolean speedTest(GameData gameData, Unit allianceUnit) {
+    boolean result = false;
+    
+    Game game = gameData.getGame();
+    UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+    
+    switch (game.getFrameCount()) {
+    case 1:
+        game.setLocalSpeed(42);
+    case 17:
+        ActionUtil.moveToPosition(allianceUnitManager, allianceUnit, new Position(1500, 2000));
+        break;
+    case 200:
+        Log.error("============================================================= Start (%s)", allianceUnit.getPosition());
+        ActionUtil.moveToPosition(allianceUnitManager, allianceUnit, new Position(2500, 2000));
+        break;
+    case 140:
+        //game.setLocalSpeed(1000);
+        break;
+    default:
+        break;
+    }
+    
+    if (allianceUnit.getPosition().getX() == 2500 && allianceUnit.getPosition().getY() == 2000) {
+        Log.error("============================================================= Finish (%s)", allianceUnit.getPosition());
+        System.exit(0);
+    }
+    Log.error("Position: %s, speed: %f", allianceUnit.getPosition(), allianceUnit.getType().topSpeed());
+    
+    return result;
+    
+    }
+    */
 }

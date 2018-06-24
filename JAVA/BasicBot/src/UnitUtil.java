@@ -5,6 +5,7 @@ import java.util.Set;
 
 import bwapi.Color;
 import bwapi.Game;
+import bwapi.Order;
 import bwapi.Position;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -71,7 +72,7 @@ public class UnitUtil {
 	UnitType unitType = unit.getType();
 
 	if (UnitType.Terran_Marine == unitType) {
-	    return new MarineSpec();
+	    return new UnitSpecMarine();
 	}
 
 	Log.warn("Can not found CombatData because of undefined unit type: {}", unit.getType());
@@ -117,21 +118,29 @@ public class UnitUtil {
 	double ret = -1.0;
 
 	if (null != baseUnit && null != targetUnit) {
+	    ret = getAngleFromPositions(baseUnit.getPosition(), targetUnit.getPosition());
+	}
 
-	    int x1 = baseUnit.getPosition().getX();
-	    int y1 = baseUnit.getPosition().getY();
+	return ret;
+    }
 
-	    int x2 = targetUnit.getPosition().getX();
-	    int y2 = targetUnit.getPosition().getY();
+    // 내 유닛과 적 유닛의 각도를 구한다.
+    public static double getAngleFromPositions(Position base, Position target) {
+	double ret = -1.0;
 
-	    int dx = x2 - x1;
-	    int dy = y2 - y1;
+	int x1 = base.getX();
+	int y1 = base.getY();
 
-	    ret = Math.atan2(dy, dx);
+	int x2 = target.getX();
+	int y2 = target.getY();
 
-	    if (ret < 0) {
-		ret = Math.PI * 2 + ret;
-	    }
+	int dx = x2 - x1;
+	int dy = y2 - y1;
+
+	ret = Math.atan2(dy, dx);
+
+	if (ret < 0) {
+	    ret = Math.PI * 2 + ret;
 	}
 
 	return ret;
@@ -180,21 +189,25 @@ public class UnitUtil {
 	return result;
     }
 
-    // 상대방과 나의 거리를 4단계로 리턴한다.
-    public static DistanceType getDistanceType(Unit baseUnit, Unit targetUnit) {
-	DistanceType result;
+    // 적과 적의 이동 목적지 각도와 적과 아군의 각도가 일치하면 true
+    public static boolean isSameAngleBetweenEnemyMoveAndAllianceUnit(Unit allianceUnit, Unit enemyUnit) {
+	boolean result = false;
 
-	int distance = baseUnit.getDistance(targetUnit);
-	UnitSpec unitSpec = getUnitSpec(baseUnit);
+	Position alliancePosition = allianceUnit.getPosition();
+	Position enemyPosition = enemyUnit.getPosition();
+	Position enemyTargetPosition = enemyUnit.getOrderTargetPosition();
+	if (null == enemyTargetPosition) {
+	    if (null != enemyUnit.getOrderTarget()) {
+		enemyTargetPosition = enemyUnit.getOrderTarget().getPosition();
+	    }
+	}
 
-	if (distance < unitSpec.getCloseDistance()) {
-	    result = DistanceType.CLOSE;
-	} else if (distance >= unitSpec.getCloseDistance() && distance <= unitSpec.getWeaponMaxRange()) {
-	    result = DistanceType.NEAR_IN;
-	} else if (distance > unitSpec.getWeaponMaxRange() && distance <= unitSpec.getFarDistance()) {
-	    result = DistanceType.NEAR_OUT;
-	} else {
-	    result = DistanceType.FAR;
+	if (null != alliancePosition && null != enemyPosition && null != enemyTargetPosition) {
+	    double angleToEnemyPosition = getAngleFromPositions(enemyPosition, enemyTargetPosition);
+	    double angleToAlliance = getAngleFromPositions(enemyPosition, alliancePosition);
+	    if (inRangeRadius(angleToEnemyPosition, angleToAlliance, Math.PI * 2 / 3)) {
+		result = true;
+	    }
 	}
 
 	return result;
@@ -294,6 +307,8 @@ public class UnitUtil {
 
 	    // 기타 정보: Target과 Order 정보를 로깅
 	    String etcInfo = unitId + "Etc Info: ";
+	    etcInfo += "[HP:" + unit.getHitPoints() + "] ";
+	    etcInfo += "[Current Pos:" + unit.getPosition() + "] ";
 	    if (null != unit.getTarget()) {
 		etcInfo += "[Target:" + unit.getTarget().getID() + "] ";
 	    }
@@ -316,5 +331,42 @@ public class UnitUtil {
 
 	    Log.trace(etcInfo);
 	}
+    }
+
+    public static EnemyUnitStatus getUnitCombatStatus(Unit allianceUnit, Unit enemyUnit) {
+	EnemyUnitStatus result = EnemyUnitStatus.UNKNOWN;
+
+	UnitSpec unitSpec = getUnitSpec(allianceUnit);
+	int distanceFromEnemyUnitToAllianceUnit = enemyUnit.getDistance(allianceUnit);
+	boolean isSameAngleBetweenEnemyMoveAndAllianceUnit = UnitUtil.isSameAngleBetweenEnemyMoveAndAllianceUnit(allianceUnit, enemyUnit);
+
+	if (enemyUnit.getOrder().equals(Order.ComputerReturn) || enemyUnit.getOrder().equals(Order.Move) || enemyUnit.getOrder().equals(Order.AttackMove)
+		|| enemyUnit.getOrder().equals(Order.AttackUnit)) {
+	    if (enemyUnit.getOrder().equals(Order.AttackMove) && unitSpec.getNearMoveDistance() > allianceUnit.getDistance(enemyUnit.getOrderTargetPosition())) {
+		// 적이 내 유닛 근처로 이동했다.
+		// TODO AttackMove 뿐만 아니라 Move도 처리해야 하지 않을까?
+		result = EnemyUnitStatus.NEAR_MOVE;
+	    } else if (false == isSameAngleBetweenEnemyMoveAndAllianceUnit) {
+		// 나와 같은 다른 방향으로 이동한다.
+		if (distanceFromEnemyUnitToAllianceUnit < unitSpec.getDifferenceDirectionCloseDistance()) {
+		    result = EnemyUnitStatus.DIFFERENCE_DIR_CLOSE;
+		} else if (distanceFromEnemyUnitToAllianceUnit < unitSpec.getDifferenceDirectionFarDistance()) {
+		    result = EnemyUnitStatus.DIFFERENCE_DIR_MIDDLE;
+		} else {
+		    result = EnemyUnitStatus.DIFFERENCE_DIR_FAR;
+		}
+	    } else {
+		// 나와 같은 방향으로 이동한다.
+		if (distanceFromEnemyUnitToAllianceUnit <= unitSpec.getSameDirectionCloseDistance()) {
+		    result = EnemyUnitStatus.SAME_DIR_CLOSE;
+		} else if (distanceFromEnemyUnitToAllianceUnit < unitSpec.getSameDirectionFarDistance()) {
+		    result = EnemyUnitStatus.SAME_DIR_MIDDLE;
+		} else {
+		    result = EnemyUnitStatus.SAME_DIR_FAR;
+		}
+	    }
+	}
+
+	return result;
     }
 }
