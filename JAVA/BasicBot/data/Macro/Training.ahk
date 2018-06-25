@@ -13,19 +13,31 @@ Training System Started.
 )
 
 #t::
+    ; 동영상 캡쳐 프로그램(OBS)가 있으면, 동영상 캡쳐를 시작한다.
+    ControlClick, x820 y676, ahk_class Qt5QWindowIcon,, LEFT
 
     startTime:=A_TickCount
     Loop %times% {
         training_once()
     }
+
+    ; 동영상 캡쳐 프로그램(OBS)가 있으면, 동영상 캡쳐를 종료한다.
+    ControlClick, x820 y676, ahk_class Qt5QWindowIcon,, LEFT
+
     duration:=A_TickCount-startTime
     MsgBox Training X %times% times has finished. Duration: %duration% ms
 
     return
 
 #o::
+    ; 동영상 캡쳐 프로그램(OBS)가 있으면, 동영상 캡쳐를 시작한다.
+    ControlClick, x820 y676, ahk_class Qt5QWindowIcon,, LEFT
+
     training_once()
     duration:=A_TickCount-startTime
+
+    ; 동영상 캡쳐 프로그램(OBS)가 있으면, 동영상 캡쳐를 종료한다.
+    ControlClick, x820 y676, ahk_class Qt5QWindowIcon,, LEFT
 
     return
 
@@ -36,7 +48,6 @@ Training System Started.
     ExitApp
 
     return
-
 
 training_once() {
     ; Run Eclipse

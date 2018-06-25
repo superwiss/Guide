@@ -48,6 +48,12 @@ public class TrainingManager {
 	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Protoss_Zealot).frameLimitFrom(50).frameLimitTo(2000).allianceKillCount(0)
 		    .enemyKillCount(1).scoreType(TrainingData.SCORE_TYPE.ALLIANCE_HP_AND_TIME);
 	    break;
+	case "Marine2_vs_Zealot1.scx":
+	    // 마린 2마리 vs 질럿 1마리 전투. 질럿이 Attack Move Location 으로 이동하던 도중에 마린을 만난 상황.
+	    // 1500 프레임 이내에 아군 마린은 죽지 않고 적 질럿을 죽여야 한다.
+	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Protoss_Zealot).frameLimitFrom(50).frameLimitTo(2000).allianceKillCount(0)
+		    .enemyKillCount(1).scoreType(TrainingData.SCORE_TYPE.ALLIANCE_HP_AND_TIME);
+	    break;
 	case "Zerg_Test.scx":
 	    // 저그 테스트용
 	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Protoss_Zealot).frameLimitFrom(50).frameLimitTo(1000000).allianceKillCount(0)

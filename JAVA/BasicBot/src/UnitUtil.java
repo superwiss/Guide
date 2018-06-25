@@ -333,6 +333,31 @@ public class UnitUtil {
 	}
     }
 
+    // 적과 아군의 위치를 계산해서 최적의 후퇴 지점을 리턴한다.
+    public static Position getBackPosition(Position allianceUnitPosition, Position enemyUnitPosition) {
+	Position result;
+
+	int allianceX = allianceUnitPosition.getX();
+	int allianceY = allianceUnitPosition.getY();
+
+	int enemyX = enemyUnitPosition.getX();
+	int enemyY = enemyUnitPosition.getY();
+
+	result = new Position(allianceX + (allianceX - enemyX) * 4, allianceY + (allianceY - enemyY) * 4);
+
+	return result;
+    }
+
+    public static int getDistance(Position p1, Position p2) {
+	int diffX = p1.getX() - p2.getX();
+	int diffY = p1.getY() - p2.getY();
+	diffX *= diffX;
+	diffY *= diffY;
+
+	return diffX + diffY;
+    }
+
+    // 적군 유닛의 현재 상태(아군을 향하고 있고 가깝다, 아군을 등지고 있고 멀리 있다, 아군 근처로 MoveAttack명을 내렸다 등)를 리턴한다.
     public static EnemyUnitStatus getUnitCombatStatus(Unit allianceUnit, Unit enemyUnit) {
 	EnemyUnitStatus result = EnemyUnitStatus.UNKNOWN;
 

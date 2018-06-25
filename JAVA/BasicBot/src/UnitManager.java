@@ -20,7 +20,7 @@ public class UnitManager {
     private Map<UnitKind, Set<Integer>> unitFilterMap = new HashMap<>();
 
     // 유닛의 마지막 명령
-    private Map<Integer, String> lastActionMap = new HashMap<>();
+    private Map<Integer, ActionDetail> lastActionMap = new HashMap<>();
 
     // 유닛의 마지막 상태
     private Map<Integer, UnitStatus> lastStatusMap = new HashMap<>();
@@ -55,12 +55,12 @@ public class UnitManager {
     }
 
     // 유닛의 마지막 Action 정보를 리틴한다.
-    public String getLastAction(Unit unit) {
+    public ActionDetail getLastAction(Unit unit) {
 	return lastActionMap.get(unit.getID());
     }
 
     // 유닛의 Action 정보를 Update 한다.
-    public void updateLastAction(Unit unit, String lastAction) {
+    public void updateLastAction(Unit unit, ActionDetail lastAction) {
 	lastActionMap.put(unit.getID(), lastAction);
     }
 

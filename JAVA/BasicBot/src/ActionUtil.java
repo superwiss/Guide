@@ -10,24 +10,25 @@ public class ActionUtil {
     private static Set<Integer> forceAttackUnitIdSet = new HashSet<>();
 
     public static void patrolToEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	String currnetCommand = getCommand("PATROL_TO_UNIT", allianceUnit, enemyUnit);
+	ActionDetail currnetCommand = getActionDetail("PATROL_TO_UNIT", allianceUnit, enemyUnit);
 
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.patrol(enemyUnit.getPosition());
 	}
     }
 
-    public static void moveToPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position) {
-	String currnetCommand = getCommand("MOVE_TO_POSITION", allianceUnit, position);
+    public static void moveToPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position, int margin) {
+	ActionDetail currnetCommand = getActionDetail("MOVE_TO_POSITION", allianceUnit, position, margin);
 
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	    // 이동할 position이 이전에 명령받은 position과 너무 가까우면 무시한다.
 	    allianceUnit.move(position);
 	}
     }
 
     // TODO 상대가 움직이면 position이 바뀌면서 매 프레임마다 move 명령이 내려지는 상황이 발생하는데, 큰 이슈 없는지 확인하기 
     public static void moveToUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	String currnetCommand = getCommand("MOVE_TO_UNIT", allianceUnit, enemyUnit.getPoint());
+	ActionDetail currnetCommand = getActionDetail("MOVE_TO_UNIT", allianceUnit, enemyUnit.getPoint());
 
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.move(enemyUnit.getPoint());
@@ -35,7 +36,7 @@ public class ActionUtil {
     }
 
     public static void attackEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	String currnetCommand = getCommand("ATTACK_TO_UNIT", allianceUnit, enemyUnit);
+	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT", allianceUnit, enemyUnit);
 
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.attack(enemyUnit);
@@ -43,7 +44,7 @@ public class ActionUtil {
     }
 
     public static void attackEnemyUnitForcibly(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	String currnetCommand = getCommand("ATTACK_TO_UNIT_Forcibly", allianceUnit, enemyUnit);
+	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT_Forcibly", allianceUnit, enemyUnit);
 
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.attack(enemyUnit);
@@ -66,7 +67,7 @@ public class ActionUtil {
     }
 
     public static void stop(UnitManager allianceUnitManager, Unit allianceUnit) {
-	String currnetCommand = getCommand("STOP", allianceUnit);
+	ActionDetail currnetCommand = getActionDetail("STOP", allianceUnit);
 
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.stop();
@@ -75,7 +76,7 @@ public class ActionUtil {
 
     // 상대방 유닛을 향해 회전한다.
     public static void turn(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	String currnetCommand = getCommand("TURN", allianceUnit, enemyUnit);
+	ActionDetail currnetCommand = getActionDetail("TURN", allianceUnit, enemyUnit);
 
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    int deltaScale = 1;
@@ -121,50 +122,57 @@ public class ActionUtil {
     }
 
     // 유닛의 명령을 String으로 표현한다. (Position이 없는 타입의 명령어)
-    private static String getCommand(String command, Unit allianceUnit, Unit enemyUnit) {
-	return getCommand(command, allianceUnit, enemyUnit, null);
+    private static ActionDetail getActionDetail(String command, Unit allianceUnit, Unit enemyUnit) {
+	return getActionDetail(command, allianceUnit, enemyUnit, null, 0);
     }
 
     // 유닛의 명령을 String으로 표현한다. (Destination Unit이 없는 타입의 명령어)
-    private static String getCommand(String command, Unit allianceUnit, Position position) {
-	return getCommand(command, allianceUnit, null, position);
+    private static ActionDetail getActionDetail(String command, Unit allianceUnit, Position position) {
+	return getActionDetail(command, allianceUnit, null, position, 0);
     }
 
     // 유닛의 명령을 String으로 표현한다. (Destination Unit, Position이 없는 타입의 명령어)
-    private static String getCommand(String command, Unit allianceUnit) {
-	return getCommand(command, allianceUnit, null, null);
+    private static ActionDetail getActionDetail(String command, Unit allianceUnit) {
+	return getActionDetail(command, allianceUnit, null, null, 0);
     }
 
-    // 유닛의 명령을 String으로 표현한다.
-    private static String getCommand(String command, Unit srcUnit, Unit destUnit, Position position) {
-	String result = "";
+    private static ActionDetail getActionDetail(String command, Unit allianceUnit, Position position, int margin) {
+	return getActionDetail(command, allianceUnit, null, position, margin);
+    }
 
-	String strDestUnit = (null == destUnit ? "null" : String.valueOf(destUnit.getID()));
-	String strPosition = (null == position ? "null" : position.toString());
-
-	result += "[" + command;
-	result += "] (" + srcUnit.getID();
-	result += "->" + strDestUnit;
-	result += "," + strPosition;
-	result += ")";
-
-	return result;
+    // 유닛의 명령을 ActionDetail 개체로 변환한다.
+    private static ActionDetail getActionDetail(String command, Unit srcUnit, Unit destUnit, Position position, int margin) {
+	return new ActionDetail(command, srcUnit, destUnit, position, margin);
     }
 
     // 유닛의 액션을 수행할지 말지 결정한다. 이전과 동일한 액션이 들어오면 skip할 수 있도록 false를 리턴한다.
-    private static boolean isAcceptedAction(String currnetCommand, Unit allianceUnit, UnitManager allianceUnitManager) {
+    private static boolean isAcceptedAction(ActionDetail currentActionDetail, Unit allianceUnit, UnitManager allianceUnitManager) {
 	boolean result = false;
 
-	String lastCommand = allianceUnitManager.getLastAction(allianceUnit);
+	ActionDetail lastActionDetail = allianceUnitManager.getLastAction(allianceUnit);
 
 	if (forceAttackUnitIdSet.contains(Integer.valueOf(allianceUnit.getID()))) {
-	    Log.trace("Action Rejected: " + currnetCommand);
-	} else if (currnetCommand.equals(lastCommand)) {
-	    Log.trace("Action Rejected: " + currnetCommand);
+	    Log.trace("Action Rejected: " + currentActionDetail);
+	} else if (currentActionDetail.equals(lastActionDetail)) {
+	    Log.trace("Action Rejected: " + currentActionDetail);
 	} else {
-	    allianceUnitManager.updateLastAction(allianceUnit, currnetCommand);
 	    result = true;
-	    Log.trace("Action Accepted: " + currnetCommand);
+	    if (null != currentActionDetail.getCommand() && null != lastActionDetail && currentActionDetail.getCommand().equals(lastActionDetail.getCommand())
+		    && null != currentActionDetail.getPosition() && null != lastActionDetail.getPosition() && 0 != currentActionDetail.getMargin()) {
+
+		int diff = UnitUtil.getDistance(currentActionDetail.getPosition(), lastActionDetail.getPosition());
+
+		// 동일한 명령어에 대해서 Position이 10Pixel 이하로 차이가 나면 무시한다. 
+		if (diff <= currentActionDetail.getMargin() * currentActionDetail.getMargin()) {
+		    result = false;
+		    Log.trace("Action Rejected: " + currentActionDetail + "; Too close to last position: " + lastActionDetail.getPosition());
+		}
+	    }
+	    if (false != result) {
+		allianceUnitManager.updateLastAction(allianceUnit, currentActionDetail);
+		result = true;
+		Log.trace("Action Accepted: " + currentActionDetail);
+	    }
 	}
 
 	return result;

@@ -41,8 +41,8 @@ public class MicroControlManager {
 
 	    Log.debug("Distance between alliance unit and enemy unit: %d", allianceUnit.getDistance(enemyUnit));
 
-	    // 도망칠 때 집결 장소. ex) first chockpoint
-	    Position backPosition = new Position(0, 0);
+	    // 도망칠 때 집결 장소. 적군 유닛과 반대 방향으로 움직인다.
+	    Position backPosition = UnitUtil.getBackPosition(allianceUnit.getPosition(), enemyUnit.getPosition());
 
 	    // 게임 속도 제어
 	    if (false == speedControl(gameData, allianceUnit, enemyUnit)) {
@@ -79,7 +79,7 @@ public class MicroControlManager {
 		break;
 	    case SAME_DIR_CLOSE:
 		Log.debug(":::::::: 적이 나와 같은 방향으로 이동 중이다. 거리가 가깝다. 도망가자.");
-		ActionUtil.moveToPosition(allianceUnitManager, allianceUnit, backPosition);
+		ActionUtil.moveToPosition(allianceUnitManager, allianceUnit, backPosition, 100);
 		break;
 	    case SAME_DIR_MIDDLE:
 		Log.debug(":::::::: 적이 나와 같은 방향으로 이동 중이다. 거리가 애매하다. Stop 하자");
