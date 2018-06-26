@@ -72,7 +72,7 @@ public class UnitUtil {
 	UnitType unitType = unit.getType();
 
 	if (UnitType.Terran_Marine == unitType) {
-	    return new UnitSpecMarine();
+	    return UnitSpecMarine.Instance();
 	}
 
 	Log.warn("Can not found CombatData because of undefined unit type: {}", unit.getType());

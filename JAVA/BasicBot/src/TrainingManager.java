@@ -42,6 +42,12 @@ public class TrainingManager {
 	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Zerg_Zergling).frameLimitFrom(50).frameLimitTo(500).allianceKillCount(0).enemyKillCount(1)
 		    .scoreType(TrainingData.SCORE_TYPE.ALLIANCE_HP_AND_TIME);
 	    break;
+	case "Marine1_vs_StrongZergling1.scx":
+	    // 마린 1마리 vs 저글링 1마리 전투. 저글링이 Attack Move Location 으로 이동하던 도중에 마린을 만난 상황.
+	    // 500 프레임 이내에 아군 마린은 죽지 않고 적 저글링을 죽여야 한다.
+	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Zerg_Zergling).frameLimitFrom(50).frameLimitTo(2000).allianceKillCount(0)
+		    .enemyKillCount(1).scoreType(TrainingData.SCORE_TYPE.ALLIANCE_HP_AND_TIME);
+	    break;
 	case "Marine1_vs_Zealot1.scx":
 	    // 마린 1마리 vs 질럿 1마리 전투. 질럿이 Attack Move Location 으로 이동하던 도중에 마린을 만난 상황.
 	    // 1500 프레임 이내에 아군 마린은 죽지 않고 적 질럿을 죽여야 한다.
@@ -51,7 +57,7 @@ public class TrainingManager {
 	case "Marine2_vs_Zealot1.scx":
 	    // 마린 2마리 vs 질럿 1마리 전투. 질럿이 Attack Move Location 으로 이동하던 도중에 마린을 만난 상황.
 	    // 1500 프레임 이내에 아군 마린은 죽지 않고 적 질럿을 죽여야 한다.
-	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Protoss_Zealot).frameLimitFrom(50).frameLimitTo(2000).allianceKillCount(0)
+	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Protoss_Zealot).frameLimitFrom(50).frameLimitTo(2000).allianceKillCount(1)
 		    .enemyKillCount(1).scoreType(TrainingData.SCORE_TYPE.ALLIANCE_HP_AND_TIME);
 	    break;
 	case "Zerg_Test.scx":
@@ -122,7 +128,8 @@ public class TrainingManager {
 	Log.info("\t Remain enemy HP: %d", enemyUnitHp);
 	Log.info("\t Killed alliance units count: %d", allianceUnitKilledCount);
 	Log.info("\t Killed enemy units count: %d", enemyUnitKilledCount);
-	Util.writeTrainingResultToFile(game.mapFileName(), isSuccess, getScore(), currentFrameCount, allianceUnitHp, enemyUnitHp, allianceUnitKilledCount, enemyUnitKilledCount);
+	Util.writeTrainingResultToFile(game.mapFileName(), isSuccess, getScore(), currentFrameCount, allianceUnitHp, enemyUnitHp, allianceUnitKilledCount, enemyUnitKilledCount,
+		UnitSpecMarine.Instance());
     }
 
     // 점수를 계산한다.
