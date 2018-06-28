@@ -66,17 +66,6 @@ public class MicroControlManager {
 	    case NEAR_MOVE:
 		Log.debug(":::::::: 적이 내 근처로 Attack Move 중이다. 이전 동작을 계속하자.");
 		break;
-	    case DIFFERENCE_DIR_CLOSE:
-		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 가깝다. 이전 동작을 계속하자.");
-		break;
-	    case DIFFERENCE_DIR_MIDDLE:
-		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 애매하다. Stop 하자.");
-		ActionUtil.stop(allianceUnitManager, allianceUnit);
-		break;
-	    case DIFFERENCE_DIR_FAR:
-		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 멀다. 강제 공격하자.");
-		ActionUtil.attackEnemyUnitForcibly(allianceUnitManager, allianceUnit, enemyUnit);
-		break;
 	    case SAME_DIR_CLOSE:
 		Log.debug(":::::::: 적이 나와 같은 방향으로 이동 중이다. 거리가 가깝다. 도망가자.");
 		ActionUtil.moveToPosition(allianceUnitManager, allianceUnit, backPosition, 100);
@@ -88,6 +77,17 @@ public class MicroControlManager {
 	    case SAME_DIR_FAR:
 		Log.debug(":::::::: 적이 나와 같은 방향으로 이동 중이다. 거리가 멀다. 공격하자.");
 		ActionUtil.attackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
+		break;
+	    case DIFFERENCE_DIR_CLOSE:
+		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 가깝다. 이전 동작을 계속하자.");
+		break;
+	    case DIFFERENCE_DIR_MIDDLE:
+		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 애매하다. Stop 하자.");
+		ActionUtil.stop(allianceUnitManager, allianceUnit);
+		break;
+	    case DIFFERENCE_DIR_FAR:
+		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 멀다. 강제 공격하자.");
+		ActionUtil.attackEnemyUnitForcibly(allianceUnitManager, allianceUnit, enemyUnit);
 		break;
 	    default:
 		Log.error(":::::::: 추가 예외 처리가 필요한 상황.");
@@ -110,7 +110,7 @@ public class MicroControlManager {
 
 	switch (game.getFrameCount()) {
 	case 17:
-	    //game.setLocalSpeed(42);
+	    game.setLocalSpeed(42);
 	    ActionUtil.attackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 	    break;
 	case 50:

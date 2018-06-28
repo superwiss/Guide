@@ -1,7 +1,7 @@
 #include, library\Gdip.ahk
 #include, library\gdip_imagesearch.ahk
 
-times:=10
+times:=100
 pToken:=Gdip_Startup()
 
 MsgBox,
@@ -78,6 +78,16 @@ training_once() {
     Sleep, 200
     ControlSend,,{Alt down}o{Alt up}{BACKSPACE},ahk_class SWarClass
 
+    ; 게임이 시작될 때까지 단축키 alt + o (OK)를 누른다.
+    Loop {
+        if (imgSearch("images\play_screen.bmp", hwnd, findX,findY)=true) {
+            break
+        } else {
+            Sleep, 1000
+            ControlSend,,{Alt down}o{Alt up}{BACKSPACE},ahk_class SWarClass
+        }
+    }
+
     ; save_replay 화면이 나올 때까지 대기한다.
     Loop {
         if (imgSearch("images\save_replay.bmp", hwnd, findX,findY)=true) {
@@ -93,7 +103,7 @@ imgSearch(image,hwnd, byref vx, byref vy) {
     pBitmapHayStack:=Gdip_BitmapFromHWND(hwnd)
     pBitmapNeedle:=Gdip_CreateBitmapFromFile(image)
 
-    if Gdip_ImageSearch(pBitmapHayStack,pBitmapNeedle,list,0,0,0,0,128,,1,1) {
+    if Gdip_ImageSearch(pBitmapHayStack,pBitmapNeedle,list,0,0,0,0,32,,1,1) {
         StringSplit, LISTArray, LIST, `, 
         vx:=LISTArray1
         vy:=LISTArray2
