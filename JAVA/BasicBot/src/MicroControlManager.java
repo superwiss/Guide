@@ -17,6 +17,7 @@ public class MicroControlManager {
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
 	UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
 
+	Log.trace("Enemy Count: %d", enemyUnitManager.getAttackableUnitList().size());
 	// 적을 공격할 수 있는 아군 유닛을 대상으로 컨트롤을 한다.
 	for (Integer allianceUnitId : allianceUnitManager.getAttackableUnitList()) {
 
@@ -32,7 +33,8 @@ public class MicroControlManager {
 	    // 공격할 적 유닛을 선택한다.
 	    Unit enemyUnit = UnitUtil.selectEnemyTargetUnit(allianceUnit, enemyUnitManager);
 	    if (null == enemyUnit) {
-		return;
+		Log.trace("Alliance Unit(%d) -> Selected Enemy is null.", allianceUnitId);
+		continue;
 	    }
 
 	    UnitUtil.loggingDetailUnitInfo(allianceUnit);
@@ -56,7 +58,7 @@ public class MicroControlManager {
 		    ActionUtil.attackFinished(allianceUnit);
 		} else {
 		    Log.debug(":::::::: 강제 공격 중이다.");
-		    return;
+		    continue;
 		}
 	    }
 

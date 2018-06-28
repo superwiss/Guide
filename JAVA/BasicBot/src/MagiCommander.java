@@ -33,6 +33,7 @@ public class MagiCommander extends GameCommander {
 
     /// 경기 진행 중 매 프레임마다 발생하는 이벤트를 처리합니다
     public void onFrame() {
+	Log.info("\nonFrame() started");
 	if (trainingManager.isTrainingMode()) {
 	    if (MyBotModule.Broodwar.isPaused() || MyBotModule.Broodwar.self() == null || MyBotModule.Broodwar.self().isDefeated() || MyBotModule.Broodwar.self().leftGame()
 		    || MyBotModule.Broodwar.enemy() == null || MyBotModule.Broodwar.enemy().isDefeated() || MyBotModule.Broodwar.enemy().leftGame()) {
@@ -44,8 +45,6 @@ public class MagiCommander extends GameCommander {
 
 	    // 각 유닛의 위치를 자체 MapGrid 자료구조에 저장
 	    MapGrid.Instance().update();
-
-	    Log.info("\nonFrame() started");
 
 	    microControlManager.onFrame(gameData);
 
@@ -62,6 +61,7 @@ public class MagiCommander extends GameCommander {
 	    }
 	} else {
 	    super.onFrame();
+	    microControlManager.onFrame(gameData);
 	}
     }
 

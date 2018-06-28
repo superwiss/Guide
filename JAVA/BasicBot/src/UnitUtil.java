@@ -83,34 +83,30 @@ public class UnitUtil {
     // 파라메터로 전달 받은 내 유닛이 공격해야 할 가장 적당한 적 유닛을 선택한다.
     // 적당한 유닛이 없으면 null을 리턴한다.
     public static Unit selectEnemyTargetUnit(Unit allianceUnit, UnitManager enemyUnitManager) {
-	List<Unit> combatDistanceList = new LinkedList<>();
-	List<Unit> attackDistanceList = new LinkedList<>();
 	UnitSpec unitSpec = UnitUtil.getUnitSpec(allianceUnit);
 
 	// 전투 반경 내의 유닛이 대상이다.
 	// TODO: Unit.getUnitsInRadius(arg0)을 활용해 보자. 
+	Unit targetUnit = null;
+	int targetDistance = Integer.MAX_VALUE;
 	for (Integer enemyUnitId : enemyUnitManager.getAttackableUnitList()) {
 	    Unit enemyUnit = enemyUnitManager.getUnit(enemyUnitId);
 	    int distance = allianceUnit.getDistance(enemyUnit);
-	    if (distance <= unitSpec.getCombatDistance()) {
-		combatDistanceList.add(enemyUnit);
+	    if (distance > unitSpec.getCombatDistance()) {
+		continue;
 	    }
-	    if (distance <= unitSpec.getWeaponMaxRange()) {
-		attackDistanceList.add(enemyUnit);
+	    if (distance < targetDistance) {
+		targetUnit = enemyUnitManager.getUnit(enemyUnitId);
+		targetDistance = distance;
 	    }
+	    loggingDetailUnitInfo(enemyUnitManager.getUnit(enemyUnitId));
 	}
 
 	// TODO 예를 들어 내가 벌쳐라면 드라군보다 질럿을 먼저 때리도록 로직을 상세화 한다.
-
-	if (0 < attackDistanceList.size()) {
-	    return attackDistanceList.get(0);
+	if (null != targetUnit) {
+	    Log.debug("Alliance Unit [%d] -> Enemy Unit [%d]", allianceUnit.getID(), targetUnit.getID());
 	}
-
-	if (0 < combatDistanceList.size()) {
-	    return combatDistanceList.get(0);
-	}
-
-	return null;
+	return targetUnit;
     }
 
     // 내 유닛과 적 유닛의 각도를 구한다.
@@ -241,7 +237,7 @@ public class UnitUtil {
     // 유닛의 정보를 엄청 자세히 로그로 남긴다.
     public static void loggingDetailUnitInfo(Unit unit) {
 	if (null != unit) {
-	    String unitId = "[" + unit.getID() + "] ";
+	    String unitId = "[" + unit.getID() + "] [" + unit.getType() + "] ";
 
 	    // 현재 수행 가능한 액션을 로깅
 	    String posibility = unitId + "Possible action: ";
