@@ -21,6 +21,7 @@ public class MagiCommander extends GameCommander {
 	super.onStart();
 	gameData = new GameData(broodwar);
 	Log.setLogLevel(Log.Level.TRACE);
+	ActionUtil.setGame(broodwar);
 	Log.info("Game has started");
 	trainingManager.init();
     }

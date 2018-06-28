@@ -1,6 +1,7 @@
 import java.util.HashSet;
 import java.util.Set;
 
+import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
 
@@ -8,6 +9,11 @@ import bwapi.Unit;
 public class ActionUtil {
 
     private static Set<Integer> forceAttackUnitIdSet = new HashSet<>();
+    private static Game game;
+
+    public static void setGame(Game game) {
+	ActionUtil.game = game;
+    }
 
     public static void patrolToEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
 	ActionDetail currnetCommand = getActionDetail("PATROL_TO_UNIT", allianceUnit, enemyUnit);
@@ -52,6 +58,14 @@ public class ActionUtil {
 	}
     }
 
+    public static void stop(UnitManager allianceUnitManager, Unit allianceUnit) {
+	ActionDetail currnetCommand = getActionDetail("STOP", allianceUnit);
+
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	    allianceUnit.stop();
+	}
+    }
+
     public static void attackFinished(Unit allianceUnit) {
 	forceAttackUnitIdSet.remove(Integer.valueOf(allianceUnit.getID()));
     }
@@ -64,14 +78,6 @@ public class ActionUtil {
 	}
 
 	return result;
-    }
-
-    public static void stop(UnitManager allianceUnitManager, Unit allianceUnit) {
-	ActionDetail currnetCommand = getActionDetail("STOP", allianceUnit);
-
-	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
-	    allianceUnit.stop();
-	}
     }
 
     // 상대방 유닛을 향해 회전한다.
@@ -142,7 +148,7 @@ public class ActionUtil {
 
     // 유닛의 명령을 ActionDetail 개체로 변환한다.
     private static ActionDetail getActionDetail(String command, Unit srcUnit, Unit destUnit, Position position, int margin) {
-	return new ActionDetail(command, srcUnit, destUnit, position, margin);
+	return new ActionDetail(command, srcUnit, destUnit, position, game.getFrameCount(), margin);
     }
 
     // 유닛의 액션을 수행할지 말지 결정한다. 이전과 동일한 액션이 들어오면 skip할 수 있도록 false를 리턴한다.
@@ -151,7 +157,11 @@ public class ActionUtil {
 
 	ActionDetail lastActionDetail = allianceUnitManager.getLastAction(allianceUnit);
 
-	if (forceAttackUnitIdSet.contains(Integer.valueOf(allianceUnit.getID()))) {
+	if (null != lastActionDetail && lastActionDetail.getActionFrame() + 12 < currentActionDetail.getActionFrame()) {
+	    allianceUnitManager.updateLastAction(allianceUnit, currentActionDetail);
+	    result = true;
+	    Log.trace("Action Accepted (Last action frame: %d): %s", lastActionDetail.getActionFrame(), currentActionDetail);
+	} else if (forceAttackUnitIdSet.contains(Integer.valueOf(allianceUnit.getID()))) {
 	    Log.trace("Action Rejected: " + currentActionDetail);
 	} else if (currentActionDetail.equals(lastActionDetail)) {
 	    Log.trace("Action Rejected: " + currentActionDetail);

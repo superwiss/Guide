@@ -58,6 +58,7 @@ public class MicroControlManager {
 		    ActionUtil.attackFinished(allianceUnit);
 		} else {
 		    Log.debug(":::::::: 강제 공격 중이다.");
+		    ActionUtil.attackEnemyUnitForcibly(allianceUnitManager, allianceUnit, enemyUnit);
 		    continue;
 		}
 	    }

@@ -1,6 +1,4 @@
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import bwapi.Color;
@@ -173,16 +171,44 @@ public class UnitUtil {
 	return result;
     }
 
-    // 적 유닛이 나를 바라보고 있는지 구한다. (target position 기반)
-    public static boolean isEnemyUnitLookingMyUnit2(Unit allianceUnit, Unit enemyUnit) {
-	boolean result = false;
+    // 상대방 유닛을 향해 회전한다.
+    public static Position getBackCounterClockWisePosition(Unit allianceUnit, Unit enemyUnit) {
+	// 직선 이동 거리
+	int deltaScale = 200;
+	// 대각선 이동 거리
+	int diagonal = (int) (deltaScale / 1.414);
 
-	Position enemyTargetPosition = enemyUnit.getTargetPosition();
-	if (allianceUnit.getDistance(enemyTargetPosition) < 100) {
-	    result = true;
+	int deltaX = 0;
+	int deltaY = 0;
+	// 내 유닛과 적 유닛의 각도를 구한다.
+	double radian = UnitUtil.getAnagleFromBaseUnitToAnotherUnit(allianceUnit, enemyUnit);
+	double factor = Math.PI / 8;
+	if (radian >= 15 * factor || radian < 1 * factor) {
+	    deltaX = -diagonal;
+	    deltaY = diagonal;
+	} else if (radian < 3 * factor) {
+	    deltaX = -deltaScale;
+	    deltaY = 0;
+	} else if (radian < 5 * factor) {
+	    deltaX = -diagonal;
+	    deltaY = -diagonal;
+	} else if (radian < 7 * factor) {
+	    deltaX = 0;
+	    deltaY = -deltaScale;
+	} else if (radian < 9 * factor) {
+	    deltaX = diagonal;
+	    deltaY = -diagonal;
+	} else if (radian < 11 * factor) {
+	    deltaX = 100;
+	    deltaY = 0;
+	} else if (radian < 13 * factor) {
+	    deltaX = diagonal;
+	    deltaY = diagonal;
+	} else if (radian < 15 * factor) {
+	    deltaX = 0;
+	    deltaY = deltaScale;
 	}
-
-	return result;
+	return new Position(allianceUnit.getPosition().getX() + deltaX, allianceUnit.getPosition().getY() + deltaY);
     }
 
     // 적과 적의 이동 목적지 각도와 적과 아군의 각도가 일치하면 true

@@ -6,13 +6,15 @@ public class ActionDetail {
     private Unit srcUnit;
     private Unit destUnit;
     private Position position;
+    private int actionFrame;
     private int margin;
 
-    public ActionDetail(String command, Unit srcUnit, Unit destUnit, Position position, int margin) {
+    public ActionDetail(String command, Unit srcUnit, Unit destUnit, Position position, int actionFrame, int margin) {
 	this.command = command;
 	this.srcUnit = srcUnit;
 	this.destUnit = destUnit;
 	this.position = position;
+	this.actionFrame = actionFrame;
 	this.margin = margin;
     }
 
@@ -30,6 +32,10 @@ public class ActionDetail {
 
     public Position getPosition() {
 	return position;
+    }
+
+    public int getActionFrame() {
+	return actionFrame;
     }
 
     public int getMargin() {
@@ -104,6 +110,6 @@ public class ActionDetail {
     @Override
     public String toString() {
 	return "ActionDetail[command=" + command + ", srcUnit=" + (null != srcUnit ? srcUnit.getID() : "null") + ", destUnit=" + (null != destUnit ? destUnit.getID() : "null")
-		+ ", position=" + position + ", margin=" + margin;
+		+ ", position=" + position + ", actionFrame=" + actionFrame + ", margin=" + margin;
     }
 }
