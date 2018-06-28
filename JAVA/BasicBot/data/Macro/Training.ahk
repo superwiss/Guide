@@ -1,7 +1,7 @@
 #include, library\Gdip.ahk
 #include, library\gdip_imagesearch.ahk
 
-times:=100
+times:=10
 pToken:=Gdip_Startup()
 
 MsgBox,

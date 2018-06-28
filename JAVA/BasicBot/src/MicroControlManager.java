@@ -110,7 +110,7 @@ public class MicroControlManager {
 
 	switch (game.getFrameCount()) {
 	case 17:
-	    game.setLocalSpeed(42);
+	    //game.setLocalSpeed(42);
 	    ActionUtil.attackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 	    break;
 	case 50:

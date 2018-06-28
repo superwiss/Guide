@@ -10,7 +10,7 @@ public class UnitSpecMarine implements UnitSpec {
 	return instance;
     }
 
-    private boolean isRandomSpec = true;
+    private boolean isRandomSpec = false;
     private int randomSameDirectionCloseDistance = 0;
     private int randomSameDirectionFarDistance = 0;
     private int randomDifferenceDirectionCloseDistance = 0;
