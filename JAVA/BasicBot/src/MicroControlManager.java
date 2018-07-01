@@ -53,8 +53,11 @@ public class MicroControlManager {
 
 	    // 강제 공격을 처리한다.
 	    if (ActionUtil.isAttackingForcibly(allianceUnit)) {
-		if (allianceUnit.isAttackFrame() && 0 != allianceUnit.getGroundWeaponCooldown()) {
+		if (UnitUtil.isAttackFinished(allianceUnit)) {
 		    Log.debug(":::::::: 공격 완료");
+		    ActionUtil.attackFinished(allianceUnit);
+		} else if (allianceUnit.getDistance(enemyUnit) < 70) {
+		    Log.debug(":::::::: 너무 가까워서 강제 공격 해제.");
 		    ActionUtil.attackFinished(allianceUnit);
 		} else {
 		    Log.debug(":::::::: 강제 공격 중이다.");

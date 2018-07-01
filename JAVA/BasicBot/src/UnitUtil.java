@@ -1,4 +1,6 @@
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import bwapi.Color;
@@ -15,6 +17,8 @@ public class UnitUtil {
     public static enum DistanceType {
 	CLOSE, NEAR_IN, NEAR_OUT, FAR
     }
+
+    private static Map<Integer, Integer> lastAttackFinishedFrame = new HashMap<>();
 
     // Unit의 정보를 출력한다.
     public static String toString(Unit unit) {
@@ -377,6 +381,21 @@ public class UnitUtil {
 	diffY *= diffY;
 
 	return diffX + diffY;
+    }
+
+    public static boolean isAttackFinished(Unit allianceUnit) {
+	boolean result = false;
+
+	if (allianceUnit.isAttackFrame() && 0 != allianceUnit.getGroundWeaponCooldown()) {
+	    int currentFrame = game.getFrameCount();
+	    Integer lastFrame = lastAttackFinishedFrame.get(allianceUnit.getID());
+	    if (null == lastFrame || currentFrame - lastFrame > 10) {
+		lastAttackFinishedFrame.put(allianceUnit.getID(), currentFrame);
+		result = true;
+	    }
+	}
+
+	return result;
     }
 
     // 적군 유닛의 현재 상태(아군을 향하고 있고 가깝다, 아군을 등지고 있고 멀리 있다, 아군 근처로 MoveAttack명을 내렸다 등)를 리턴한다.

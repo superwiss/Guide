@@ -65,7 +65,7 @@ public class UnitSpecMarine implements UnitSpec {
 
     @Override
     public int getDifferenceDirectionFarDistance() {
-	return 50 + randomDifferenceDirectionFarDistance;
+	return 50 + randomDifferenceDirectionFarDistance + 25;
     }
 
     @Override

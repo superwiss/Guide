@@ -50,7 +50,7 @@ public class ActionUtil {
     }
 
     public static void attackEnemyUnitForcibly(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT_Forcibly", allianceUnit, enemyUnit);
+	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT_FORCIBLY", allianceUnit, enemyUnit);
 
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.attack(enemyUnit);
@@ -157,7 +157,13 @@ public class ActionUtil {
 
 	ActionDetail lastActionDetail = allianceUnitManager.getLastAction(allianceUnit);
 
-	if (null != lastActionDetail && lastActionDetail.getActionFrame() + 12 < currentActionDetail.getActionFrame()) {
+	if (false == isAttackingForcibly(allianceUnit) && currentActionDetail.getCommand().equals("ATTACK_TO_UNIT_FORCIBLY")) {
+	    // 10프레임동안 10회 강제 공격 명령을 내렸을 경우, 5프레임에서 공격이 성공하더라도 5프레임에서 다시 내린 강제 공격 명령은 무시된다.
+	    // 이 현상을 막기 위해서 강제 공격 상태가 아닌 상태에서 강제 공격 명령이 들어오면 이전과 동일한 명령이더라도 Accept한다.
+	    allianceUnitManager.updateLastAction(allianceUnit, currentActionDetail);
+	    result = true;
+	    Log.trace("Action Accepted: " + currentActionDetail);
+	} else if (null != lastActionDetail && lastActionDetail.getActionFrame() + 10 <= currentActionDetail.getActionFrame()) {
 	    allianceUnitManager.updateLastAction(allianceUnit, currentActionDetail);
 	    result = true;
 	    Log.trace("Action Accepted (Last action frame: %d): %s", lastActionDetail.getActionFrame(), currentActionDetail);
