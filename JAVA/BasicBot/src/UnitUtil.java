@@ -23,8 +23,8 @@ public class UnitUtil {
     // Unit의 정보를 출력한다.
     public static String toString(Unit unit) {
 	if (null != unit) {
-	    return String.format("Unit[id=%d, type=%s, hp=%d, angle=%f, position=%s]", unit.getID(), unit.getType().toString(), unit.getHitPoints(), unit.getAngle(),
-		    unit.getPosition().toString());
+	    return String.format("Unit[id=%d, type=%s, hp=%d, angle=%f, position=%s, tilePosition=%s]", unit.getID(), unit.getType().toString(), unit.getHitPoints(),
+		    unit.getAngle(), unit.getPosition().toString(), unit.getTilePosition().toString());
 	}
 
 	return "unit is null";
@@ -47,16 +47,31 @@ public class UnitUtil {
 	UnitType unitType = unit.getType();
 	String strUnitType = unitType.toString();
 
-	// UnitType.Protoss_Zealot;
+	//UnitType.Terran_Academy;
 
 	switch (strUnitType) {
 	case "Terran_Marine":
 	    result.add(UnitKind.ATTACKABLE_NORMAL);
+	    result.add(UnitKind.MARINE);
+	    break;
+	case "Terran_SCV":
+	    result.add(UnitKind.WORKER);
+	    break;
+	case "Terran_Command_Center":
+	    result.add(UnitKind.COMMAND_CENTER);
+	    break;
+	case "Terran_Barracks":
+	    result.add(UnitKind.BARRACKS);
+	    break;
+	case "Terran_Bunker":
+	    result.add(UnitKind.Bunker);
 	    break;
 	case "Zerg_Zergling":
 	    result.add(UnitKind.ATTACKABLE_NORMAL);
+	    break;
 	case "Protoss_Zealot":
 	    result.add(UnitKind.ATTACKABLE_NORMAL);
+	    break;
 	default:
 	    break;
 	}
@@ -91,7 +106,7 @@ public class UnitUtil {
 	// TODO: Unit.getUnitsInRadius(arg0)을 활용해 보자. 
 	Unit targetUnit = null;
 	int targetDistance = Integer.MAX_VALUE;
-	for (Integer enemyUnitId : enemyUnitManager.getAttackableUnitList()) {
+	for (Integer enemyUnitId : enemyUnitManager.getUnitsByUnitKind(UnitKind.ATTACKABLE_NORMAL)) {
 	    Unit enemyUnit = enemyUnitManager.getUnit(enemyUnitId);
 	    int distance = allianceUnit.getDistance(enemyUnit);
 	    if (distance > unitSpec.getCombatDistance()) {

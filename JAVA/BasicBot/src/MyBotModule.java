@@ -70,7 +70,7 @@ public class MyBotModule extends DefaultBWListener {
 
 	/// 실제 봇프로그램
 	/// @see GameCommander			
-	private MagiCommander gameCommander;
+	private GameCommander gameCommander;
 
 	
 	
@@ -116,7 +116,7 @@ public class MyBotModule extends DefaultBWListener {
 
 		Broodwar = mirror.getGame();
 		
-		gameCommander = new MagiCommander(Broodwar);
+		gameCommander = new GameCommander();
 
 		if (Broodwar.isReplay()) {
 			return;
@@ -206,7 +206,6 @@ public class MyBotModule extends DefaultBWListener {
 			} 
 			catch (Exception e) {
 				
-			    	Log.error("Exception: %s", e.toString());
 				Broodwar.sendText("[Error Stack Trace]");
 				System.out.println("[Error Stack Trace]");
 				for (StackTraceElement ste : e.getStackTrace()) {

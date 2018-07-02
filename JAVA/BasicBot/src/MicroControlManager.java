@@ -17,9 +17,9 @@ public class MicroControlManager {
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
 	UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
 
-	Log.trace("Enemy Count: %d", enemyUnitManager.getAttackableUnitList().size());
+	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitsByUnitKind(UnitKind.ATTACKABLE_NORMAL).size());
 	// 적을 공격할 수 있는 아군 유닛을 대상으로 컨트롤을 한다.
-	for (Integer allianceUnitId : allianceUnitManager.getAttackableUnitList()) {
+	for (Integer allianceUnitId : allianceUnitManager.getUnitsByUnitKind(UnitKind.ATTACKABLE_NORMAL)) {
 
 	    Unit allianceUnit = allianceUnitManager.getUnit(allianceUnitId);
 
@@ -116,7 +116,7 @@ public class MicroControlManager {
 
 	switch (game.getFrameCount()) {
 	case 17:
-	    //game.setLocalSpeed(42);
+	    game.setLocalSpeed(42);
 	    ActionUtil.attackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
 	    break;
 	case 50:

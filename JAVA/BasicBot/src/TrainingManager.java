@@ -32,7 +32,7 @@ public class TrainingManager {
     // 미션 성공 여부
     private boolean isSuccess = false;
 
-    public void init() {
+    public void onStart() {
 	String mapName = game.mapFileName();
 	TrainingData.TrainingDataBuilder builder = TrainingData.builder();
 	switch (mapName) {

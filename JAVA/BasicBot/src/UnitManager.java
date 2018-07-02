@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import bwapi.Game;
 import bwapi.Unit;
 
 public class UnitManager {
+
+    private Game game = MyBotModule.Broodwar;
 
     // 모든 유닛 목록
     private List<Unit> unitList = new ArrayList<>();
@@ -24,6 +27,12 @@ public class UnitManager {
 
     // 유닛의 마지막 상태
     private Map<Integer, UnitStatus> lastStatusMap = new HashMap<>();
+
+    // Key: Command Center의 ID, Value: Key 주변의 미네랄 목록
+    private Map<Integer, Set<Integer>> mineralMap = new HashMap<>();
+
+    // Key: 미네랄, Value: 미네랄에 일꾼이 할당되었는지 여부
+    private Map<Integer, Boolean> assignedMineralMap = new HashMap<>();
 
     // 생성자
     public UnitManager() {
@@ -49,9 +58,20 @@ public class UnitManager {
 	return idUnitMap.get(id);
     }
 
-    // 공격 가능한 타입의 유닛을 리턴한다.
-    public Set<Integer> getAttackableUnitList() {
-	return unitFilterMap.get(UnitKind.ATTACKABLE_NORMAL);
+    public Set<Integer> getUnitsByUnitKind(UnitKind unitKind) {
+	return unitFilterMap.get(unitKind);
+    }
+
+    // 현재 존재하는 커맨드센터 중 하나를 리턴한다.
+    public Unit getFirstCommandCenter() {
+	Unit result = null;
+
+	Set<Integer> commandCenters = unitFilterMap.get(UnitKind.COMMAND_CENTER);
+	if (commandCenters.size() > 0) {
+	    result = getUnit(commandCenters.iterator().next());
+	}
+
+	return result;
     }
 
     // 유닛의 마지막 Action 정보를 리틴한다.
@@ -100,8 +120,31 @@ public class UnitManager {
 	    lastStatusMap.remove(id);
 
 	    unitList.remove(unit);
-
 	}
+    }
+
+    // command center 주변의 미네랄 정보를 업데이트 한다.
+    public void initMimeralInfo() {
+	for (Integer commandCneter : unitFilterMap.get(UnitKind.COMMAND_CENTER)) {
+	    insertMineralMap(commandCneter);
+	}
+    }
+
+    // id(command center) 주위의 미네랄 세팅
+    public void insertMineralMap(int commandCenterId) {
+	Set<Integer> value = new HashSet<>();
+	for (Unit mineral : game.getMinerals()) {
+	    if (getUnit(commandCenterId).getDistance(mineral) < 500) {
+		value.add(mineral.getID());
+		assignedMineralMap.put(mineral.getID(), false);
+	    }
+	}
+	mineralMap.put(commandCenterId, value);
+    }
+
+    // TODO 커맨드센터 파괴될 때 처리해주기.
+    public void removeMineralMap(Integer CommandCenterId) {
+	mineralMap.remove(CommandCenterId);
     }
 
     @Override
@@ -113,5 +156,70 @@ public class UnitManager {
 	}
 
 	return result;
+    }
+
+    public Unit getCloseCommandCenter(Unit worker) {
+	Unit result = null;
+
+	int minDistance = Integer.MAX_VALUE;
+	for (Integer commandCenter : unitFilterMap.get(UnitKind.COMMAND_CENTER)) {
+	    int distance = worker.getDistance(getUnit(commandCenter));
+	    if (distance < minDistance) {
+		minDistance = distance;
+		result = getUnit(commandCenter);
+	    }
+	}
+
+	return result;
+    }
+
+    public void mining(Unit worker, Unit commandCenter) {
+	// 커맨드 센터 주변의 미네랄 목록을 가져온다.
+	Set<Integer> minerals = mineralMap.get(commandCenter.getID());
+	int assignedDistance = Integer.MAX_VALUE;
+	int notAssignedMinDistance = Integer.MAX_VALUE;
+	Unit notAssignedMineral = null;
+	Unit assignedMineral = null;
+	for (Integer mineral : minerals) {
+	    int distance = getUnit(mineral).getDistance(worker);
+	    if (distance < assignedDistance) {
+		assignedDistance = distance;
+		assignedMineral = getUnit(mineral);
+	    }
+
+	    if (true == assignedMineralMap.get(mineral)) {
+		continue;
+	    }
+	    if (distance < notAssignedMinDistance) {
+		notAssignedMinDistance = distance;
+		notAssignedMineral = getUnit(mineral);
+	    }
+	}
+
+	if (null == notAssignedMineral) {
+	    worker.gather(assignedMineral);
+	    Log.debug("worker(%d) mining assigned mineral(%d)", worker.getID(), assignedMineral.getID());
+	} else {
+	    worker.gather(notAssignedMineral);
+	    assignedMineralMap.put(notAssignedMineral.getID(), true);
+	    Log.debug("worker(%d) mining new mineral(%d)", worker.getID(), notAssignedMineral.getID());
+	}
+    }
+
+    public Unit getBuildableWorker() {
+	Unit result = null;
+	for (Integer workerId : unitFilterMap.get(UnitKind.WORKER)) {
+	    Unit worker = getUnit(workerId);
+	    if (isinterruptableWorker(worker)) {
+		result = worker;
+		break;
+	    }
+	}
+
+	return result;
+    }
+
+    public boolean isinterruptableWorker(Unit worker) {
+	return worker.isCompleted() && !worker.isConstructing() && !worker.isBeingConstructed() && (worker.isIdle() || worker.isGatheringMinerals());
     }
 }
