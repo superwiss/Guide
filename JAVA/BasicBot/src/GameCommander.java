@@ -23,7 +23,7 @@ public class GameCommander {
     /// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
     public void onStart() {
 	gameData = new GameData(broodwar);
-	Log.setLogLevel(Log.Level.TRACE);
+	Log.setLogLevel(Log.Level.WARN);
 	ActionUtil.setGame(broodwar);
 	Log.info("Game has started");
 	trainingManager.onStart();
@@ -99,14 +99,33 @@ public class GameCommander {
     /// 유닛(건물/지상유닛/공중유닛)의 소속 플레이어가 바뀔 때 발생하는 이벤트를 처리합니다<br>
     /// Gas Geyser에 어떤 플레이어가 Refinery 건물을 건설했을 때, Refinery 건물이 파괴되었을 때, Protoss 종족 Dark Archon 의 Mind Control 에 의해 소속 플레이어가 바뀔 때 발생합니다
     public void onUnitRenegade(Unit unit) {
+	try {
+	    if (true == UnitUtil.isAllianceUnit(unit)) {
+		gameData.getAllianceUnitManager().add(unit);
+	    } else if (true == UnitUtil.isEnemyUnit(unit)) {
+		gameData.getEnemyUnitManager().add(unit);
+	    } else {
+		// else 상황 = 즉 중립 건물, 중립 동물에 대해서는 아무런 처리도 하지 않는다.
+	    }
+	    if (unit.getType().isMineralField()) {
+		gameData.getAllianceUnitManager().add(unit);
+	    }
+	    MagiBuildManager.Instance().onUnitDiscover(unit, gameData);
+	} catch (Exception e) {
+	    Log.error("Exception: %s", e.toString());
+	    e.printStackTrace();
+	}
+
+	Log.info("onUnitRenegade: %s", UnitUtil.toString(unit));
     }
 
     /// 유닛(건물/지상유닛/공중유닛)의 하던 일 (건물 건설, 업그레이드, 지상유닛 훈련 등)이 끝났을 때 발생하는 이벤트를 처리합니다
     public void onUnitComplete(Unit unit) {
+	Log.info("onUnitComplete: %s", UnitUtil.toString(unit));
 	if (unit.getType().isWorker()) {
 	    MagiWorkerManager.Instance().onUnitComplete(unit, gameData);
 	}
-	Log.info("onUnitComplete: %s", UnitUtil.toString(unit));
+	buildManager.onUnitComplete(unit, gameData);
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Discover 될 때 발생하는 이벤트를 처리합니다<br>

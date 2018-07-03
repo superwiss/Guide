@@ -62,6 +62,16 @@ public class UnitManager {
 	return unitFilterMap.get(unitKind);
     }
 
+    public Integer getFirstUnitByUnitKind(UnitKind unitKind) {
+	Integer result = null;
+
+	if (0 != unitFilterMap.get(unitKind).size()) {
+	    result = unitFilterMap.get(unitKind).iterator().next();
+	}
+
+	return result;
+    }
+
     // 현재 존재하는 커맨드센터 중 하나를 리턴한다.
     public Unit getFirstCommandCenter() {
 	Unit result = null;
@@ -221,5 +231,25 @@ public class UnitManager {
 
     public boolean isinterruptableWorker(Unit worker) {
 	return worker.isCompleted() && !worker.isConstructing() && !worker.isBeingConstructed() && (worker.isIdle() || worker.isGatheringMinerals());
+    }
+
+    public void setScoutUnit(Unit unit) {
+	// 유닛을 관리 대상에서 삭제하고 SCOUT 타입으로 변경한다.
+	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
+	Integer id = unit.getID();
+	for (UnitKind unitKind : unitKinds) {
+	    unitFilterMap.get(unitKind).remove(id);
+	}
+	unitFilterMap.get(UnitKind.SCOUT).add(id);
+    }
+
+    public void releaseScoutUnit(Unit unit) {
+	// 유닛을 SCOUT 타입에서 원래 타입으로 원복한다.
+	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
+	Integer id = unit.getID();
+	for (UnitKind unitKind : unitKinds) {
+	    unitFilterMap.get(unitKind).add(id);
+	}
+	unitFilterMap.get(UnitKind.SCOUT).remove(id);
     }
 }

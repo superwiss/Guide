@@ -32,7 +32,7 @@ public class MagiWorkerManager {
 	    MagiBuildOrderItem buildItem = buildWorker.get(workerId);
 
 	    // 건물을 짓기 시작했으면 건설 일꾼 맵에서 release 한다.
-	    if (null != worker.getBuildUnit() && worker.getBuildUnit().getType().toString().equals(buildItem.getTargetUnitType().toString())) {
+	    if (null != worker.getBuildUnit() && worker.getBuildUnit().getType().equals(buildItem.getTargetUnitType())) {
 		Log.debug("Worker(%d) construct started: %s", worker.getID(), buildItem.getTargetUnitType());
 		releaseBuildWorker(worker);
 		continue;

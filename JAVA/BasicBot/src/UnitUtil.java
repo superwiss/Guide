@@ -57,8 +57,12 @@ public class UnitUtil {
 	case "Terran_SCV":
 	    result.add(UnitKind.WORKER);
 	    break;
+	case "Terran_Academy":
+	    result.add(UnitKind.ACADEMY);
+	    break;
 	case "Terran_Command_Center":
 	    result.add(UnitKind.COMMAND_CENTER);
+	    result.add(UnitKind.MAIN_BUILDING);
 	    break;
 	case "Terran_Barracks":
 	    result.add(UnitKind.BARRACKS);
@@ -68,6 +72,14 @@ public class UnitUtil {
 	    break;
 	case "Zerg_Zergling":
 	    result.add(UnitKind.ATTACKABLE_NORMAL);
+	    break;
+	case "Zerg_Hatchery":
+	case "Zerg_Lair":
+	case "Zerg_Hive":
+	    result.add(UnitKind.MAIN_BUILDING);
+	    break;
+	case "Protoss_Nexus":
+	    result.add(UnitKind.MAIN_BUILDING);
 	    break;
 	case "Protoss_Zealot":
 	    result.add(UnitKind.ATTACKABLE_NORMAL);
@@ -446,6 +458,22 @@ public class UnitUtil {
 		    result = EnemyUnitStatus.SAME_DIR_FAR;
 		}
 	    }
+	}
+
+	return result;
+    }
+
+    public static boolean isMicroControlableEnemyType(UnitType unitType) {
+	boolean result = false;
+
+	switch (unitType.toString()) {
+	case "Terran_Firebat":
+	case "Zerg_Zergling":
+	case "Protoss_Zealot":
+	    result = true;
+	    break;
+	default:
+	    break;
 	}
 
 	return result;

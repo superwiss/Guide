@@ -1,5 +1,6 @@
 import bwapi.Game;
 import bwapi.Position;
+import bwapi.TilePosition;
 
 public class GameData {
 
@@ -33,6 +34,18 @@ public class GameData {
 
     public void leaveGame() {
 	broodwar.leaveGame();
+    }
+
+    public int getMineral() {
+	return broodwar.self().minerals();
+    }
+
+    public int getSupplyRemain() {
+	return broodwar.self().supplyTotal() - broodwar.self().supplyUsed();
+    }
+
+    public boolean isExplored(TilePosition position) {
+	return broodwar.isExplored(position);
     }
 
     public void setScreen(Position position) {

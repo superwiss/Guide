@@ -71,7 +71,7 @@ public class Config {
 	
 
 	/// 화면 표시 여부 - 게임 정보
-	public static boolean DrawGameInfo = true;
+	public static boolean DrawGameInfo = false;
 	
 	/// 화면 표시 여부 - 미네랄, 가스
 	public static boolean DrawResourceInfo = false;
@@ -83,9 +83,9 @@ public class Config {
 	/// 화면 표시 여부 - 유닛 HitPoint
 	public static boolean DrawUnitHealthBars = false;
 	/// 화면 표시 여부 - 유닛 통계
-	public static boolean DrawEnemyUnitInfo = true;
+	public static boolean DrawEnemyUnitInfo = false;
 	/// 화면 표시 여부 - 유닛 ~ Target 간 직선
-	public static boolean DrawUnitTargetInfo = true;
+	public static boolean DrawUnitTargetInfo = false;
 
 	/// 화면 표시 여부 - 빌드 큐
 	public static boolean DrawProductionInfo = false;

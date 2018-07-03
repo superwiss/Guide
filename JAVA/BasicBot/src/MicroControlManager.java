@@ -39,7 +39,13 @@ public class MicroControlManager {
 
 	    UnitUtil.loggingDetailUnitInfo(allianceUnit);
 	    UnitUtil.loggingDetailUnitInfo(enemyUnit);
-	    UnitUtil.drawTargetPosition(enemyUnit);
+	    //UnitUtil.drawTargetPosition(enemyUnit);
+
+	    // 마이크로 컨트롤을 할 수 없는 적 유닛이라면 그냥 강제 공격한다.
+	    if (!UnitUtil.isMicroControlableEnemyType(enemyUnit.getType())) {
+		ActionUtil.attackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
+		return;
+	    }
 
 	    Log.debug("Distance between alliance unit and enemy unit: %d", allianceUnit.getDistance(enemyUnit));
 
@@ -47,9 +53,11 @@ public class MicroControlManager {
 	    Position backPosition = UnitUtil.getBackPosition(allianceUnit.getPosition(), enemyUnit.getPosition());
 
 	    // 게임 속도 제어
+	    /*
 	    if (false == speedControl(gameData, allianceUnit, enemyUnit)) {
-		return;
+	    return;
 	    }
+	    */
 
 	    // 강제 공격을 처리한다.
 	    if (ActionUtil.isAttackingForcibly(allianceUnit)) {

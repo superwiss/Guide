@@ -2,7 +2,7 @@ import bwapi.UnitType;
 
 public class MagiBuildOrderItem {
     public enum Order {
-	TRAINING_WORKER, BUILD, TRAINING_MARINE
+	INITIAL_BUILDORDER_FINISH, TRAINING_WORKER, BUILD, TRAINING_MARINE, SCOUT
     }
 
     private Order order;

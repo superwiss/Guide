@@ -21,6 +21,9 @@ public class MagiBuildManager {
 	return instance;
     }
 
+    private boolean initialBuildFinished = false;
+    private int supplyBuildingCount = 0;
+
     public void onFrame(GameData gameData) {
 	if (!queue.isEmpty()) {
 	    MagiBuildOrderItem buildItem = queue.peek();
@@ -29,13 +32,23 @@ public class MagiBuildManager {
 	}
     }
 
+    public void onUnitComplete(Unit unit, GameData gameData) {
+	if (unit.getType().equals(UnitType.Terran_Supply_Depot)) {
+	    supplyBuildingCount--;
+	}
+
+    }
+
     public void onUnitDiscover(Unit unit, GameData gameData) {
 	if (!queue.isEmpty() && 0 != gameData.getFrameCount()) {
 	    MagiBuildOrderItem buildItem = queue.peek();
 	    if (buildItem.getOrder().equals(MagiBuildOrderItem.Order.BUILD) && unit.getType().toString().equals(buildItem.getTargetUnitType().toString())) {
 		queue.poll();
 		Log.debug("BuildOrder Finish: %s", buildItem.toString());
-		return;
+
+		if (unit.getType().equals(UnitType.Terran_Supply_Depot)) {
+		    supplyBuildingCount++;
+		}
 	    }
 	}
     }
@@ -44,10 +57,25 @@ public class MagiBuildManager {
 	queue.offer(buildItem);
     }
 
+    public int getQueueSize() {
+	return queue.size();
+    }
+
     private void process(MagiBuildOrderItem buildItem, GameData gameData) {
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
 	MagiBuildOrderItem.Order type = buildItem.getOrder();
 	switch (type) {
+	case INITIAL_BUILDORDER_FINISH:
+	    initialBuildFinished = true;
+	    Log.info("Initial build order has finished.");
+	    queue.poll();
+	    break;
+	case SCOUT:
+	    Unit workerForScout = allianceUnitManager.getBuildableWorker();
+	    allianceUnitManager.setScoutUnit(workerForScout);
+	    Log.info("Scout start: ");
+	    queue.poll();
+	    break;
 	case TRAINING_WORKER:
 	    trainingWorker(gameData, buildItem);
 	    break;
@@ -61,11 +89,15 @@ public class MagiBuildManager {
 		    Log.info("Build worker id: %d", worker.getID());
 		    UnitType targetType = buildItem.getTargetUnitType();
 		    List<TilePosition> tilePositionList = null;
-		    if (UnitType.Terran_Barracks.toString().equals(targetType.toString())) {
+		    if (UnitType.Terran_Barracks.equals(targetType)) {
 			tilePositionList = LocationManager.Instance().getBarracks();
-		    } else if (UnitType.Terran_Supply_Depot.toString().equals(targetType.toString())) {
+		    } else if (UnitType.Terran_Refinery.equals(targetType)) {
+			tilePositionList = LocationManager.Instance().getRefinery();
+		    } else if (UnitType.Terran_Supply_Depot.equals(targetType)) {
 			tilePositionList = LocationManager.Instance().getSupplyDepot();
-		    } else if (UnitType.Terran_Bunker.toString().equals(targetType.toString())) {
+		    } else if (UnitType.Terran_Academy.equals(targetType)) {
+			tilePositionList = LocationManager.Instance().getSupplyDepot();
+		    } else if (UnitType.Terran_Bunker.equals(targetType)) {
 			tilePositionList = LocationManager.Instance().getBunker();
 		    }
 		    if (null != tilePositionList) {
@@ -110,21 +142,33 @@ public class MagiBuildManager {
 	}
     }
 
-    private void trainingMarine(GameData gameData, MagiBuildOrderItem buildItem) {
-	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
-	Set<Integer> barracksSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.BARRACKS);
-	int minQueueSize = Integer.MAX_VALUE;
+    public Unit getTrainableBarracks(UnitManager allianceUnitManager) {
 	Unit targetBarracks = null;
 
+	int minQueueSize = Integer.MAX_VALUE;
+	Set<Integer> barracksSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.BARRACKS);
+	// 마린 훈련이 가능한 배럭 중에서 TrainingQueue가 가장 적은 배럭을 선택
+	// TrainingQueue는 최대 2개까지만 허용
 	for (Integer barracksId : barracksSet) {
 	    Unit barracks = allianceUnitManager.getUnit(barracksId);
 	    if (barracks.canTrain(UnitType.Terran_Marine)) {
-		if (minQueueSize > barracks.getTrainingQueue().size()) {
-		    minQueueSize = barracks.getTrainingQueue().size();
-		    targetBarracks = barracks;
+		if (barracks.getTrainingQueue().size() < 2) {
+		    if (minQueueSize > barracks.getTrainingQueue().size()) {
+			minQueueSize = barracks.getTrainingQueue().size();
+			targetBarracks = barracks;
+		    }
 		}
 	    }
 	}
+
+	return targetBarracks;
+    }
+
+    public void trainingMarine(GameData gameData, MagiBuildOrderItem buildItem) {
+	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+
+	Unit targetBarracks = getTrainableBarracks(allianceUnitManager);
+	// 마린 훈련하기
 	if (null != targetBarracks && targetBarracks.canTrain(UnitType.Terran_Marine)) {
 	    int beforeQueueSize = targetBarracks.getTrainingQueue().size();
 	    targetBarracks.train(UnitType.Terran_Marine);
@@ -134,6 +178,20 @@ public class MagiBuildManager {
 		Log.debug("BuildOrder Finish: %s", buildItem.toString());
 	    }
 	}
+    }
+
+    public boolean isInitialBuildFinished() {
+	return initialBuildFinished;
+    }
+
+    public boolean isBuildingSupply() {
+	boolean result = false;
+
+	if (supplyBuildingCount > 0) {
+	    result = true;
+	}
+
+	return result;
     }
 
 };
