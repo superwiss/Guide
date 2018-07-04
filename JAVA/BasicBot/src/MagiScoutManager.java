@@ -16,6 +16,7 @@ public class MagiScoutManager {
 
     private LocationManager locationManager = LocationManager.Instance();
     private boolean scouting = false;
+    private TilePosition enemyBaseLocation = null;
 
     public void onFrame(GameData gameData) {
 	// 50프레임에 한 번씩 수행된다.
@@ -30,8 +31,11 @@ public class MagiScoutManager {
 	if (true == scouting && 0 < enemyUnitManager.getUnitsByUnitKind(UnitKind.MAIN_BUILDING).size()) {
 	    for (Integer scoutUnitId : scoutUnits) {
 		Unit scoutUnit = allianceUnitManager.getUnit(scoutUnitId);
-		allianceUnitManager.releaseScoutUnit(scoutUnit);
-		scoutUnit.stop();
+		if (null != scoutUnitId) {
+		    allianceUnitManager.releaseScoutUnit(scoutUnit);
+		    scoutUnit.stop();
+		}
+		enemyBaseLocation = enemyUnitManager.getUnit(enemyUnitManager.getFirstUnitByUnitKind(UnitKind.MAIN_BUILDING)).getTilePosition();
 	    }
 	    Log.info("정찰을 완료했다.");
 	    scouting = false;
@@ -91,5 +95,9 @@ public class MagiScoutManager {
 		}
 	    }
 	}
+    }
+
+    public TilePosition getEnemyBaseLocation() {
+	return enemyBaseLocation;
     }
 }

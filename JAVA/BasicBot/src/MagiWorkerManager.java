@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,14 +28,20 @@ public class MagiWorkerManager {
 	}
 
 	Log.debug("Build Worker size: %d", buildWorker.keySet().size());
+	Set<Unit> releaseWorker = new HashSet<>();
 	for (Integer workerId : buildWorker.keySet()) {
 	    Unit worker = gameData.getAllianceUnitManager().getUnit(workerId);
+	    if (null == worker) {
+		// TODO 어떤 경우에 이런 상황이 발생하는지 분석 필요
+		Log.warn("분석 필요...");
+		continue;
+	    }
 	    MagiBuildOrderItem buildItem = buildWorker.get(workerId);
 
 	    // 건물을 짓기 시작했으면 건설 일꾼 맵에서 release 한다.
 	    if (null != worker.getBuildUnit() && worker.getBuildUnit().getType().equals(buildItem.getTargetUnitType())) {
 		Log.debug("Worker(%d) construct started: %s", worker.getID(), buildItem.getTargetUnitType());
-		releaseBuildWorker(worker);
+		releaseWorker.add(worker);
 		continue;
 	    }
 
@@ -44,9 +51,12 @@ public class MagiWorkerManager {
 		if (getBuildFailCount(worker) > 3) {
 		    Log.warn("Worker(%d) cancled to construct(%s)", worker.getID(), buildItem.getTargetUnitType());
 		    buildItem.setInProgress(false);
-		    releaseBuildWorker(worker);
+		    releaseWorker.add(worker);
 		}
 	    }
+	}
+	for (Unit unit : releaseWorker) {
+	    releaseBuildWorker(unit);
 	}
     }
 
@@ -83,6 +93,7 @@ public class MagiWorkerManager {
 	    // 일꾼 하나를 가져온다.
 	    Unit worker = allianceUnitManager.getUnit(unitId);
 	    if (worker.isCompleted() && worker.isIdle()) {
+		Log.info("Found idle worker: %d", worker.getID());
 		// 일꾼에서 가장 가까운 커맨드 센터를 가져온다.
 		Unit commandCenter = allianceUnitManager.getCloseCommandCenter(worker);
 		if (null != commandCenter) {

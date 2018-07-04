@@ -44,53 +44,63 @@ public class UnitUtil {
     public static Set<UnitKind> getUnitKinds(Unit unit) {
 	Set<UnitKind> result = new HashSet<>();
 
-	UnitType unitType = unit.getType();
-	String strUnitType = unitType.toString();
+	if (null != unit) {
+	    UnitType unitType = unit.getType();
+	    String strUnitType = unitType.toString();
 
-	//UnitType.Terran_Academy;
+	    UnitType test = UnitType.Terran_Medic;
 
-	switch (strUnitType) {
-	case "Terran_Marine":
-	    result.add(UnitKind.ATTACKABLE_NORMAL);
-	    result.add(UnitKind.MARINE);
-	    break;
-	case "Terran_SCV":
-	    result.add(UnitKind.WORKER);
-	    break;
-	case "Terran_Academy":
-	    result.add(UnitKind.ACADEMY);
-	    break;
-	case "Terran_Command_Center":
-	    result.add(UnitKind.COMMAND_CENTER);
-	    result.add(UnitKind.MAIN_BUILDING);
-	    break;
-	case "Terran_Barracks":
-	    result.add(UnitKind.BARRACKS);
-	    break;
-	case "Terran_Bunker":
-	    result.add(UnitKind.Bunker);
-	    break;
-	case "Zerg_Zergling":
-	    result.add(UnitKind.ATTACKABLE_NORMAL);
-	    break;
-	case "Zerg_Hatchery":
-	case "Zerg_Lair":
-	case "Zerg_Hive":
-	    result.add(UnitKind.MAIN_BUILDING);
-	    break;
-	case "Protoss_Nexus":
-	    result.add(UnitKind.MAIN_BUILDING);
-	    break;
-	case "Protoss_Zealot":
-	    result.add(UnitKind.ATTACKABLE_NORMAL);
-	    break;
-	default:
-	    break;
-	}
+	    switch (strUnitType) {
+	    case "Terran_Marine":
+		result.add(UnitKind.ATTACKABLE_NORMAL);
+		result.add(UnitKind.MARINE);
+		break;
+	    case "Terran_Medic":
+		result.add(UnitKind.ATTACKABLE_NORMAL);
+		result.add(UnitKind.MEDIC);
+		break;
+	    case "Terran_SCV":
+		result.add(UnitKind.WORKER);
+		break;
+	    case "Terran_Academy":
+		result.add(UnitKind.ACADEMY);
+		break;
+	    case "Terran_Command_Center":
+		result.add(UnitKind.COMMAND_CENTER);
+		result.add(UnitKind.MAIN_BUILDING);
+		break;
+	    case "Terran_Barracks":
+		result.add(UnitKind.BARRACKS);
+		break;
+	    case "Terran_Bunker":
+		result.add(UnitKind.Bunker);
+		break;
+	    case "Terran_Refinery":
+		result.add(UnitKind.REFINERY);
+		break;
+	    case "Zerg_Zergling":
+		result.add(UnitKind.ATTACKABLE_NORMAL);
+		break;
+	    case "Zerg_Hatchery":
+	    case "Zerg_Lair":
+	    case "Zerg_Hive":
+		result.add(UnitKind.MAIN_BUILDING);
+		break;
+	    case "Protoss_Nexus":
+		result.add(UnitKind.MAIN_BUILDING);
+		break;
+	    case "Protoss_Zealot":
+		result.add(UnitKind.ATTACKABLE_NORMAL);
+		break;
+	    default:
+		break;
+	    }
 
-	// 빌딩 여부를 확인
-	if (unitType.isBuilding()) {
-	    result.add(UnitKind.ALL_BUILDING);
+	    // 빌딩 여부를 확인
+	    if (unitType.isBuilding()) {
+		result.add(UnitKind.ALL_BUILDING);
+	    }
+
 	}
 
 	return result;

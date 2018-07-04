@@ -23,7 +23,7 @@ public class GameCommander {
     /// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
     public void onStart() {
 	gameData = new GameData(broodwar);
-	Log.setLogLevel(Log.Level.WARN);
+	Log.setLogLevel(Log.Level.TRACE);
 	ActionUtil.setGame(broodwar);
 	Log.info("Game has started");
 	trainingManager.onStart();
@@ -126,6 +126,7 @@ public class GameCommander {
 	    MagiWorkerManager.Instance().onUnitComplete(unit, gameData);
 	}
 	buildManager.onUnitComplete(unit, gameData);
+	strategymanager.onUnitComplete(unit, gameData);
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Discover 될 때 발생하는 이벤트를 처리합니다<br>

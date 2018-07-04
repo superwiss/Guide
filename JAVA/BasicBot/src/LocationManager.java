@@ -37,24 +37,32 @@ public class LocationManager {
 
 	switch (clockLocation) {
 	case ONE:
+	    result.add(new TilePosition(113, 6));
 	    result.add(new TilePosition(113, 9));
 	    result.add(new TilePosition(113, 12));
 	    result.add(new TilePosition(113, 15));
+	    result.add(new TilePosition(113, 3));
 	    break;
 	case FIVE:
 	    result.add(new TilePosition(110, 117));
 	    result.add(new TilePosition(110, 120));
-	    result.add(new TilePosition(110, 123));
+	    result.add(new TilePosition(106, 117));
+	    result.add(new TilePosition(106, 120));
+	    result.add(new TilePosition(102, 117));
 	    break;
 	case SEVEN:
 	    result.add(new TilePosition(11, 119));
 	    result.add(new TilePosition(11, 116));
 	    result.add(new TilePosition(11, 113));
+	    result.add(new TilePosition(11, 110));
+	    result.add(new TilePosition(11, 107));
 	    break;
 	case ELEVEN:
 	    result.add(new TilePosition(11, 9));
 	    result.add(new TilePosition(11, 6));
+	    result.add(new TilePosition(15, 9));
 	    result.add(new TilePosition(15, 6));
+	    result.add(new TilePosition(19, 9));
 	    break;
 	default:
 	    break;
@@ -233,6 +241,29 @@ public class LocationManager {
 	    break;
 	case ELEVEN:
 	    result.add(new TilePosition(7, 2));
+	    break;
+	default:
+	    break;
+	}
+
+	return result;
+    }
+
+    public TilePosition getChokePoint1() {
+	TilePosition result = null;
+
+	switch (clockLocation) {
+	case ONE:
+	    result = new TilePosition(106, 13);
+	    break;
+	case FIVE:
+	    result = new TilePosition(113, 105);
+	    break;
+	case SEVEN:
+	    result = new TilePosition(22, 112);
+	    break;
+	case ELEVEN:
+	    result = new TilePosition(15, 20);
 	    break;
 	default:
 	    break;

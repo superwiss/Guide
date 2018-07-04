@@ -27,7 +27,9 @@ public class MagiBuildManager {
     public void onFrame(GameData gameData) {
 	if (!queue.isEmpty()) {
 	    MagiBuildOrderItem buildItem = queue.peek();
-	    Log.debug("BuildOrder Start: %s", buildItem.toString());
+	    if (false == buildItem.isInProgress()) {
+		Log.info("BuildOrder Start: %s", buildItem.toString());
+	    }
 	    process(buildItem, gameData);
 	}
     }
@@ -81,6 +83,22 @@ public class MagiBuildManager {
 	    break;
 	case TRAINING_MARINE:
 	    trainingMarine(gameData, buildItem);
+	    break;
+	case GATHER_GAS:
+	    Unit workerForGatherGas = allianceUnitManager.getBuildableWorker();
+	    if (null != workerForGatherGas) {
+		Integer refineryId = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.REFINERY);
+		if (null != refineryId) {
+		    if (workerForGatherGas.canGather(allianceUnitManager.getUnit(refineryId))) {
+			workerForGatherGas.gather(allianceUnitManager.getUnit(refineryId));
+			Log.info("일꾼 가스 투입: %d -> %d", workerForGatherGas.getID(), refineryId);
+			allianceUnitManager.setUnitAssignment(workerForGatherGas, UnitManager.Assignment.GATHER_GAS);
+			queue.poll();
+		    } else {
+			Log.info("일꾼 가스 투입 실패: %d -> %d", workerForGatherGas.getID(), refineryId);
+		    }
+		}
+	    }
 	    break;
 	case BUILD:
 	    if (false == buildItem.isInProgress()) {
@@ -162,6 +180,24 @@ public class MagiBuildManager {
 	}
 
 	return targetBarracks;
+    }
+
+    public int getTrainingQueueUnitCount(UnitManager allianceUnitManager, UnitType unitType) {
+	int result = 0;
+
+	Set<Integer> barracksSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.BARRACKS);
+	for (Integer barracksId : barracksSet) {
+	    Unit barracks = allianceUnitManager.getUnit(barracksId);
+	    List<UnitType> trainingQueue = barracks.getTrainingQueue();
+	    for (UnitType trainingUnitType : trainingQueue) {
+		if (unitType.equals(trainingUnitType)) {
+		    result++;
+		}
+	    }
+	}
+
+	return result;
+
     }
 
     public void trainingMarine(GameData gameData, MagiBuildOrderItem buildItem) {

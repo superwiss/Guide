@@ -18,6 +18,9 @@ public class MicroControlManager {
 	UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
 
 	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitsByUnitKind(UnitKind.ATTACKABLE_NORMAL).size());
+	if (true) {
+	    return;
+	}
 	// 적을 공격할 수 있는 아군 유닛을 대상으로 컨트롤을 한다.
 	for (Integer allianceUnitId : allianceUnitManager.getUnitsByUnitKind(UnitKind.ATTACKABLE_NORMAL)) {
 
@@ -40,12 +43,6 @@ public class MicroControlManager {
 	    UnitUtil.loggingDetailUnitInfo(allianceUnit);
 	    UnitUtil.loggingDetailUnitInfo(enemyUnit);
 	    //UnitUtil.drawTargetPosition(enemyUnit);
-
-	    // 마이크로 컨트롤을 할 수 없는 적 유닛이라면 그냥 강제 공격한다.
-	    if (!UnitUtil.isMicroControlableEnemyType(enemyUnit.getType())) {
-		ActionUtil.attackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
-		return;
-	    }
 
 	    Log.debug("Distance between alliance unit and enemy unit: %d", allianceUnit.getDistance(enemyUnit));
 

@@ -49,6 +49,14 @@ public class ActionUtil {
 	}
     }
 
+    public static void attackEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Position position) {
+	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_POSITION", allianceUnit, position);
+
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	    allianceUnit.attack(position);
+	}
+    }
+
     public static void attackEnemyUnitForcibly(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
 	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT_FORCIBLY", allianceUnit, enemyUnit);
 

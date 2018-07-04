@@ -11,6 +11,10 @@ import bwapi.Unit;
 
 public class UnitManager {
 
+    public static enum Assignment {
+	SCOUT, GATHER_GAS
+    }
+
     private Game game = MyBotModule.Broodwar;
 
     // 모든 유닛 목록
@@ -33,6 +37,8 @@ public class UnitManager {
 
     // Key: 미네랄, Value: 미네랄에 일꾼이 할당되었는지 여부
     private Map<Integer, Boolean> assignedMineralMap = new HashMap<>();
+
+    private Map<Integer, Assignment> unitAssignmentMap = new HashMap<>();
 
     // 생성자
     public UnitManager() {
@@ -230,7 +236,15 @@ public class UnitManager {
     }
 
     public boolean isinterruptableWorker(Unit worker) {
-	return worker.isCompleted() && !worker.isConstructing() && !worker.isBeingConstructed() && (worker.isIdle() || worker.isGatheringMinerals());
+	boolean result = false;
+	Assignment assignment = unitAssignmentMap.get(Integer.valueOf(worker.getID()));
+	if (null != assignment && assignment.equals(Assignment.GATHER_GAS)) {
+	    // 가스 캐는 일꾼은 건드리지 말자.
+	    result = false;
+	} else {
+	    result = worker.isCompleted() && !worker.isConstructing() && !worker.isBeingConstructed() && (worker.isIdle() || worker.isGatheringMinerals());
+	}
+	return result;
     }
 
     public void setScoutUnit(Unit unit) {
@@ -244,12 +258,20 @@ public class UnitManager {
     }
 
     public void releaseScoutUnit(Unit unit) {
-	// 유닛을 SCOUT 타입에서 원래 타입으로 원복한다.
-	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
-	Integer id = unit.getID();
-	for (UnitKind unitKind : unitKinds) {
-	    unitFilterMap.get(unitKind).add(id);
+	if (null != unit) {
+	    // 유닛을 SCOUT 타입에서 원래 타입으로 원복한다.
+	    Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
+	    Integer id = unit.getID();
+	    for (UnitKind unitKind : unitKinds) {
+		unitFilterMap.get(unitKind).add(id);
+	    }
+	    unitFilterMap.get(UnitKind.SCOUT).remove(id);
+	} else {
+	    Log.trace("정찰 유닛이 죽어버렸음..");
 	}
-	unitFilterMap.get(UnitKind.SCOUT).remove(id);
+    }
+
+    public void setUnitAssignment(Unit unit, Assignment assignment) {
+	unitAssignmentMap.put(unit.getID(), assignment);
     }
 }

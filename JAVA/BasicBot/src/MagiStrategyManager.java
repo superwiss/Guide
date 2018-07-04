@@ -21,11 +21,15 @@ public class MagiStrategyManager {
     private Set<StrategyItem> strategyItems = new HashSet<>();
 
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
+    private MagiScoutManager scoutManager = MagiScoutManager.Instance();
+    private LocationManager locationManager = LocationManager.Instance();
+    private boolean allAttackMode = false;
 
     public MagiStrategyManager() {
 	strategyItems.add(StrategyItem.MARINE_INTO_BUNKER);
 	strategyItems.add(StrategyItem.REPAIR_BUNKER);
 	strategyItems.add(StrategyItem.MARINE_AUTO_TRAIN);
+	strategyItems.add(StrategyItem.SET_BARRACKS_RALLY);
     }
 
     /// 경기가 시작될 때 일회적으로 전략 초기 세팅 관련 로직을 실행합니다
@@ -46,27 +50,59 @@ public class MagiStrategyManager {
 	    if (strategyItems.contains(StrategyItem.REPAIR_BUNKER)) {
 		repairBunker(allianceUnitManager, bunker);
 	    }
-	    if (strategyItems.contains(StrategyItem.MARINE_AUTO_TRAIN)) {
-		Log.debug("wiss: isBuildingSupply: %b, getSupplyRemain: %d", buildManager.isBuildingSupply(), gameData.getSupplyRemain());
-		if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
-		    // 서플 여유가 4개 이하면 서플을 짓는다.
-		    if (false == buildManager.isBuildingSupply() && gameData.getSupplyRemain() <= 4 * 2) {
-			Log.debug("wiss: 서플라이 건설");
-			buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-		    } else if (gameData.getMineral() >= 50) {
-			Log.debug("wiss: 마린 훈련");
-			Unit barracks = buildManager.getTrainableBarracks(allianceUnitManager);
-			if (null != barracks) {
+	}
+	if (strategyItems.contains(StrategyItem.MARINE_AUTO_TRAIN)) {
+	    Log.debug("wiss: isBuildingSupply: %b, getSupplyRemain: %d", buildManager.isBuildingSupply(), gameData.getSupplyRemain());
+	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
+		// 서플 여유가 4개 이하면 서플을 짓는다.
+		if (false == buildManager.isBuildingSupply() && gameData.getSupplyRemain() <= 4 * 2) {
+		    Log.debug("wiss: 서플라이 건설");
+		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+		} else if (gameData.getMineral() > 200 && null != allianceUnitManager.getFirstUnitByUnitKind(UnitKind.ACADEMY)
+			&& 5 > allianceUnitManager.getUnitsByUnitKind(UnitKind.BARRACKS).size() && 0 == buildManager.getQueueSize()) {
+		    // 아카데미가 존재하고, 배럭이 5개 미만이고, BuildOrder Queue가 비어있으면 세 번째 배럭을 짓는다.
+		    Log.debug("wiss: 배럭 건설");
+		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
+		} else if (gameData.getMineral() >= 50) {
+		    Log.debug("wiss: 마린/매딕 훈련");
+		    Unit barracks = buildManager.getTrainableBarracks(allianceUnitManager);
+		    if (null != barracks) {
+			Set<Integer> medicIds = allianceUnitManager.getUnitsByUnitKind(UnitKind.MEDIC);
+			Set<Integer> marineIds = allianceUnitManager.getUnitsByUnitKind(UnitKind.MARINE);
+			int medicCount = medicIds.size() + buildManager.getTrainingQueueUnitCount(allianceUnitManager, UnitType.Terran_Medic);
+			int marineCount = marineIds.size() + buildManager.getTrainingQueueUnitCount(allianceUnitManager, UnitType.Terran_Marine);
+			// 마린4마리당 매딕 1마리
+			Log.info("마린/매딕 생산. 마린 수: %d, 메딕 수: %d", marineCount, medicCount);
+			if (medicCount * 4 < marineCount) {
+			    barracks.train(UnitType.Terran_Medic);
+			} else {
 			    barracks.train(UnitType.Terran_Marine);
 			}
 		    }
 		}
 	    }
-	    Integer academyId = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.ACADEMY);
-	    if (null != academyId) {
-		Unit academy = allianceUnitManager.getUnit(academyId);
-		if (academy.canUpgrade(UpgradeType.U_238_Shells)) {
-		    academy.upgrade(UpgradeType.U_238_Shells);
+	}
+	Integer academyId = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.ACADEMY);
+	if (null != academyId) {
+	    Unit academy = allianceUnitManager.getUnit(academyId);
+	    if (academy.canUpgrade(UpgradeType.U_238_Shells)) {
+		academy.upgrade(UpgradeType.U_238_Shells);
+	    }
+	}
+
+	// 모든 공격 가능한 유닛셋을 가져온다.
+	Set<Integer> attackableUnits = allianceUnitManager.getUnitsByUnitKind(UnitKind.ATTACKABLE_NORMAL);
+	// 총 공격 전이고, 공격 유닛이 20마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
+	if (false == allAttackMode && attackableUnits.size() > 60 && null != scoutManager.getEnemyBaseLocation()) {
+	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnits.size());
+	    allAttackMode = true;
+	}
+
+	if (true == allAttackMode) {
+	    for (Integer unitId : attackableUnits) {
+		Unit unit = allianceUnitManager.getUnit(unitId);
+		if (unit.isIdle()) {
+		    ActionUtil.attackEnemyUnit(allianceUnitManager, unit, scoutManager.getEnemyBaseLocation().toPosition());
 		}
 	    }
 	}
@@ -149,6 +185,16 @@ public class MagiStrategyManager {
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.GATHER_GAS));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
+    }
+
+    public void onUnitComplete(Unit unit, GameData gameData) {
+	if (null != unit && unit.getType().equals(UnitType.Terran_Barracks)) {
+	    unit.setRallyPoint(locationManager.getChokePoint1().toPosition());
+	}
     }
 }
