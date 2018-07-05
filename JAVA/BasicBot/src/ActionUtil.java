@@ -23,6 +23,14 @@ public class ActionUtil {
 	}
     }
 
+    public static void repair(UnitManager allianceUnitManager, Unit allianceUnit, Unit target) {
+	ActionDetail currnetCommand = getActionDetail("REPAIR", allianceUnit, target);
+
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	    allianceUnit.repair(target);
+	}
+    }
+
     public static void moveToPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position, int margin) {
 	ActionDetail currnetCommand = getActionDetail("MOVE_TO_POSITION", allianceUnit, position, margin);
 

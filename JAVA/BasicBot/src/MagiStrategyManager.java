@@ -24,6 +24,8 @@ public class MagiStrategyManager {
     private MagiScoutManager scoutManager = MagiScoutManager.Instance();
     private LocationManager locationManager = LocationManager.Instance();
     private boolean allAttackMode = false;
+    // 벙커는 SCV 4마리만 수리한다.
+    private static int repairCount = 4;
 
     public MagiStrategyManager() {
 	strategyItems.add(StrategyItem.MARINE_INTO_BUNKER);
@@ -48,7 +50,13 @@ public class MagiStrategyManager {
 		}
 	    }
 	    if (strategyItems.contains(StrategyItem.REPAIR_BUNKER)) {
-		repairBunker(allianceUnitManager, bunker);
+		if (gameData.getMineral() > 0) {
+		    if (UnitType.Terran_Bunker.maxHitPoints() > bunker.getHitPoints()) {
+			repairBunker(allianceUnitManager, bunker);
+		    } else {
+			repairCount = 4;
+		    }
+		}
 	    }
 	}
 	if (strategyItems.contains(StrategyItem.MARINE_AUTO_TRAIN)) {
@@ -125,8 +133,11 @@ public class MagiStrategyManager {
 		targetWorker = worker;
 	    }
 	}
-	if (null != targetWorker) {
-	    targetWorker.repair(bunker);
+	if (repairCount > 0) {
+	    if (null != targetWorker) {
+		ActionUtil.repair(allianceUnitManager, targetWorker, bunker);
+		--repairCount;
+	    }
 	}
     }
 

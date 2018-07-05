@@ -31,7 +31,7 @@ public class MagiScoutManager {
 	if (true == scouting && 0 < enemyUnitManager.getUnitsByUnitKind(UnitKind.MAIN_BUILDING).size()) {
 	    for (Integer scoutUnitId : scoutUnits) {
 		Unit scoutUnit = allianceUnitManager.getUnit(scoutUnitId);
-		if (null != scoutUnitId) {
+		if (null != scoutUnitId && scoutUnit.exists()) {
 		    allianceUnitManager.releaseScoutUnit(scoutUnit);
 		    scoutUnit.stop();
 		}
