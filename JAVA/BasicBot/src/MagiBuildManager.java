@@ -87,7 +87,7 @@ public class MagiBuildManager {
 	case GATHER_GAS:
 	    Unit workerForGatherGas = allianceUnitManager.getBuildableWorker();
 	    if (null != workerForGatherGas) {
-		Integer refineryId = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.REFINERY);
+		Integer refineryId = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
 		if (null != refineryId) {
 		    if (workerForGatherGas.canGather(allianceUnitManager.getUnit(refineryId))) {
 			workerForGatherGas.gather(allianceUnitManager.getUnit(refineryId));
@@ -144,7 +144,7 @@ public class MagiBuildManager {
     // 일꾼을 가장 먼저 만들어진 커맨드 센터에서 훈련한다.
     private void trainingWorker(GameData gameData, MagiBuildOrderItem buildItem) {
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
-	Set<Integer> commandCenters = allianceUnitManager.getUnitsByUnitKind(UnitKind.COMMAND_CENTER);
+	Set<Integer> commandCenters = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Command_Center);
 	if (commandCenters.size() == 0) {
 	    Log.warn("trainingWorker() failed. Command Center does not exist.");
 	} else {
@@ -164,7 +164,7 @@ public class MagiBuildManager {
 	Unit targetBarracks = null;
 
 	int minQueueSize = Integer.MAX_VALUE;
-	Set<Integer> barracksSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.BARRACKS);
+	Set<Integer> barracksSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Barracks);
 	// 마린 훈련이 가능한 배럭 중에서 TrainingQueue가 가장 적은 배럭을 선택
 	// TrainingQueue는 최대 2개까지만 허용
 	for (Integer barracksId : barracksSet) {
@@ -185,7 +185,7 @@ public class MagiBuildManager {
     public int getTrainingQueueUnitCount(UnitManager allianceUnitManager, UnitType unitType) {
 	int result = 0;
 
-	Set<Integer> barracksSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.BARRACKS);
+	Set<Integer> barracksSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Barracks);
 	for (Integer barracksId : barracksSet) {
 	    Unit barracks = allianceUnitManager.getUnit(barracksId);
 	    List<UnitType> trainingQueue = barracks.getTrainingQueue();

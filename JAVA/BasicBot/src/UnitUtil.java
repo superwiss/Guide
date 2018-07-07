@@ -40,7 +40,7 @@ public class UnitUtil {
 	return unit.getPlayer().isEnemy(game.self());
     }
 
-    // Filter를 위해서 유닛의 종류를 리턴한다.
+    // BWMirror에는 BWAPI에는 존재하는 UnitSet, Filter가 없다. 이를 위해서 UnitSet과 비슷한 목적의 Set<UnitKind>를 사용한다.
     public static Set<UnitKind> getUnitKinds(Unit unit) {
 	Set<UnitKind> result = new HashSet<>();
 
@@ -48,65 +48,24 @@ public class UnitUtil {
 	    UnitType unitType = unit.getType();
 	    String strUnitType = unitType.toString();
 
-	    UnitType test = UnitType.Terran_Medic;
-
-	    switch (strUnitType) {
-	    case "Terran_Marine":
-		result.add(UnitKind.ATTACKABLE_NORMAL);
-		result.add(UnitKind.MARINE);
-		break;
-	    case "Terran_Medic":
-		result.add(UnitKind.ATTACKABLE_NORMAL);
-		result.add(UnitKind.MEDIC);
-		break;
-	    case "Terran_SCV":
-		result.add(UnitKind.WORKER);
-		break;
-	    case "Terran_Academy":
-		result.add(UnitKind.ACADEMY);
-		break;
-	    case "Terran_Command_Center":
-		result.add(UnitKind.COMMAND_CENTER);
-		result.add(UnitKind.MAIN_BUILDING);
-		break;
-	    case "Terran_Barracks":
-		result.add(UnitKind.BARRACKS);
-		break;
-	    case "Terran_Bunker":
-		result.add(UnitKind.Bunker);
-		break;
-	    case "Terran_Refinery":
-		result.add(UnitKind.REFINERY);
-		break;
-	    case "Zerg_Zergling":
-		result.add(UnitKind.ATTACKABLE_NORMAL);
-		break;
-	    case "Zerg_Hatchery":
-	    case "Zerg_Lair":
-	    case "Zerg_Hive":
-		result.add(UnitKind.MAIN_BUILDING);
-		break;
-	    case "Protoss_Nexus":
-		result.add(UnitKind.MAIN_BUILDING);
-		break;
-	    case "Protoss_Zealot":
-		result.add(UnitKind.ATTACKABLE_NORMAL);
-		break;
-	    default:
-		break;
+	    // Terran, Protoss, Zerg에 대한 UnitType을 처리한다.
+	    if (strUnitType.startsWith("Terran_") || strUnitType.startsWith("Protoss_") || strUnitType.startsWith("Zerg_")) {
+		result.add(UnitKind.valueOf(unit.getType().toString()));
+		checkUnitType(result, unitType);
+	    } else if (strUnitType.startsWith("Resource_Mineral_Field")) {
+		// 미네랄 필드는 Resource_Mineral_Field, Resource_Mineral_Field_Type_2, Resource_Mineral_Field_Type_3 이렇게 세 종류가 존재한다.
+		// Type2, 3일 경우 Resource_Mineral_Field로 처리한다.
+		result.add(UnitKind.Resource_Mineral_Field);
+	    } else if (strUnitType.equals("Resource_Vespene_Geyser")) {
+		result.add(UnitKind.Resource_Vespene_Geyser);
 	    }
-
-	    // 빌딩 여부를 확인
-	    if (unitType.isBuilding()) {
-		result.add(UnitKind.ALL_BUILDING);
-	    }
-
 	}
 
 	return result;
     }
 
     // 유닛의 타입을 판별해서 스펙을 리턴한다.
+    // 마이크로 컨트롤을 할 때 사용한다.
     public static UnitSpec getUnitSpec(Unit unit) {
 	UnitType unitType = unit.getType();
 
@@ -121,6 +80,7 @@ public class UnitUtil {
 
     // 파라메터로 전달 받은 내 유닛이 공격해야 할 가장 적당한 적 유닛을 선택한다.
     // 적당한 유닛이 없으면 null을 리턴한다.
+    // 마이크로 컨트롤을 할 때 사용한다.
     public static Unit selectEnemyTargetUnit(Unit allianceUnit, UnitManager enemyUnitManager) {
 	UnitSpec unitSpec = UnitUtil.getUnitSpec(allianceUnit);
 
@@ -128,7 +88,7 @@ public class UnitUtil {
 	// TODO: Unit.getUnitsInRadius(arg0)을 활용해 보자. 
 	Unit targetUnit = null;
 	int targetDistance = Integer.MAX_VALUE;
-	for (Integer enemyUnitId : enemyUnitManager.getUnitsByUnitKind(UnitKind.ATTACKABLE_NORMAL)) {
+	for (Integer enemyUnitId : enemyUnitManager.getUnitsByUnitKind(UnitKind.Combat_Unit)) {
 	    Unit enemyUnit = enemyUnitManager.getUnit(enemyUnitId);
 	    int distance = allianceUnit.getDistance(enemyUnit);
 	    if (distance > unitSpec.getCombatDistance()) {
@@ -276,22 +236,6 @@ public class UnitUtil {
 	return result;
     }
 
-    // 한방에 적을 죽일 수 있는지 판단한다.
-    public static boolean canKillSingleShoot(Unit allianceUnit, Unit enemyUnit) {
-	// 무기를 사용할 수 없으면 false
-	if (0 != allianceUnit.getGroundWeaponCooldown()) {
-	    return false;
-	}
-	// 사거리 밖이면 false
-	if (!allianceUnit.isInWeaponRange(enemyUnit)) {
-	    return false;
-	}
-	if (enemyUnit.getHitPoints() <= allianceUnit.getType().groundWeapon().damageAmount()) {
-	    return true;
-	}
-	return false;
-    }
-
     // 적이 바라보고 있는 target position을 화면에 표시한다.
     public static void drawTargetPosition(Unit unit) {
 	Position targetPosition = unit.getTargetPosition();
@@ -302,6 +246,7 @@ public class UnitUtil {
     }
 
     // 유닛의 정보를 엄청 자세히 로그로 남긴다.
+    // 주의: 속도가 느려지므로, 디버깅할 때만 사용할 것.
     public static void loggingDetailUnitInfo(Unit unit) {
 	if (null != unit) {
 	    String unitId = "[" + unit.getID() + "] [" + unit.getType() + "] ";
@@ -411,6 +356,7 @@ public class UnitUtil {
 	return result;
     }
 
+    // 두 Position 간의 거리를 리턴한다.
     public static int getDistance(Position p1, Position p2) {
 	int diffX = p1.getX() - p2.getX();
 	int diffY = p1.getY() - p2.getY();
@@ -420,6 +366,8 @@ public class UnitUtil {
 	return diffX + diffY;
     }
 
+    // 공격 모션이 완료되었는지 리턴한다.
+    // 예를 들어 마리의 경우, 공격이 끝나기도 전에 이동하면 총을 꺼내고 쏘기도 전에 총을 집어 넣고 이동한다.
     public static boolean isAttackFinished(Unit allianceUnit) {
 	boolean result = false;
 
@@ -473,6 +421,7 @@ public class UnitUtil {
 	return result;
     }
 
+    // 마이크로 컨트롤이 구현된 적군 유닛인지 여부를 리턴한다.
     public static boolean isMicroControlableEnemyType(UnitType unitType) {
 	boolean result = false;
 
@@ -487,5 +436,92 @@ public class UnitUtil {
 	}
 
 	return result;
+    }
+
+    private static void checkUnitType(final Set<UnitKind> result, final UnitType unitType) {
+	String strUnitType = unitType.toString();
+
+	checkIfWorker(result, strUnitType);
+	checkIfMainBuilding(result, strUnitType);
+	checkIfCombatUnit(result, strUnitType);
+	checkIfBuilding(result, unitType);
+    }
+
+    // 일꾼 여부를 판단해서, 일꾼일 경우, UnitKind set에 추가한다.
+    private static void checkIfWorker(final Set<UnitKind> unitKindSet, final String strUnitType) {
+	switch (strUnitType) {
+	case "Terran_SCV":
+	case "Protoss_Probe":
+	case "Zerg_Drone":
+	    unitKindSet.add(UnitKind.Worker);
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    // Command Center, Nexus, Hatchery 류의 메인 빌딩 여부 반환.
+    private static void checkIfMainBuilding(final Set<UnitKind> unitKindSet, final String strUnitType) {
+	switch (strUnitType) {
+	case "Terran_Command_Center":
+	case "Protoss_Nexus":
+	case "Zerg_Hatchery":
+	case "Zerg_Lair":
+	case "Zerg_Hive":
+	    unitKindSet.add(UnitKind.MAIN_BUILDING);
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    // 공격 유닛 타입 여부를 리턴.
+    private static void checkIfCombatUnit(final Set<UnitKind> unitKindSet, final String strUnitType) {
+	switch (strUnitType) {
+	case "Terran_Firebat":
+	case "Terran_Ghost":
+	case "Terran_Goliath":
+	case "Terran_Marine":
+	case "Terran_Medic":
+	case "Terran_Siege_Tank_Siege_Mode":
+	case "Terran_Siege_Tank_Tank_Mode":
+	case "Terran_Battlecruiser":
+	case "Terran_Science_Vessel":
+	case "Terran_Valkyrie":
+	case "Terran_Wraith":
+	case "Protoss_Archon":
+	case "Protoss_Dark_Archon":
+	case "Protoss_Dark_Templar":
+	case "Protoss_Dragoon":
+	case "Protoss_High_Templar":
+	case "Protoss_Reaver":
+	case "Protoss_Zealot":
+	case "Protoss_Arbiter":
+	case "Protoss_Carrier":
+	case "Protoss_Corsair":
+	case "Protoss_Scout":
+	case "Zerg_Defiler":
+	case "Zerg_Hydralisk":
+	case "Zerg_Infested_Terran":
+	case "Zerg_Lurker":
+	case "Zerg_Ultralisk":
+	case "Zerg_Zergling":
+	case "Zerg_Devourer":
+	case "Zerg_Guardian":
+	case "Zerg_Mutalisk":
+	case "Zerg_Queen":
+	case "Zerg_Scourge":
+	    unitKindSet.add(UnitKind.Combat_Unit);
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    // 건물 여부를 리턴
+    private static void checkIfBuilding(final Set<UnitKind> unitKindSet, final UnitType unitType) {
+	if (unitType.isBuilding()) {
+	    unitKindSet.add(UnitKind.Building);
+	}
     }
 }

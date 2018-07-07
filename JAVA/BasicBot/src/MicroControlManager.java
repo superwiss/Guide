@@ -17,12 +17,12 @@ public class MicroControlManager {
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
 	UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
 
-	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitsByUnitKind(UnitKind.ATTACKABLE_NORMAL).size());
+	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitsByUnitKind(UnitKind.Combat_Unit).size());
 	if (true) {
 	    return;
 	}
 	// 적을 공격할 수 있는 아군 유닛을 대상으로 컨트롤을 한다.
-	for (Integer allianceUnitId : allianceUnitManager.getUnitsByUnitKind(UnitKind.ATTACKABLE_NORMAL)) {
+	for (Integer allianceUnitId : allianceUnitManager.getUnitsByUnitKind(UnitKind.Combat_Unit)) {
 
 	    Unit allianceUnit = allianceUnitManager.getUnit(allianceUnitId);
 

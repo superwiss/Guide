@@ -41,7 +41,7 @@ public class MagiStrategyManager {
 
     public void onFrame(GameData gameData) {
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
-	Set<Integer> bunkerSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Bunker);
+	Set<Integer> bunkerSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Bunker);
 	for (Integer bunkerId : bunkerSet) {
 	    Unit bunker = allianceUnitManager.getUnit(bunkerId);
 	    if (strategyItems.contains(StrategyItem.MARINE_INTO_BUNKER)) {
@@ -66,8 +66,8 @@ public class MagiStrategyManager {
 		if (false == buildManager.isBuildingSupply() && gameData.getSupplyRemain() <= 4 * 2) {
 		    Log.debug("wiss: 서플라이 건설");
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-		} else if (gameData.getMineral() > 200 && null != allianceUnitManager.getFirstUnitByUnitKind(UnitKind.ACADEMY)
-			&& 5 > allianceUnitManager.getUnitsByUnitKind(UnitKind.BARRACKS).size() && 0 == buildManager.getQueueSize()) {
+		} else if (gameData.getMineral() > 200 && null != allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Academy)
+			&& 5 > allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
 		    // 아카데미가 존재하고, 배럭이 5개 미만이고, BuildOrder Queue가 비어있으면 세 번째 배럭을 짓는다.
 		    Log.debug("wiss: 배럭 건설");
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
@@ -75,8 +75,8 @@ public class MagiStrategyManager {
 		    Log.debug("wiss: 마린/매딕 훈련");
 		    Unit barracks = buildManager.getTrainableBarracks(allianceUnitManager);
 		    if (null != barracks) {
-			Set<Integer> medicIds = allianceUnitManager.getUnitsByUnitKind(UnitKind.MEDIC);
-			Set<Integer> marineIds = allianceUnitManager.getUnitsByUnitKind(UnitKind.MARINE);
+			Set<Integer> medicIds = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Medic);
+			Set<Integer> marineIds = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Marine);
 			int medicCount = medicIds.size() + buildManager.getTrainingQueueUnitCount(allianceUnitManager, UnitType.Terran_Medic);
 			int marineCount = marineIds.size() + buildManager.getTrainingQueueUnitCount(allianceUnitManager, UnitType.Terran_Marine);
 			// 마린4마리당 매딕 1마리
@@ -90,7 +90,7 @@ public class MagiStrategyManager {
 		}
 	    }
 	}
-	Integer academyId = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.ACADEMY);
+	Integer academyId = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Academy);
 	if (null != academyId) {
 	    Unit academy = allianceUnitManager.getUnit(academyId);
 	    if (academy.canUpgrade(UpgradeType.U_238_Shells)) {
@@ -99,7 +99,7 @@ public class MagiStrategyManager {
 	}
 
 	// 모든 공격 가능한 유닛셋을 가져온다.
-	Set<Integer> attackableUnits = allianceUnitManager.getUnitsByUnitKind(UnitKind.ATTACKABLE_NORMAL);
+	Set<Integer> attackableUnits = allianceUnitManager.getUnitsByUnitKind(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 20마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
 	if (false == allAttackMode && attackableUnits.size() > 60 && null != scoutManager.getEnemyBaseLocation()) {
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnits.size());
@@ -118,7 +118,7 @@ public class MagiStrategyManager {
 
     // 벙거를 수리한다.
     private void repairBunker(UnitManager allianceUnitManager, Unit bunker) {
-	Set<Integer> workerSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.WORKER);
+	Set<Integer> workerSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Worker);
 	int minDistance = Integer.MAX_VALUE;
 	Unit targetWorker = null;
 	for (Integer workerId : workerSet) {
@@ -143,7 +143,7 @@ public class MagiStrategyManager {
 
     // 마린을 벙커에 넣는다.
     private void marineToBunker(UnitManager allianceUnitManager, Unit bunker) {
-	Set<Integer> marineSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.MARINE);
+	Set<Integer> marineSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Marine);
 	int minDistance = Integer.MAX_VALUE;
 	Unit targetMarine = null;
 	for (Integer marineId : marineSet) {

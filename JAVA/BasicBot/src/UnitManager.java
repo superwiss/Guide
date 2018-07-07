@@ -82,7 +82,7 @@ public class UnitManager {
     public Unit getFirstCommandCenter() {
 	Unit result = null;
 
-	Set<Integer> commandCenters = unitFilterMap.get(UnitKind.COMMAND_CENTER);
+	Set<Integer> commandCenters = unitFilterMap.get(UnitKind.Terran_Command_Center);
 	if (commandCenters.size() > 0) {
 	    result = getUnit(commandCenters.iterator().next());
 	}
@@ -141,7 +141,7 @@ public class UnitManager {
 
     // command center 주변의 미네랄 정보를 업데이트 한다.
     public void initMimeralInfo() {
-	for (Integer commandCneter : unitFilterMap.get(UnitKind.COMMAND_CENTER)) {
+	for (Integer commandCneter : unitFilterMap.get(UnitKind.Terran_Command_Center)) {
 	    insertMineralMap(commandCneter);
 	}
     }
@@ -178,7 +178,7 @@ public class UnitManager {
 	Unit result = null;
 
 	int minDistance = Integer.MAX_VALUE;
-	for (Integer commandCenter : unitFilterMap.get(UnitKind.COMMAND_CENTER)) {
+	for (Integer commandCenter : unitFilterMap.get(UnitKind.Terran_Command_Center)) {
 	    int distance = worker.getDistance(getUnit(commandCenter));
 	    if (distance < minDistance) {
 		minDistance = distance;
@@ -224,7 +224,7 @@ public class UnitManager {
 
     public Unit getBuildableWorker() {
 	Unit result = null;
-	for (Integer workerId : unitFilterMap.get(UnitKind.WORKER)) {
+	for (Integer workerId : unitFilterMap.get(UnitKind.Worker)) {
 	    Unit worker = getUnit(workerId);
 	    if (isinterruptableWorker(worker)) {
 		result = worker;
@@ -254,7 +254,7 @@ public class UnitManager {
 	for (UnitKind unitKind : unitKinds) {
 	    unitFilterMap.get(unitKind).remove(id);
 	}
-	unitFilterMap.get(UnitKind.SCOUT).add(id);
+	unitFilterMap.get(UnitKind.Scouting_Unit).add(id);
     }
 
     public void releaseScoutUnit(Unit unit) {
@@ -265,7 +265,7 @@ public class UnitManager {
 	    for (UnitKind unitKind : unitKinds) {
 		unitFilterMap.get(unitKind).add(id);
 	    }
-	    unitFilterMap.get(UnitKind.SCOUT).remove(id);
+	    unitFilterMap.get(UnitKind.Scouting_Unit).remove(id);
 	} else {
 	    Log.trace("정찰 유닛이 죽어버렸음..");
 	}

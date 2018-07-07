@@ -185,9 +185,9 @@ public class GameCommander {
 
     /// 텍스트를 입력 후 엔터를 하여 다른 플레이어들에게 텍스트를 전달하려 할 때 발생하는 이벤트를 처리합니다
     public void onSendText(String text) {
-	Log.info("onSendText: %s", text);
 	try {
 	    int number = Integer.parseInt(text);
+	    Log.info("Set game speed to %d", number);
 	    broodwar.setLocalSpeed(number);
 	} catch (NumberFormatException e) {
 	    switch (text) {
@@ -195,6 +195,7 @@ public class GameCommander {
 	    case "pp":
 	    case "ppp":
 		// 일시 정지를 위해서 3초만 대기한다.
+		Log.info("Set game speed to 3000");
 		broodwar.setLocalSpeed(3000);
 		break;
 	    default:

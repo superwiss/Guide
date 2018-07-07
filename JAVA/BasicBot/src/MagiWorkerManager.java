@@ -88,7 +88,7 @@ public class MagiWorkerManager {
 
     // idle 상태의 일꾼에게 미네랄을 캐도록 일을 시킨다.
     private void assignWorkersToMineral(UnitManager allianceUnitManager) {
-	Set<Integer> workerList = allianceUnitManager.getUnitsByUnitKind(UnitKind.WORKER);
+	Set<Integer> workerList = allianceUnitManager.getUnitsByUnitKind(UnitKind.Worker);
 	for (Integer unitId : workerList) {
 	    // 일꾼 하나를 가져온다.
 	    Unit worker = allianceUnitManager.getUnit(unitId);
