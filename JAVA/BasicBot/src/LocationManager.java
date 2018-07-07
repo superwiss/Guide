@@ -164,7 +164,6 @@ public class LocationManager {
 	    result.add(new TilePosition(119, 109));
 	    result.add(new TilePosition(122, 109));
 	    result.add(new TilePosition(125, 109));
-	    result.add(new TilePosition(116, 110));
 	    result.add(new TilePosition(122, 111));
 	    result.add(new TilePosition(125, 111));
 	    result.add(new TilePosition(114, 112));
@@ -184,6 +183,7 @@ public class LocationManager {
 	    result.add(new TilePosition(110, 125));
 	    result.add(new TilePosition(122, 124));
 	    result.add(new TilePosition(125, 123));
+	    result.add(new TilePosition(116, 110));
 	    break;
 	case SEVEN:
 	    result.add(new TilePosition(17, 113));

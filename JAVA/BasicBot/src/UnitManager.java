@@ -10,6 +10,7 @@ import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
+import bwapi.UnitType;
 
 public class UnitManager {
 
@@ -82,7 +83,7 @@ public class UnitManager {
 	return idUnitMap.get(id);
     }
 
-    public Set<Integer> getUnitsByUnitKind(UnitKind unitKind) {
+    public Set<Integer> getUnitsIdByUnitKind(UnitKind unitKind) {
 	return unitKindMap.get(unitKind);
     }
 
@@ -326,17 +327,29 @@ public class UnitManager {
     }
 
     // unitSet 중에서 position에 제일 가까운 unit을 리턴한다.
-    private Unit getClosestUnit(Set<Integer> unitSet, Position position) {
+    public Unit getClosestUnit(Set<Integer> unitSet, Position position) {
+	return getClosestUnit(unitSet, position, null);
+    }
+
+    // unitSet 중에서 position에 제일 가까운 unit을 리턴한다. excludeUnitType은 계산에서 제외한다.
+    public Unit getClosestUnit(Set<Integer> unitSet, Position position, Set<UnitType> excludeUnitType) {
 	Unit result = null;
 
 	if (null != unitSet && null != position) {
 	    int minDistance = Integer.MAX_VALUE;
 	    for (Integer unitId : unitSet) {
 		Unit unit = getUnit(unitId);
-		int distance = unit.getDistance(position);
-		if (distance < minDistance) {
-		    minDistance = distance;
-		    result = unit;
+		if (null != unit) {
+		    if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
+			continue;
+		    }
+		    int distance = unit.getDistance(position);
+		    if (distance < minDistance) {
+			minDistance = distance;
+			result = unit;
+		    }
+		} else {
+		    Log.warn("getClosestUnit(): Failed to getting unit by unitId(%d)", unitId);
 		}
 	    }
 	} else {

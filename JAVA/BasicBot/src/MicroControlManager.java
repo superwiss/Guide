@@ -1,6 +1,11 @@
+import java.util.HashSet;
+import java.util.Set;
+
 import bwapi.Game;
 import bwapi.Position;
+import bwapi.TilePosition;
 import bwapi.Unit;
+import bwapi.UnitType;
 
 // MagiBot을 빠르게 연습시키기 위해서, 유즈맵으로 미션을 만들어 MagiBot이 미션을 해결하는 방식으로 훈련한다.
 public class MicroControlManager {
@@ -11,18 +16,26 @@ public class MicroControlManager {
     }
 
     private MicroControlManager() {
+	medicUnitTypeSet.add(UnitType.Terran_Medic);
     }
 
+    private GameData gameData;
+    private TilePosition attackTilePosition = null;
+    private final Set<UnitType> medicUnitTypeSet = new HashSet<>();
+
     public void onFrame(GameData gameData) {
+	this.gameData = gameData;
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
 	UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
 
-	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitsByUnitKind(UnitKind.Combat_Unit).size());
+	medicControl(allianceUnitManager);
+
+	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit).size());
 	if (true) {
 	    return;
 	}
 	// 적을 공격할 수 있는 아군 유닛을 대상으로 컨트롤을 한다.
-	for (Integer allianceUnitId : allianceUnitManager.getUnitsByUnitKind(UnitKind.Combat_Unit)) {
+	for (Integer allianceUnitId : allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit)) {
 
 	    Unit allianceUnit = allianceUnitManager.getUnit(allianceUnitId);
 
@@ -107,6 +120,41 @@ public class MicroControlManager {
 	}
     }
 
+    // 메딕을 컨트롤 한다.
+    private void medicControl(UnitManager allianceUnitManager) {
+	// 메딕은 42프레임에 1번만 컨트롤 한다.
+	if (gameData.getFrameCount() % 42 != 0) {
+	    return;
+	}
+	Position newPosition = null;
+	Set<Integer> bionicSet = null;
+	if (true == hasAttackTilePosition()) {
+	    Position attackPosition = attackTilePosition.toPosition();
+	    bionicSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Bionic_Unit);
+	    // 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
+	    Unit headBionicUnit = allianceUnitManager.getClosestUnit(bionicSet, attackPosition, medicUnitTypeSet);
+	    if (null != headBionicUnit) {
+		// 선두 바이오닉 유닛으로부터 공격 목표 지점 방향으로 +100 position 거리의 위치를 구한다.
+		newPosition = UnitUtil.getPositionAsDistance(headBionicUnit.getPosition(), attackPosition, 100);
+	    }
+
+	    if (null == newPosition) {
+		Log.warn("medicControl(): newPosition is null. Bionic Unit size = %d, headBionicUnitPosition=%s, attackTilePosition: %s", bionicSet.size(),
+			null != headBionicUnit ? headBionicUnit.getPosition() : "null", attackTilePosition);
+	    } else {
+		Set<Integer> medicSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Medic);
+		for (Integer medicId : medicSet) {
+		    Unit medic = allianceUnitManager.getUnit(medicId);
+		    boolean updated = ActionUtil.attackPosition(allianceUnitManager, medic, newPosition);
+		    if (updated) {
+			Log.debug("메딕(%d)을 %s 위치로 이동한다. headBionicUnitId=%d, headBionicUnit=%s", medicId, newPosition, headBionicUnit.getID(), headBionicUnit.getPosition());
+		    }
+		}
+	    }
+	}
+
+    }
+
     // 필요한 프레임으로 빨리 이동하기 위해서 게임 속도를 제어한다. false를 리턴하면 frmae을 종료한다.
     private boolean speedControl(GameData gameData, Unit allianceUnit, Unit enemyUnit) {
 	boolean result = true;
@@ -135,6 +183,24 @@ public class MicroControlManager {
 	}
 
 	return result;
+    }
+
+    public boolean hasAttackTilePosition() {
+	boolean result = false;
+
+	if (null != attackTilePosition) {
+	    result = true;
+	}
+
+	return result;
+    }
+
+    public TilePosition getAttackTilePosition() {
+	return attackTilePosition;
+    }
+
+    public void setAttackTilePosition(TilePosition attackTilePosition) {
+	this.attackTilePosition = attackTilePosition;
     }
 
     // 유닛의 이동 거리를 측정하기 위한 테스트용 메서드

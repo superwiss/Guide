@@ -88,7 +88,7 @@ public class UnitUtil {
 	// TODO: Unit.getUnitsInRadius(arg0)을 활용해 보자. 
 	Unit targetUnit = null;
 	int targetDistance = Integer.MAX_VALUE;
-	for (Integer enemyUnitId : enemyUnitManager.getUnitsByUnitKind(UnitKind.Combat_Unit)) {
+	for (Integer enemyUnitId : enemyUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit)) {
 	    Unit enemyUnit = enemyUnitManager.getUnit(enemyUnitId);
 	    int distance = allianceUnit.getDistance(enemyUnit);
 	    if (distance > unitSpec.getCombatDistance()) {
@@ -438,13 +438,14 @@ public class UnitUtil {
 	return result;
     }
 
-    private static void checkUnitType(final Set<UnitKind> result, final UnitType unitType) {
+    private static void checkUnitType(final Set<UnitKind> unitKindSet, final UnitType unitType) {
 	String strUnitType = unitType.toString();
 
-	checkIfWorker(result, strUnitType);
-	checkIfMainBuilding(result, strUnitType);
-	checkIfCombatUnit(result, strUnitType);
-	checkIfBuilding(result, unitType);
+	checkIfWorker(unitKindSet, strUnitType);
+	checkIfMainBuilding(unitKindSet, strUnitType);
+	checkIfCombatUnit(unitKindSet, strUnitType);
+	checkIfBionicUnit(unitKindSet, unitType);
+	checkIfBuilding(unitKindSet, unitType);
     }
 
     // 일꾼 여부를 판단해서, 일꾼일 경우, UnitKind set에 추가한다.
@@ -518,10 +519,37 @@ public class UnitUtil {
 	}
     }
 
+    // 바이오닉 유닛 타입 여부를 리턴.
+    private static void checkIfBionicUnit(final Set<UnitKind> unitKindSet, final UnitType unitType) {
+	if (unitType.isOrganic()) {
+	    unitKindSet.add(UnitKind.Bionic_Unit);
+	}
+    }
+
     // 건물 여부를 리턴
     private static void checkIfBuilding(final Set<UnitKind> unitKindSet, final UnitType unitType) {
 	if (unitType.isBuilding()) {
 	    unitKindSet.add(UnitKind.Building);
 	}
+    }
+
+    public static Position getPositionAsDistance(Position from, Position to, int distance) {
+	Position result = null;
+
+	if (null == from || null == to || distance < 1) {
+	    Log.warn("getPositionAsDistance(): Invalid parameters. from=%s,to=%s,distance=%d", from, to, distance);
+	} else {
+	    double fullDistance = from.getDistance(to);
+	    if (0 != fullDistance) {
+		double percentage = distance / fullDistance;
+
+		double deltaX = (from.getX() - to.getX()) * percentage;
+		double deltaY = (from.getY() - to.getY()) * percentage;
+
+		result = new Position(from.getX() - (int) deltaX, from.getY() - (int) deltaY);
+	    }
+	}
+
+	return result;
     }
 }

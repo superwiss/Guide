@@ -15,75 +15,102 @@ public class ActionUtil {
 	ActionUtil.game = game;
     }
 
-    public static void patrolToEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	ActionDetail currnetCommand = getActionDetail("PATROL_TO_UNIT", allianceUnit, enemyUnit);
+    public static boolean patrolToEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+	boolean result = false;
 
+	ActionDetail currnetCommand = getActionDetail("PATROL_TO_UNIT", allianceUnit, enemyUnit);
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.patrol(enemyUnit.getPosition());
+	    result = true;
 	}
+
+	return result;
     }
 
-    public static void repair(UnitManager allianceUnitManager, Unit allianceUnit, Unit target) {
-	ActionDetail currnetCommand = getActionDetail("REPAIR", allianceUnit, target);
+    public static boolean repair(UnitManager allianceUnitManager, Unit allianceUnit, Unit target) {
+	boolean result = false;
 
+	ActionDetail currnetCommand = getActionDetail("REPAIR", allianceUnit, target);
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.repair(target);
+	    result = true;
 	}
+
+	return result;
     }
 
-    public static void moveToPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position, int margin) {
-	ActionDetail currnetCommand = getActionDetail("MOVE_TO_POSITION", allianceUnit, position, margin);
+    public static boolean moveToPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position, int margin) {
+	boolean result = false;
 
+	ActionDetail currnetCommand = getActionDetail("MOVE_TO_POSITION", allianceUnit, position, margin);
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    // 이동할 position이 이전에 명령받은 position과 너무 가까우면 무시한다.
 	    allianceUnit.move(position);
+	    result = true;
 	}
+
+	return result;
     }
 
     // TODO 상대가 움직이면 position이 바뀌면서 매 프레임마다 move 명령이 내려지는 상황이 발생하는데, 큰 이슈 없는지 확인하기 
-    public static void moveToUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	ActionDetail currnetCommand = getActionDetail("MOVE_TO_UNIT", allianceUnit, enemyUnit.getPoint());
+    public static boolean moveToUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+	boolean result = false;
 
+	ActionDetail currnetCommand = getActionDetail("MOVE_TO_UNIT", allianceUnit, enemyUnit.getPoint());
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.move(enemyUnit.getPoint());
+	    result = true;
 	}
+
+	return result;
     }
 
-    public static void attackEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT", allianceUnit, enemyUnit);
+    public static boolean attackEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+	boolean result = false;
 
+	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT", allianceUnit, enemyUnit);
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.attack(enemyUnit);
+	    result = true;
 	}
+	return result;
     }
 
-    public static void attackEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Position position) {
-	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_POSITION", allianceUnit, position);
+    public static boolean attackPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position) {
+	boolean result = false;
 
+	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_POSITION", allianceUnit, position);
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.attack(position);
+	    result = true;
 	}
+
+	return result;
     }
 
-    public static void attackEnemyUnitForcibly(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT_FORCIBLY", allianceUnit, enemyUnit);
+    public static boolean attackEnemyUnitForcibly(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+	boolean result = false;
 
+	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT_FORCIBLY", allianceUnit, enemyUnit);
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.attack(enemyUnit);
 	    forceAttackUnitIdSet.add(allianceUnit.getID());
+	    result = true;
 	}
+
+	return result;
     }
 
-    public static void stop(UnitManager allianceUnitManager, Unit allianceUnit) {
-	ActionDetail currnetCommand = getActionDetail("STOP", allianceUnit);
+    public static boolean stop(UnitManager allianceUnitManager, Unit allianceUnit) {
+	boolean result = false;
 
+	ActionDetail currnetCommand = getActionDetail("STOP", allianceUnit);
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    allianceUnit.stop();
+	    result = true;
 	}
-    }
 
-    public static void attackFinished(Unit allianceUnit) {
-	forceAttackUnitIdSet.remove(Integer.valueOf(allianceUnit.getID()));
+	return result;
     }
 
     public static boolean isAttackingForcibly(Unit allianceUnit) {
@@ -96,10 +123,15 @@ public class ActionUtil {
 	return result;
     }
 
-    // 상대방 유닛을 향해 회전한다.
-    public static void turn(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
-	ActionDetail currnetCommand = getActionDetail("TURN", allianceUnit, enemyUnit);
+    public static void attackFinished(Unit allianceUnit) {
+	forceAttackUnitIdSet.remove(Integer.valueOf(allianceUnit.getID()));
+    }
 
+    // 상대방 유닛을 향해 회전한다.
+    public static boolean turn(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+	boolean result = false;
+
+	ActionDetail currnetCommand = getActionDetail("TURN", allianceUnit, enemyUnit);
 	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
 	    int deltaScale = 1;
 	    int deltaX = 0;
@@ -133,7 +165,10 @@ public class ActionUtil {
 		deltaY = -deltaScale;
 	    }
 	    allianceUnit.move(new Position(allianceUnit.getPosition().getX() + deltaX, allianceUnit.getPosition().getY() + deltaY));
+	    result = true;
 	}
+
+	return result;
     }
 
     public static void updateStatus(UnitManager allianceUnitManager, Unit allianceUnit, UnitStatus unitStatus) {

@@ -169,7 +169,7 @@ public class MagiBuildManager {
 	Unit targetBarracks = null;
 
 	int minQueueSize = Integer.MAX_VALUE;
-	Set<Integer> barracksSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Barracks);
+	Set<Integer> barracksSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Barracks);
 	// 마린 훈련이 가능한 배럭 중에서 TrainingQueue가 가장 적은 배럭을 선택
 	// TrainingQueue는 최대 2개까지만 허용
 	for (Integer barracksId : barracksSet) {
@@ -190,7 +190,7 @@ public class MagiBuildManager {
     public int getTrainingQueueUnitCount(UnitManager allianceUnitManager, UnitType unitType) {
 	int result = 0;
 
-	Set<Integer> barracksSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Barracks);
+	Set<Integer> barracksSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Barracks);
 	for (Integer barracksId : barracksSet) {
 	    Unit barracks = allianceUnitManager.getUnit(barracksId);
 	    List<UnitType> trainingQueue = barracks.getTrainingQueue();

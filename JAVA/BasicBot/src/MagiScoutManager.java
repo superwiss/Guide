@@ -26,12 +26,12 @@ public class MagiScoutManager {
 
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
 	UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
-	Set<Integer> scoutUnits = allianceUnitManager.getUnitsByUnitKind(UnitKind.Scouting_Unit);
+	Set<Integer> scoutUnits = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Scouting_Unit);
 	// 적 건물을 발견했으면 일꾼을 릴리즈 한다.
-	if (true == scouting && 0 < enemyUnitManager.getUnitsByUnitKind(UnitKind.MAIN_BUILDING).size()) {
+	if (true == scouting && 0 < enemyUnitManager.getUnitsIdByUnitKind(UnitKind.MAIN_BUILDING).size()) {
 	    for (Integer scoutUnitId : scoutUnits) {
 		Unit scoutUnit = allianceUnitManager.getUnit(scoutUnitId);
-		if (null != scoutUnitId && scoutUnit.exists()) {
+		if (null != scoutUnit && scoutUnit.exists()) {
 		    allianceUnitManager.releaseScoutUnit(scoutUnit);
 		    scoutUnit.stop();
 		}

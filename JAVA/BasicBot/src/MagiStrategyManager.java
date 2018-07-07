@@ -23,7 +23,7 @@ public class MagiStrategyManager {
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
     private MagiScoutManager scoutManager = MagiScoutManager.Instance();
     private LocationManager locationManager = LocationManager.Instance();
-    private boolean allAttackMode = false;
+    private MicroControlManager microControlManager = MicroControlManager.Instance();
     // 벙커는 SCV 4마리만 수리한다.
     private static int repairCount = 4;
 
@@ -41,7 +41,7 @@ public class MagiStrategyManager {
 
     public void onFrame(GameData gameData) {
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
-	Set<Integer> bunkerSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Bunker);
+	Set<Integer> bunkerSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Bunker);
 	for (Integer bunkerId : bunkerSet) {
 	    Unit bunker = allianceUnitManager.getUnit(bunkerId);
 	    if (strategyItems.contains(StrategyItem.MARINE_INTO_BUNKER)) {
@@ -67,7 +67,7 @@ public class MagiStrategyManager {
 		    Log.debug("wiss: 서플라이 건설");
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 		} else if (gameData.getMineral() > 200 && null != allianceUnitManager.getFirstUnitIdByUnitKind(UnitKind.Terran_Academy)
-			&& 5 > allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
+			&& 5 > allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
 		    // 아카데미가 존재하고, 배럭이 5개 미만이고, BuildOrder Queue가 비어있으면 세 번째 배럭을 짓는다.
 		    Log.debug("wiss: 배럭 건설");
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
@@ -75,8 +75,8 @@ public class MagiStrategyManager {
 		    Log.debug("wiss: 마린/매딕 훈련");
 		    Unit barracks = buildManager.getTrainableBarracks(allianceUnitManager);
 		    if (null != barracks) {
-			Set<Integer> medicIds = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Medic);
-			Set<Integer> marineIds = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Marine);
+			Set<Integer> medicIds = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Medic);
+			Set<Integer> marineIds = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Marine);
 			int medicCount = medicIds.size() + buildManager.getTrainingQueueUnitCount(allianceUnitManager, UnitType.Terran_Medic);
 			int marineCount = marineIds.size() + buildManager.getTrainingQueueUnitCount(allianceUnitManager, UnitType.Terran_Marine);
 			// 마린4마리당 매딕 1마리
@@ -99,18 +99,18 @@ public class MagiStrategyManager {
 	}
 
 	// 모든 공격 가능한 유닛셋을 가져온다.
-	Set<Integer> attackableUnits = allianceUnitManager.getUnitsByUnitKind(UnitKind.Combat_Unit);
+	Set<Integer> attackableUnits = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 20마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
-	if (false == allAttackMode && attackableUnits.size() > 60 && null != scoutManager.getEnemyBaseLocation()) {
+	if (false == microControlManager.hasAttackTilePosition() && attackableUnits.size() > 60 && null != scoutManager.getEnemyBaseLocation()) {
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnits.size());
-	    allAttackMode = true;
+	    microControlManager.setAttackTilePosition(scoutManager.getEnemyBaseLocation());
 	}
 
-	if (true == allAttackMode) {
+	if (true == microControlManager.hasAttackTilePosition()) {
 	    for (Integer unitId : attackableUnits) {
 		Unit unit = allianceUnitManager.getUnit(unitId);
 		if (unit.isIdle()) {
-		    ActionUtil.attackEnemyUnit(allianceUnitManager, unit, scoutManager.getEnemyBaseLocation().toPosition());
+		    ActionUtil.attackPosition(allianceUnitManager, unit, scoutManager.getEnemyBaseLocation().toPosition());
 		}
 	    }
 	}
@@ -118,7 +118,7 @@ public class MagiStrategyManager {
 
     // 벙거를 수리한다.
     private void repairBunker(UnitManager allianceUnitManager, Unit bunker) {
-	Set<Integer> workerSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Worker);
+	Set<Integer> workerSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Worker);
 	int minDistance = Integer.MAX_VALUE;
 	Unit targetWorker = null;
 	for (Integer workerId : workerSet) {
@@ -143,7 +143,7 @@ public class MagiStrategyManager {
 
     // 마린을 벙커에 넣는다.
     private void marineToBunker(UnitManager allianceUnitManager, Unit bunker) {
-	Set<Integer> marineSet = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Marine);
+	Set<Integer> marineSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Marine);
 	int minDistance = Integer.MAX_VALUE;
 	Unit targetMarine = null;
 	for (Integer marineId : marineSet) {
