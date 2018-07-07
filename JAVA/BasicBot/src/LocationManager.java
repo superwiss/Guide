@@ -37,32 +37,56 @@ public class LocationManager {
 
 	switch (clockLocation) {
 	case ONE:
-	    result.add(new TilePosition(113, 6));
-	    result.add(new TilePosition(113, 9));
-	    result.add(new TilePosition(113, 12));
-	    result.add(new TilePosition(113, 15));
-	    result.add(new TilePosition(113, 3));
+	    result.add(new TilePosition(108, 14));
+	    result.add(new TilePosition(108, 18));
+	    result.add(new TilePosition(114, 18));
+	    result.add(new TilePosition(120, 18));
+	    result.add(new TilePosition(120, 14));
+	    result.add(new TilePosition(108, 22));
+	    result.add(new TilePosition(114, 22));
+	    result.add(new TilePosition(120, 22));
+	    result.add(new TilePosition(114, 26));
+	    result.add(new TilePosition(120, 26));
+	    result.add(new TilePosition(120, 30));
 	    break;
 	case FIVE:
-	    result.add(new TilePosition(110, 117));
-	    result.add(new TilePosition(110, 120));
-	    result.add(new TilePosition(106, 117));
-	    result.add(new TilePosition(106, 120));
-	    result.add(new TilePosition(102, 117));
+	    result.add(new TilePosition(108, 106));
+	    result.add(new TilePosition(102, 106));
+	    result.add(new TilePosition(107, 110));
+	    result.add(new TilePosition(100, 110));
+	    result.add(new TilePosition(107, 114));
+	    result.add(new TilePosition(100, 114));
+	    result.add(new TilePosition(107, 118));
+	    result.add(new TilePosition(100, 118));
+	    result.add(new TilePosition(94, 118));
+	    result.add(new TilePosition(107, 122));
+	    result.add(new TilePosition(100, 122));
 	    break;
 	case SEVEN:
-	    result.add(new TilePosition(11, 119));
-	    result.add(new TilePosition(11, 116));
-	    result.add(new TilePosition(11, 113));
-	    result.add(new TilePosition(11, 110));
-	    result.add(new TilePosition(11, 107));
+	    result.add(new TilePosition(19, 108));
+	    result.add(new TilePosition(12, 108));
+	    result.add(new TilePosition(6, 108));
+	    result.add(new TilePosition(18, 104));
+	    result.add(new TilePosition(11, 104));
+	    result.add(new TilePosition(5, 104));
+	    result.add(new TilePosition(14, 100));
+	    result.add(new TilePosition(7, 100));
+	    result.add(new TilePosition(1, 100));
+	    result.add(new TilePosition(14, 96));
+	    result.add(new TilePosition(7, 96));
 	    break;
 	case ELEVEN:
-	    result.add(new TilePosition(11, 9));
-	    result.add(new TilePosition(11, 6));
-	    result.add(new TilePosition(15, 9));
-	    result.add(new TilePosition(15, 6));
-	    result.add(new TilePosition(19, 9));
+	    result.add(new TilePosition(16, 19));
+	    result.add(new TilePosition(16, 15));
+	    result.add(new TilePosition(22, 15));
+	    result.add(new TilePosition(16, 11));
+	    result.add(new TilePosition(22, 11));
+	    result.add(new TilePosition(16, 7));
+	    result.add(new TilePosition(22, 7));
+	    result.add(new TilePosition(28, 7));
+	    result.add(new TilePosition(16, 3));
+	    result.add(new TilePosition(22, 3));
+	    result.add(new TilePosition(28, 3));
 	    break;
 	default:
 	    break;
@@ -77,16 +101,16 @@ public class LocationManager {
 
 	switch (clockLocation) {
 	case ONE:
-	    result.add(new TilePosition(117, 10));
+	    result.add(new TilePosition(105, 15));
 	    break;
 	case FIVE:
-	    result.add(new TilePosition(114, 117));
+	    result.add(new TilePosition(112, 107));
 	    break;
 	case SEVEN:
-	    result.add(new TilePosition(8, 120));
+	    result.add(new TilePosition(18, 111));
 	    break;
 	case ELEVEN:
-	    result.add(new TilePosition(8, 10));
+	    result.add(new TilePosition(13, 19));
 	    break;
 	default:
 	    break;
@@ -101,123 +125,124 @@ public class LocationManager {
 
 	switch (clockLocation) {
 	case ONE:
-	    result.add(new TilePosition(117, 12));
-	    result.add(new TilePosition(120, 12));
-	    result.add(new TilePosition(117, 14));
-	    result.add(new TilePosition(120, 14));
-	    result.add(new TilePosition(123, 14));
-	    result.add(new TilePosition(117, 16));
-	    result.add(new TilePosition(120, 16));
-	    result.add(new TilePosition(123, 16));
-	    result.add(new TilePosition(117, 18));
-	    result.add(new TilePosition(120, 18));
-	    result.add(new TilePosition(123, 18));
-	    result.add(new TilePosition(117, 20));
-	    result.add(new TilePosition(120, 20));
-	    result.add(new TilePosition(123, 20));
-	    result.add(new TilePosition(124, 0));
-	    result.add(new TilePosition(121, 0));
-	    result.add(new TilePosition(118, 0));
-	    result.add(new TilePosition(115, 0));
-	    result.add(new TilePosition(112, 0));
-	    result.add(new TilePosition(109, 0));
-	    result.add(new TilePosition(115, 2));
-	    result.add(new TilePosition(112, 2));
-	    result.add(new TilePosition(109, 2));
-	    result.add(new TilePosition(124, 2));
-	    result.add(new TilePosition(121, 2));
-	    result.add(new TilePosition(115, 4));
-	    result.add(new TilePosition(112, 4));
-	    result.add(new TilePosition(109, 4));
+	    result.add(new TilePosition(110, 12));
+	    result.add(new TilePosition(102, 16));
+	    result.add(new TilePosition(117, 13));
+	    result.add(new TilePosition(117, 15));
+	    result.add(new TilePosition(112, 10));
+	    result.add(new TilePosition(110, 5));
+	    result.add(new TilePosition(113, 5));
+	    result.add(new TilePosition(113, 7));
+	    result.add(new TilePosition(125, 2));
+	    result.add(new TilePosition(125, 0));
+	    result.add(new TilePosition(122, 2));
+	    result.add(new TilePosition(122, 0));
+	    result.add(new TilePosition(119, 0));
+	    result.add(new TilePosition(116, 0));
+	    result.add(new TilePosition(113, 0));
+	    result.add(new TilePosition(114, 2));
+	    result.add(new TilePosition(110, 0));
+	    result.add(new TilePosition(111, 2));
+	    result.add(new TilePosition(107, 0));
+	    result.add(new TilePosition(108, 2));
+	    result.add(new TilePosition(106, 26));
+	    result.add(new TilePosition(108, 29));
+	    result.add(new TilePosition(111, 30));
+	    result.add(new TilePosition(114, 32));
+	    result.add(new TilePosition(117, 33));
+	    result.add(new TilePosition(120, 34));
+	    result.add(new TilePosition(123, 34));
 
 	    break;
 	case FIVE:
-	    result.add(new TilePosition(114, 115));
-	    result.add(new TilePosition(111, 115));
-	    result.add(new TilePosition(114, 113));
-	    result.add(new TilePosition(111, 113));
-	    result.add(new TilePosition(114, 111));
-	    result.add(new TilePosition(111, 111));
-	    result.add(new TilePosition(124, 124));
-	    result.add(new TilePosition(121, 124));
-	    result.add(new TilePosition(118, 124));
-	    result.add(new TilePosition(115, 124));
-	    result.add(new TilePosition(112, 124));
-	    result.add(new TilePosition(109, 124));
-	    result.add(new TilePosition(106, 124));
-	    result.add(new TilePosition(103, 124));
-	    result.add(new TilePosition(100, 124));
-	    result.add(new TilePosition(97, 124));
-	    result.add(new TilePosition(124, 122));
-	    result.add(new TilePosition(121, 122));
-	    result.add(new TilePosition(118, 122));
-	    result.add(new TilePosition(115, 122));
-	    result.add(new TilePosition(112, 122));
-	    result.add(new TilePosition(109, 122));
-	    result.add(new TilePosition(106, 122));
-	    result.add(new TilePosition(103, 122));
-	    result.add(new TilePosition(100, 122));
-	    result.add(new TilePosition(97, 122));
+	    result.add(new TilePosition(115, 108));
+	    result.add(new TilePosition(107, 104));
+	    result.add(new TilePosition(114, 116));
+	    result.add(new TilePosition(114, 118));
+	    result.add(new TilePosition(113, 121));
+	    result.add(new TilePosition(116, 121));
+	    result.add(new TilePosition(119, 109));
+	    result.add(new TilePosition(122, 109));
+	    result.add(new TilePosition(125, 109));
+	    result.add(new TilePosition(116, 110));
+	    result.add(new TilePosition(122, 111));
+	    result.add(new TilePosition(125, 111));
+	    result.add(new TilePosition(114, 112));
+	    result.add(new TilePosition(113, 121));
+	    result.add(new TilePosition(116, 121));
+	    result.add(new TilePosition(113, 123));
+	    result.add(new TilePosition(116, 123));
+	    result.add(new TilePosition(119, 123));
+	    result.add(new TilePosition(110, 125));
+	    result.add(new TilePosition(113, 125));
+	    result.add(new TilePosition(116, 125));
+	    result.add(new TilePosition(119, 125));
+	    result.add(new TilePosition(92, 123));
+	    result.add(new TilePosition(95, 123));
+	    result.add(new TilePosition(94, 125));
+	    result.add(new TilePosition(97, 125));
+	    result.add(new TilePosition(110, 125));
+	    result.add(new TilePosition(122, 124));
+	    result.add(new TilePosition(125, 123));
 	    break;
 	case SEVEN:
-	    result.add(new TilePosition(7, 122));
-	    result.add(new TilePosition(10, 122));
-	    result.add(new TilePosition(1, 114));
-	    result.add(new TilePosition(4, 114));
-	    result.add(new TilePosition(1, 112));
-	    result.add(new TilePosition(4, 112));
-	    result.add(new TilePosition(1, 110));
-	    result.add(new TilePosition(4, 110));
-	    result.add(new TilePosition(1, 108));
-	    result.add(new TilePosition(4, 108));
-	    result.add(new TilePosition(1, 106));
-	    result.add(new TilePosition(4, 106));
-	    result.add(new TilePosition(1, 104));
-	    result.add(new TilePosition(4, 104));
-	    result.add(new TilePosition(1, 102));
-	    result.add(new TilePosition(4, 102));
-	    result.add(new TilePosition(1, 100));
-	    result.add(new TilePosition(4, 100));
-	    result.add(new TilePosition(7, 100));
-	    result.add(new TilePosition(10, 100));
-	    result.add(new TilePosition(1, 98));
-	    result.add(new TilePosition(4, 98));
-	    result.add(new TilePosition(7, 98));
-	    result.add(new TilePosition(10, 98));
-	    result.add(new TilePosition(1, 96));
-	    result.add(new TilePosition(4, 96));
-	    result.add(new TilePosition(7, 96));
-	    result.add(new TilePosition(10, 96));
-
+	    result.add(new TilePosition(17, 113));
+	    result.add(new TilePosition(23, 110));
+	    result.add(new TilePosition(15, 115));
+	    result.add(new TilePosition(15, 117));
+	    result.add(new TilePosition(2, 124));
+	    result.add(new TilePosition(5, 125));
+	    result.add(new TilePosition(8, 125));
+	    result.add(new TilePosition(11, 125));
+	    result.add(new TilePosition(14, 125));
+	    result.add(new TilePosition(17, 125));
+	    result.add(new TilePosition(10, 123));
+	    result.add(new TilePosition(13, 123));
+	    result.add(new TilePosition(16, 123));
+	    result.add(new TilePosition(13, 121));
+	    result.add(new TilePosition(16, 121));
+	    result.add(new TilePosition(0, 113));
+	    result.add(new TilePosition(0, 111));
+	    result.add(new TilePosition(0, 109));
+	    result.add(new TilePosition(0, 107));
+	    result.add(new TilePosition(0, 105));
+	    result.add(new TilePosition(0, 97));
+	    result.add(new TilePosition(0, 95));
+	    result.add(new TilePosition(0, 93));
+	    result.add(new TilePosition(0, 91));
+	    result.add(new TilePosition(3, 92));
+	    result.add(new TilePosition(6, 92));
+	    result.add(new TilePosition(9, 93));
+	    result.add(new TilePosition(3, 94));
 	    break;
 	case ELEVEN:
-	    result.add(new TilePosition(5, 14));
-	    result.add(new TilePosition(5, 12));
-	    result.add(new TilePosition(8, 14));
-	    result.add(new TilePosition(8, 12));
-	    result.add(new TilePosition(1, 3));
-	    result.add(new TilePosition(4, 3));
-	    result.add(new TilePosition(1, 0));
-	    result.add(new TilePosition(4, 0));
-	    result.add(new TilePosition(7, 0));
-	    result.add(new TilePosition(10, 0));
-	    result.add(new TilePosition(13, 0));
-	    result.add(new TilePosition(16, 0));
-	    result.add(new TilePosition(19, 0));
-	    result.add(new TilePosition(22, 0));
-	    result.add(new TilePosition(25, 0));
+	    result.add(new TilePosition(10, 18));
+	    result.add(new TilePosition(18, 22));
+	    result.add(new TilePosition(10, 10));
+	    result.add(new TilePosition(0, 17));
+	    result.add(new TilePosition(0, 15));
+	    result.add(new TilePosition(3, 17));
+	    result.add(new TilePosition(3, 15));
+	    result.add(new TilePosition(6, 17));
+	    result.add(new TilePosition(6, 15));
+	    result.add(new TilePosition(6, 13));
+	    result.add(new TilePosition(9, 16));
+	    result.add(new TilePosition(9, 14));
+	    result.add(new TilePosition(0, 0));
+	    result.add(new TilePosition(0, 2));
+	    result.add(new TilePosition(3, 0));
+	    result.add(new TilePosition(3, 2));
+	    result.add(new TilePosition(6, 0));
+	    result.add(new TilePosition(9, 0));
+	    result.add(new TilePosition(12, 0));
+	    result.add(new TilePosition(15, 0));
+	    result.add(new TilePosition(18, 0));
+	    result.add(new TilePosition(21, 0));
+	    result.add(new TilePosition(24, 0));
+	    result.add(new TilePosition(27, 0));
+	    result.add(new TilePosition(30, 0));
 	    result.add(new TilePosition(11, 2));
-	    result.add(new TilePosition(14, 2));
-	    result.add(new TilePosition(17, 2));
-	    result.add(new TilePosition(20, 2));
-	    result.add(new TilePosition(23, 2));
-	    result.add(new TilePosition(26, 2));
 	    result.add(new TilePosition(11, 4));
-	    result.add(new TilePosition(14, 4));
-	    result.add(new TilePosition(17, 4));
-	    result.add(new TilePosition(20, 4));
-	    result.add(new TilePosition(23, 4));
-	    result.add(new TilePosition(26, 4));
 	    break;
 	default:
 	    break;
@@ -249,21 +274,71 @@ public class LocationManager {
 	return result;
     }
 
+    public List<TilePosition> getTurret() {
+	List<TilePosition> result = new ArrayList<>();
+
+	switch (clockLocation) {
+	case ONE:
+	    result.add(new TilePosition(105, 17));
+	    result.add(new TilePosition(119, 10));
+	    break;
+	case FIVE:
+	    result.add(new TilePosition(113, 109));
+	    result.add(new TilePosition(119, 120));
+	    break;
+	case SEVEN:
+	    result.add(new TilePosition(23, 108));
+	    result.add(new TilePosition(7, 120));
+	    break;
+	case ELEVEN:
+	    result.add(new TilePosition(20, 20));
+	    result.add(new TilePosition(8, 10));
+	    break;
+	default:
+	    break;
+	}
+
+	return result;
+    }
+
     public TilePosition getChokePoint1() {
 	TilePosition result = null;
 
 	switch (clockLocation) {
 	case ONE:
-	    result = new TilePosition(106, 13);
+	    result = new TilePosition(107, 14);
 	    break;
 	case FIVE:
-	    result = new TilePosition(113, 105);
+	    result = new TilePosition(112, 106);
 	    break;
 	case SEVEN:
 	    result = new TilePosition(22, 112);
 	    break;
 	case ELEVEN:
-	    result = new TilePosition(15, 20);
+	    result = new TilePosition(15, 21);
+	    break;
+	default:
+	    break;
+	}
+
+	return result;
+    }
+
+    public TilePosition getChokePoint2() {
+	TilePosition result = null;
+
+	switch (clockLocation) {
+	case ONE:
+	    result = new TilePosition(93, 18);
+	    break;
+	case FIVE:
+	    result = new TilePosition(110, 97);
+	    break;
+	case SEVEN:
+	    result = new TilePosition(33, 112);
+	    break;
+	case ELEVEN:
+	    result = new TilePosition(34, 26);
 	    break;
 	default:
 	    break;

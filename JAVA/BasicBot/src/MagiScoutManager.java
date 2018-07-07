@@ -35,7 +35,7 @@ public class MagiScoutManager {
 		    allianceUnitManager.releaseScoutUnit(scoutUnit);
 		    scoutUnit.stop();
 		}
-		enemyBaseLocation = enemyUnitManager.getUnit(enemyUnitManager.getFirstUnitByUnitKind(UnitKind.MAIN_BUILDING)).getTilePosition();
+		enemyBaseLocation = enemyUnitManager.getUnit(enemyUnitManager.getFirstUnitIdByUnitKind(UnitKind.MAIN_BUILDING)).getTilePosition();
 	    }
 	    Log.info("정찰을 완료했다.");
 	    scouting = false;

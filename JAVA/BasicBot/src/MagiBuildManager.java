@@ -63,77 +63,84 @@ public class MagiBuildManager {
 	return queue.size();
     }
 
-    private void process(MagiBuildOrderItem buildItem, GameData gameData) {
+    private void process(MagiBuildOrderItem buildOrderItem, GameData gameData) {
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
-	MagiBuildOrderItem.Order type = buildItem.getOrder();
+	MagiBuildOrderItem.Order type = buildOrderItem.getOrder();
 	switch (type) {
 	case INITIAL_BUILDORDER_FINISH:
 	    initialBuildFinished = true;
 	    Log.info("Initial build order has finished.");
 	    queue.poll();
 	    break;
-	case SCOUT:
-	    Unit workerForScout = allianceUnitManager.getBuildableWorker();
-	    allianceUnitManager.setScoutUnit(workerForScout);
-	    Log.info("Scout start: ");
-	    queue.poll();
+	case SCOUTING:
+	    // TODO first chock point에서 제일 가까운 유닛으로 변경하기
+	    Unit workerForScout = allianceUnitManager.getBuildableWorker(allianceUnitManager.getFirstUnitTilePositionByUnitKind(UnitKind.Terran_Command_Center));
+	    if (null != workerForScout) {
+		allianceUnitManager.setScoutUnit(workerForScout);
+		Log.info("정찰 시작. 정찰 유닛 ID: %d", workerForScout.getID());
+		queue.poll();
+	    } else {
+		Log.warn("정찰할 유닛이 없습니다.");
+	    }
 	    break;
 	case TRAINING_WORKER:
-	    trainingWorker(gameData, buildItem);
+	    trainingWorker(gameData, buildOrderItem);
 	    break;
 	case TRAINING_MARINE:
-	    trainingMarine(gameData, buildItem);
+	    trainingMarine(gameData, buildOrderItem);
 	    break;
 	case GATHER_GAS:
-	    Unit workerForGatherGas = allianceUnitManager.getBuildableWorker();
-	    if (null != workerForGatherGas) {
-		Integer refineryId = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
-		if (null != refineryId) {
-		    if (workerForGatherGas.canGather(allianceUnitManager.getUnit(refineryId))) {
-			workerForGatherGas.gather(allianceUnitManager.getUnit(refineryId));
-			Log.info("일꾼 가스 투입: %d -> %d", workerForGatherGas.getID(), refineryId);
-			allianceUnitManager.setUnitAssignment(workerForGatherGas, UnitManager.Assignment.GATHER_GAS);
+	    Unit refinary = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
+	    if (null != refinary) {
+		Unit workerForGatherGas = allianceUnitManager.getBuildableWorker(refinary.getTilePosition());
+		if (null != workerForGatherGas) {
+		    if (workerForGatherGas.canGather(refinary)) {
+			workerForGatherGas.gather(refinary);
+			Log.info("일꾼 가스 투입: %d -> %d", workerForGatherGas.getID(), refinary.getID());
+			allianceUnitManager.addUnitKind(UnitKind.Worker_Gather_Gas, workerForGatherGas);
 			queue.poll();
 		    } else {
-			Log.info("일꾼 가스 투입 실패: %d -> %d", workerForGatherGas.getID(), refineryId);
+			Log.warn("일꾼 가스 투입 실패: %d -> %d", workerForGatherGas.getID(), refinary.getID());
 		    }
+		} else {
+		    Log.warn("가스를 캘 일꾼이 없음.");
 		}
 	    }
 	    break;
 	case BUILD:
-	    if (false == buildItem.isInProgress()) {
-		Unit worker = allianceUnitManager.getBuildableWorker();
-		if (null != worker) {
-		    Log.info("Build worker id: %d", worker.getID());
-		    UnitType targetType = buildItem.getTargetUnitType();
-		    List<TilePosition> tilePositionList = null;
-		    if (UnitType.Terran_Barracks.equals(targetType)) {
-			tilePositionList = LocationManager.Instance().getBarracks();
-		    } else if (UnitType.Terran_Refinery.equals(targetType)) {
-			tilePositionList = LocationManager.Instance().getRefinery();
-		    } else if (UnitType.Terran_Supply_Depot.equals(targetType)) {
-			tilePositionList = LocationManager.Instance().getSupplyDepot();
-		    } else if (UnitType.Terran_Academy.equals(targetType)) {
-			tilePositionList = LocationManager.Instance().getSupplyDepot();
-		    } else if (UnitType.Terran_Bunker.equals(targetType)) {
-			tilePositionList = LocationManager.Instance().getBunker();
-		    }
-		    if (null != tilePositionList) {
-			for (TilePosition tilePosition : tilePositionList) {
-			    boolean canBuild = worker.canBuild(targetType, tilePosition);
+	    if (false == buildOrderItem.isInProgress()) {
+		List<TilePosition> tilePositionList = null; // 건물을 지을 위치
+		UnitType buildingType = buildOrderItem.getTargetUnitType(); // 건설할 건물의 종류.
+		if (UnitType.Terran_Barracks.equals(buildingType)) {
+		    tilePositionList = LocationManager.Instance().getBarracks();
+		} else if (UnitType.Terran_Refinery.equals(buildingType)) {
+		    tilePositionList = LocationManager.Instance().getRefinery();
+		} else if (UnitType.Terran_Supply_Depot.equals(buildingType)) {
+		    tilePositionList = LocationManager.Instance().getSupplyDepot();
+		} else if (UnitType.Terran_Academy.equals(buildingType)) {
+		    tilePositionList = LocationManager.Instance().getSupplyDepot();
+		} else if (UnitType.Terran_Bunker.equals(buildingType)) {
+		    tilePositionList = LocationManager.Instance().getBunker();
+		}
+
+		if (null != tilePositionList) {
+		    for (TilePosition tilePosition : tilePositionList) {
+			Unit worker = allianceUnitManager.getBuildableWorker(tilePosition);
+			if (null != worker) {
+			    boolean canBuild = worker.canBuild(buildingType, tilePosition);
 			    if (true == canBuild) {
-				worker.build(targetType, tilePosition);
-				buildItem.setInProgress(true);
-				MagiWorkerManager.Instance().assignBuildWorker(worker, buildItem);
+				worker.build(buildingType, tilePosition);
+				buildOrderItem.setInProgress(true);
+				MagiWorkerManager.Instance().assignBuildWorker(worker, buildOrderItem);
 				break;
 			    }
+			} else {
+			    Log.warn("건물을 건설할 일꾼이 없습니다. BuildOrderItem: %s", buildOrderItem);
 			}
 		    }
 		} else {
-		    buildItem.setInProgress(false);
+		    Log.error("더 이상 건물을 지을 공간이 없습니다. BuildOrderItem: ", buildOrderItem);
 		}
-	    } else {
-		Log.warn("Valid worker does not exist");
 	    }
 	    break;
 	default:
@@ -141,15 +148,11 @@ public class MagiBuildManager {
 	}
     }
 
-    // 일꾼을 가장 먼저 만들어진 커맨드 센터에서 훈련한다.
+    // 일꾼을 랜덤한 커맨드 센터에서 훈련한다.
     private void trainingWorker(GameData gameData, MagiBuildOrderItem buildItem) {
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
-	Set<Integer> commandCenters = allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Command_Center);
-	if (commandCenters.size() == 0) {
-	    Log.warn("trainingWorker() failed. Command Center does not exist.");
-	} else {
-	    int firstCommandCenterId = commandCenters.iterator().next();
-	    Unit firstCommandCenter = allianceUnitManager.getUnit(firstCommandCenterId);
+	Unit firstCommandCenter = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Command_Center);
+	if (null != firstCommandCenter) {
 	    int oldQueueSize = firstCommandCenter.getTrainingQueue().size();
 	    firstCommandCenter.build(UnitType.Terran_SCV);
 	    int newQueueSie = firstCommandCenter.getTrainingQueue().size();
@@ -157,6 +160,8 @@ public class MagiBuildManager {
 		queue.poll();
 		Log.debug("BuildOrder Finish: %s", buildItem.toString());
 	    }
+	} else {
+	    Log.warn("trainingWorker() failed. Command Center does not exist.");
 	}
     }
 

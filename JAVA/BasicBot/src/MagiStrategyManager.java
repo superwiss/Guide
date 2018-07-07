@@ -66,7 +66,7 @@ public class MagiStrategyManager {
 		if (false == buildManager.isBuildingSupply() && gameData.getSupplyRemain() <= 4 * 2) {
 		    Log.debug("wiss: 서플라이 건설");
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-		} else if (gameData.getMineral() > 200 && null != allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Academy)
+		} else if (gameData.getMineral() > 200 && null != allianceUnitManager.getFirstUnitIdByUnitKind(UnitKind.Terran_Academy)
 			&& 5 > allianceUnitManager.getUnitsByUnitKind(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
 		    // 아카데미가 존재하고, 배럭이 5개 미만이고, BuildOrder Queue가 비어있으면 세 번째 배럭을 짓는다.
 		    Log.debug("wiss: 배럭 건설");
@@ -90,7 +90,7 @@ public class MagiStrategyManager {
 		}
 	    }
 	}
-	Integer academyId = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Academy);
+	Integer academyId = allianceUnitManager.getFirstUnitIdByUnitKind(UnitKind.Terran_Academy);
 	if (null != academyId) {
 	    Unit academy = allianceUnitManager.getUnit(academyId);
 	    if (academy.canUpgrade(UpgradeType.U_238_Shells)) {
@@ -123,7 +123,7 @@ public class MagiStrategyManager {
 	Unit targetWorker = null;
 	for (Integer workerId : workerSet) {
 	    Unit worker = allianceUnitManager.getUnit(workerId);
-	    if (!allianceUnitManager.isinterruptableWorker(worker)) {
+	    if (!allianceUnitManager.isinterruptableWorker(workerId)) {
 		// 동원 가능한 일꾼이 아니면 Skip한다.
 		continue;
 	    }
@@ -183,7 +183,7 @@ public class MagiStrategyManager {
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.SCOUT));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.SCOUTING));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Bunker));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));

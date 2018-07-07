@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import bwapi.Game;
+import bwapi.Position;
+import bwapi.TilePosition;
 import bwapi.Unit;
 
 public class UnitManager {
@@ -24,7 +26,7 @@ public class UnitManager {
     private Map<Integer, Unit> idUnitMap = new HashMap<>();
 
     // 유닛의 종류
-    private Map<UnitKind, Set<Integer>> unitFilterMap = new HashMap<>();
+    private Map<UnitKind, Set<Integer>> unitKindMap = new HashMap<>();
 
     // 유닛의 마지막 명령
     private Map<Integer, ActionDetail> lastActionMap = new HashMap<>();
@@ -38,14 +40,12 @@ public class UnitManager {
     // Key: 미네랄, Value: 미네랄에 일꾼이 할당되었는지 여부
     private Map<Integer, Boolean> assignedMineralMap = new HashMap<>();
 
-    private Map<Integer, Assignment> unitAssignmentMap = new HashMap<>();
-
     // 생성자
     public UnitManager() {
 	// unitFilter를 초기화 한다.
-	for (UnitKind unitFilter : UnitKind.values()) {
+	for (UnitKind unitKind : UnitKind.values()) {
 	    Set<Integer> set = new HashSet<>();
-	    unitFilterMap.put(unitFilter, set);
+	    unitKindMap.put(unitKind, set);
 	}
     }
 
@@ -59,20 +59,63 @@ public class UnitManager {
 	addOrRemove(unit, false);
     }
 
+    // UnitKind에 unit을 추가한다.
+    public void addUnitKind(UnitKind unitKind, Unit unit) {
+	if (null != unitKind && null != unit) {
+	    unitKindMap.get(unitKind).add(unit.getID());
+	} else {
+	    Log.warn("putUnitKind(): invalid paramter. unitKind: %s, unit: %s", unitKind, unit);
+	}
+    }
+
+    // UnitKind에 unit을 추가한다.
+    public void removeUnitKind(UnitKind unitKind, Unit unit) {
+	if (null != unitKind && null != unit) {
+	    unitKindMap.get(unitKind).remove(Integer.valueOf(unit.getID()));
+	} else {
+	    Log.warn("removeUnitKind(): invalid paramter. unitKind: %s, unit: %s", unitKind, unit);
+	}
+    }
+
     // Unit ID에 해당하는 유닛 객체를 리턴한다.
     public Unit getUnit(int id) {
 	return idUnitMap.get(id);
     }
 
     public Set<Integer> getUnitsByUnitKind(UnitKind unitKind) {
-	return unitFilterMap.get(unitKind);
+	return unitKindMap.get(unitKind);
     }
 
-    public Integer getFirstUnitByUnitKind(UnitKind unitKind) {
+    // unitKind 유닛 중에서 아무거나 하나 가져온 뒤, 그 유닛의 ID를 리턴한다.
+    public Integer getFirstUnitIdByUnitKind(UnitKind unitKind) {
 	Integer result = null;
 
-	if (0 != unitFilterMap.get(unitKind).size()) {
-	    result = unitFilterMap.get(unitKind).iterator().next();
+	if (0 != unitKindMap.get(unitKind).size()) {
+	    result = unitKindMap.get(unitKind).iterator().next();
+	}
+
+	return result;
+    }
+
+    // unitKind 유닛 중에서 아무거나 하나 가져온 뒤, 그 유닛을 리턴한다.
+    public Unit getFirstUnitByUnitKind(UnitKind unitKind) {
+	Unit result = null;
+
+	Integer unitId = getFirstUnitIdByUnitKind(unitKind);
+	if (null != unitId) {
+	    result = getUnit(unitId);
+	}
+
+	return result;
+    }
+
+    // unitKind 유닛 중에서 아무거나 하나 가져온 뒤, 그 유닛의 tilePosition을 리턴한다.
+    public TilePosition getFirstUnitTilePositionByUnitKind(UnitKind unitKind) {
+	TilePosition result = null;
+
+	Unit unit = getFirstUnitByUnitKind(unitKind);
+	if (null != unit) {
+	    result = unit.getTilePosition();
 	}
 
 	return result;
@@ -82,7 +125,7 @@ public class UnitManager {
     public Unit getFirstCommandCenter() {
 	Unit result = null;
 
-	Set<Integer> commandCenters = unitFilterMap.get(UnitKind.Terran_Command_Center);
+	Set<Integer> commandCenters = unitKindMap.get(UnitKind.Terran_Command_Center);
 	if (commandCenters.size() > 0) {
 	    result = getUnit(commandCenters.iterator().next());
 	}
@@ -118,7 +161,7 @@ public class UnitManager {
 	    idUnitMap.put(id, unit);
 
 	    for (UnitKind unitKind : unitKinds) {
-		unitFilterMap.get(unitKind).add(id);
+		unitKindMap.get(unitKind).add(id);
 	    }
 
 	    // 유닛의 초기 상태는 Idle이다.
@@ -129,7 +172,7 @@ public class UnitManager {
 	    idUnitMap.remove(id);
 
 	    for (UnitKind unitKind : unitKinds) {
-		unitFilterMap.get(unitKind).remove(id);
+		unitKindMap.get(unitKind).remove(id);
 	    }
 
 	    lastActionMap.remove(id);
@@ -141,7 +184,7 @@ public class UnitManager {
 
     // command center 주변의 미네랄 정보를 업데이트 한다.
     public void initMimeralInfo() {
-	for (Integer commandCneter : unitFilterMap.get(UnitKind.Terran_Command_Center)) {
+	for (Integer commandCneter : unitKindMap.get(UnitKind.Terran_Command_Center)) {
 	    insertMineralMap(commandCneter);
 	}
     }
@@ -178,7 +221,7 @@ public class UnitManager {
 	Unit result = null;
 
 	int minDistance = Integer.MAX_VALUE;
-	for (Integer commandCenter : unitFilterMap.get(UnitKind.Terran_Command_Center)) {
+	for (Integer commandCenter : unitKindMap.get(UnitKind.Terran_Command_Center)) {
 	    int distance = worker.getDistance(getUnit(commandCenter));
 	    if (distance < minDistance) {
 		minDistance = distance;
@@ -222,28 +265,39 @@ public class UnitManager {
 	}
     }
 
-    public Unit getBuildableWorker() {
+    // tilePosition에서 가장 가까운 건설 가능한 일꾼을 리턴한다.
+    public Unit getBuildableWorker(TilePosition tilePosition) {
 	Unit result = null;
-	for (Integer workerId : unitFilterMap.get(UnitKind.Worker)) {
-	    Unit worker = getUnit(workerId);
-	    if (isinterruptableWorker(worker)) {
-		result = worker;
-		break;
+
+	if (null != tilePosition) {
+	    Set<Integer> candidate = new HashSet<>();
+	    for (Integer workerId : unitKindMap.get(UnitKind.Terran_SCV)) {
+		if (isinterruptableWorker(workerId)) {
+		    candidate.add(workerId);
+		}
 	    }
+
+	    result = getClosestUnit(candidate, tilePosition.toPosition());
 	}
 
 	return result;
     }
 
-    public boolean isinterruptableWorker(Unit worker) {
+    public boolean isinterruptableWorker(Integer workerId) {
 	boolean result = false;
-	Assignment assignment = unitAssignmentMap.get(Integer.valueOf(worker.getID()));
-	if (null != assignment && assignment.equals(Assignment.GATHER_GAS)) {
-	    // 가스 캐는 일꾼은 건드리지 말자.
-	    result = false;
-	} else {
-	    result = worker.isCompleted() && !worker.isConstructing() && !worker.isBeingConstructed() && (worker.isIdle() || worker.isGatheringMinerals());
+
+	if (null != workerId) {
+	    Unit worker = getUnit(workerId);
+	    if (null != worker) {
+		if (true == unitKindMap.get(UnitKind.Worker_Gather_Gas).contains(Integer.valueOf(workerId))) {
+		    // 가스 캐는 일꾼은 건드리지 말자.
+		    result = false;
+		} else {
+		    result = worker.isCompleted() && !worker.isConstructing() && (worker.isIdle() || worker.isGatheringMinerals());
+		}
+	    }
 	}
+
 	return result;
     }
 
@@ -252,9 +306,9 @@ public class UnitManager {
 	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
 	Integer id = unit.getID();
 	for (UnitKind unitKind : unitKinds) {
-	    unitFilterMap.get(unitKind).remove(id);
+	    unitKindMap.get(unitKind).remove(id);
 	}
-	unitFilterMap.get(UnitKind.Scouting_Unit).add(id);
+	unitKindMap.get(UnitKind.Scouting_Unit).add(id);
     }
 
     public void releaseScoutUnit(Unit unit) {
@@ -263,15 +317,32 @@ public class UnitManager {
 	    Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
 	    Integer id = unit.getID();
 	    for (UnitKind unitKind : unitKinds) {
-		unitFilterMap.get(unitKind).add(id);
+		unitKindMap.get(unitKind).add(id);
 	    }
-	    unitFilterMap.get(UnitKind.Scouting_Unit).remove(id);
+	    unitKindMap.get(UnitKind.Scouting_Unit).remove(id);
 	} else {
 	    Log.trace("정찰 유닛이 죽어버렸음..");
 	}
     }
 
-    public void setUnitAssignment(Unit unit, Assignment assignment) {
-	unitAssignmentMap.put(unit.getID(), assignment);
+    // unitSet 중에서 position에 제일 가까운 unit을 리턴한다.
+    private Unit getClosestUnit(Set<Integer> unitSet, Position position) {
+	Unit result = null;
+
+	if (null != unitSet && null != position) {
+	    int minDistance = Integer.MAX_VALUE;
+	    for (Integer unitId : unitSet) {
+		Unit unit = getUnit(unitId);
+		int distance = unit.getDistance(position);
+		if (distance < minDistance) {
+		    minDistance = distance;
+		    result = unit;
+		}
+	    }
+	} else {
+	    Log.warn("Invalid Parameter: unitset: %s, position: %s", unitSet, position);
+	}
+
+	return result;
     }
 }
