@@ -1,4 +1,6 @@
 
+import java.util.Set;
+
 import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
@@ -14,6 +16,7 @@ public class GameCommander {
     private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
     private MagiScoutManager scoutManager = MagiScoutManager.Instance();
+    private MagiEliminateManager eliminateManager = MagiEliminateManager.Instance();
     private GameData gameData;
 
     public GameCommander() {
@@ -23,7 +26,7 @@ public class GameCommander {
     /// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
     public void onStart() {
 	gameData = new GameData(broodwar);
-	Log.setLogLevel(Log.Level.TRACE);
+	Log.setLogLevel(Log.Level.WARN);
 	ActionUtil.setGame(broodwar);
 	Log.info("Game has started");
 	trainingManager.onStart();
@@ -66,6 +69,7 @@ public class GameCommander {
 	    scoutManager.onFrame(gameData);
 	    strategymanager.onFrame(gameData);
 	    microControlManager.onFrame(gameData);
+	    eliminateManager.onFrame(gameData);
 	}
     }
 
@@ -123,11 +127,13 @@ public class GameCommander {
     /// 유닛(건물/지상유닛/공중유닛)의 하던 일 (건물 건설, 업그레이드, 지상유닛 훈련 등)이 끝났을 때 발생하는 이벤트를 처리합니다
     public void onUnitComplete(Unit unit) {
 	Log.info("onUnitComplete: %s", UnitUtil.toString(unit));
-	if (unit.getType().isWorker()) {
-	    MagiWorkerManager.Instance().onUnitComplete(unit, gameData);
+	if (unit.getPlayer() == MyBotModule.Broodwar.self()) {
+	    if (unit.getType().isWorker()) {
+		MagiWorkerManager.Instance().onUnitComplete(unit, gameData);
+	    }
+	    buildManager.onUnitComplete(unit, gameData);
+	    strategymanager.onUnitComplete(unit, gameData);
 	}
-	buildManager.onUnitComplete(unit, gameData);
-	strategymanager.onUnitComplete(unit, gameData);
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Discover 될 때 발생하는 이벤트를 처리합니다<br>
@@ -156,6 +162,7 @@ public class GameCommander {
     /// 유닛(건물/지상유닛/공중유닛)이 Evade 될 때 발생하는 이벤트를 처리합니다<br>
     /// 유닛이 Destroy 될 때 발생합니다
     public void onUnitEvade(Unit unit) {
+	Log.info("onUnitEvade: %s", UnitUtil.toString(unit));
 	if (trainingManager.isTrainingMode()) {
 	    trainingManager.onUnitEvade(unit);
 	}
@@ -164,12 +171,13 @@ public class GameCommander {
     /// 유닛(건물/지상유닛/공중유닛)이 Show 될 때 발생하는 이벤트를 처리합니다<br>
     /// 아군 유닛이 Create 되었을 때 라든가, 적군 유닛이 Discover 되었을 때 발생합니다
     public void onUnitShow(Unit unit) {
-	Log.info("onUnitShow(%d)", unit.getID());
+	Log.info("onUnitShow(%s)", UnitUtil.toString(unit));
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Hide 될 때 발생하는 이벤트를 처리합니다<br>
     /// 보이던 유닛이 Hide 될 때 발생합니다
     public void onUnitHide(Unit unit) {
+	Log.info("onUnitHide(%s)", UnitUtil.toString(unit));
     }
 
     /// 핵미사일 발사가 감지되었을 때 발생하는 이벤트를 처리합니다
@@ -198,6 +206,25 @@ public class GameCommander {
 		// 일시 정지를 위해서 3초만 대기한다.
 		Log.info("Set game speed to 3000");
 		broodwar.setLocalSpeed(3000);
+		break;
+	    case "enemy":
+		Log.info("[EnemyUnits] %s", gameData.getEnemyUnitManager().toString());
+		break;
+	    case "enemyBuilding":
+		String msg = "";
+		UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
+		Set<Integer> enemyBuildingIds = enemyUnitManager.getUnitsIdByUnitKind(UnitKind.Building);
+		msg += String.format("enemy building size: %d\n", enemyBuildingIds.size());
+		Set<Integer> mainBuildingIds = enemyUnitManager.getUnitsIdByUnitKind(UnitKind.MAIN_BUILDING);
+		for (Integer enemyBuildingId : enemyBuildingIds) {
+		    Unit enemyBuilding = enemyUnitManager.getUnit(enemyBuildingId);
+		    msg += String.format("Building id=%d, TilePosition: %s, isVisible: %b, UnitType: %s, isMainBuilding: %b\n", enemyBuildingId,
+			    enemyUnitManager.getLastTilePosition(enemyBuildingId), enemyBuilding.isVisible(), enemyBuilding.getType(), mainBuildingIds.contains(enemyBuildingId));
+		}
+		Log.warn(msg);
+		break;
+	    case "alliance":
+		Log.info("[AllianceUnits] :%s", gameData.getAllianceUnitManager().toString());
 		break;
 	    default:
 		// nothing

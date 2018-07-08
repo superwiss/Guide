@@ -21,18 +21,23 @@ public class LocationManager {
     private static final TilePosition SEVEN_TILE_POSITION = new TilePosition(7, 117);
     private static final TilePosition ELEVEN_TILE_POSITION = new TilePosition(7, 7);
     private ClockLocation allianceStartLocation;
-    private TilePosition enemyStartLocation = null;
+    private TilePosition enemyStartTilePosition = null;
+    private TilePosition allianceStartTilePosition = null;
 
     // 최초 커맨드센터의 위치를 기반으로 건물 심시티를 결정한다. 
     public void init(Unit commandCenter) {
 	if (commandCenter.getTilePosition().equals(ONE_TILE_POSITION)) {
 	    allianceStartLocation = ClockLocation.ONE;
+	    allianceStartTilePosition = ONE_TILE_POSITION;
 	} else if (commandCenter.getTilePosition().equals(FIVE_TILE_POSITION)) {
 	    allianceStartLocation = ClockLocation.FIVE;
+	    allianceStartTilePosition = FIVE_TILE_POSITION;
 	} else if (commandCenter.getTilePosition().equals(SEVEN_TILE_POSITION)) {
 	    allianceStartLocation = ClockLocation.SEVEN;
+	    allianceStartTilePosition = SEVEN_TILE_POSITION;
 	} else if (commandCenter.getTilePosition().equals(ELEVEN_TILE_POSITION)) {
 	    allianceStartLocation = ClockLocation.ELEVEN;
+	    allianceStartTilePosition = ELEVEN_TILE_POSITION;
 	}
     }
 
@@ -231,7 +236,6 @@ public class LocationManager {
 	    result.add(new TilePosition(6, 17));
 	    result.add(new TilePosition(6, 15));
 	    result.add(new TilePosition(6, 13));
-	    result.add(new TilePosition(9, 16));
 	    result.add(new TilePosition(9, 14));
 	    result.add(new TilePosition(0, 0));
 	    result.add(new TilePosition(0, 2));
@@ -248,6 +252,7 @@ public class LocationManager {
 	    result.add(new TilePosition(30, 0));
 	    result.add(new TilePosition(11, 2));
 	    result.add(new TilePosition(11, 4));
+	    result.add(new TilePosition(9, 16));
 	    break;
 	default:
 	    break;
@@ -357,6 +362,10 @@ public class LocationManager {
 	return allianceStartLocation;
     }
 
+    public TilePosition getAllianceStartTilePosition() {
+	return allianceStartTilePosition;
+    }
+
     // 정찰 순서를 리턴한다.
     public List<TilePosition> getSearchList() {
 	List<TilePosition> result = new ArrayList<>(4);
@@ -393,11 +402,11 @@ public class LocationManager {
 	return result;
     }
 
-    public TilePosition getEnemyStartLocation() {
-	return enemyStartLocation;
+    public TilePosition getEnemyStartTilePosition() {
+	return enemyStartTilePosition;
     }
 
-    public void setEnemyStartLocation(TilePosition enemyStartLocation) {
-	this.enemyStartLocation = enemyStartLocation;
+    public void setEnemyStartLocation(TilePosition enemyStartTilePosition) {
+	this.enemyStartTilePosition = enemyStartTilePosition;
     }
 }

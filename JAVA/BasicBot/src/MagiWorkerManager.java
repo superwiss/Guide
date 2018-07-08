@@ -92,7 +92,7 @@ public class MagiWorkerManager {
 	for (Integer unitId : workerList) {
 	    // 일꾼 하나를 가져온다.
 	    Unit worker = allianceUnitManager.getUnit(unitId);
-	    if (worker.isCompleted() && worker.isIdle()) {
+	    if (null != worker && worker.isCompleted() && worker.isIdle()) {
 		Log.info("Found idle worker: %d", worker.getID());
 		// 일꾼에서 가장 가까운 커맨드 센터를 가져온다.
 		Unit commandCenter = allianceUnitManager.getCloseCommandCenter(worker);

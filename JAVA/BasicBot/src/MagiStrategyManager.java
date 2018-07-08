@@ -1,6 +1,7 @@
 import java.util.HashSet;
 import java.util.Set;
 
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
@@ -23,6 +24,7 @@ public class MagiStrategyManager {
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
     private LocationManager locationManager = LocationManager.Instance();
     private MicroControlManager microControlManager = MicroControlManager.Instance();
+    private MagiEliminateManager magiEliminateManager = MagiEliminateManager.Instance();
     // 벙커는 SCV 4마리만 수리한다.
     private static int repairCount = 4;
 
@@ -62,15 +64,12 @@ public class MagiStrategyManager {
 	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
 		// 서플 여유가 4개 이하면 서플을 짓는다.
 		if (false == buildManager.isBuildingSupply() && gameData.getSupplyRemain() <= 4 * 2) {
-		    Log.debug("wiss: 서플라이 건설");
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 		} else if (gameData.getMineral() > 200 && null != allianceUnitManager.getFirstUnitIdByUnitKind(UnitKind.Terran_Academy)
 			&& 5 > allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
 		    // 아카데미가 존재하고, 배럭이 5개 미만이고, BuildOrder Queue가 비어있으면 세 번째 배럭을 짓는다.
-		    Log.debug("wiss: 배럭 건설");
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
 		} else if (gameData.getMineral() >= 50) {
-		    Log.debug("wiss: 마린/매딕 훈련");
 		    Unit barracks = buildManager.getTrainableBarracks(allianceUnitManager);
 		    if (null != barracks) {
 			Set<Integer> medicIds = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Medic);
@@ -98,18 +97,48 @@ public class MagiStrategyManager {
 
 	// 모든 공격 가능한 유닛셋을 가져온다.
 	Set<Integer> attackableUnits = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit);
-	// 총 공격 전이고, 공격 유닛이 20마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
-	if (false == microControlManager.hasAttackTilePosition() && attackableUnits.size() > 60 && null != locationManager.getEnemyStartLocation()) {
+	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
+	if (false == microControlManager.hasAttackTilePosition() && attackableUnits.size() > 60 && null != locationManager.getEnemyStartTilePosition()) {
+	    // 5초에 한 번만 수행한다.
+	    if (0 != gameData.getFrameCount() % (42 * 5)) {
+		return;
+	    }
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnits.size());
-	    microControlManager.setAttackTilePosition(locationManager.getEnemyStartLocation());
-	}
+	    TilePosition attackTilePosition = null;
+	    UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
 
-	if (true == microControlManager.hasAttackTilePosition()) {
-	    for (Integer unitId : attackableUnits) {
-		Unit unit = allianceUnitManager.getUnit(unitId);
-		if (unit.isIdle()) {
-		    ActionUtil.attackPosition(allianceUnitManager, unit, microControlManager.getAttackTilePosition().toPosition());
+	    // 내 본진의 위치
+	    TilePosition allianceStartTilePosition = locationManager.getAllianceStartTilePosition();
+
+	    // 적 본진의 위치
+	    Set<Integer> enemyMainBuildingIds = enemyUnitManager.getUnitsIdByUnitKind(UnitKind.MAIN_BUILDING);
+
+	    // 가급적 본진에서 가장 가까운 적 본진부터 공격한다.
+	    Unit closestMainBuilding = enemyUnitManager.getClosestUnitWithLastTilePosition(enemyMainBuildingIds, allianceStartTilePosition.toPosition());
+
+	    if (null != closestMainBuilding) {
+		attackTilePosition = enemyUnitManager.getLastTilePosition(closestMainBuilding.getID());
+	    } else {
+		// 적 건물들의 위치를 가져온다.
+		Set<Integer> enemyBuildingIds = enemyUnitManager.getUnitsIdByUnitKind(UnitKind.Building);
+		// 내 본진에서 가장 가까운 상대 건물부터 공격한다.
+		Unit closestBuilding = enemyUnitManager.getClosestUnitWithLastTilePosition(enemyBuildingIds, allianceStartTilePosition.toPosition());
+		if (null != closestBuilding) {
+		    attackTilePosition = enemyUnitManager.getLastTilePosition(closestBuilding.getID());
 		}
+	    }
+
+	    Log.info("공격할 위치: %s", attackTilePosition);
+	    if (null != attackTilePosition) {
+		for (Integer unitId : attackableUnits) {
+		    Unit unit = allianceUnitManager.getUnit(unitId);
+		    if (unit.isIdle()) {
+			ActionUtil.attackPosition(allianceUnitManager, unit, attackTilePosition.toPosition());
+		    }
+		}
+	    } else {
+		magiEliminateManager.search(allianceUnitManager);
+		Log.info("Eliminate Manager 동작 시작.");
 	    }
 	}
     }

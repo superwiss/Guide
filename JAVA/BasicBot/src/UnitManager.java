@@ -41,6 +41,9 @@ public class UnitManager {
     // Key: 미네랄, Value: 미네랄에 일꾼이 할당되었는지 여부
     private Map<Integer, Boolean> assignedMineralMap = new HashMap<>();
 
+    // 유닛의 마지막 위치
+    private Map<Integer, TilePosition> lastTilePositoin = new HashMap<>();
+
     // 생성자
     public UnitManager() {
 	// unitFilter를 초기화 한다.
@@ -81,6 +84,10 @@ public class UnitManager {
     // Unit ID에 해당하는 유닛 객체를 리턴한다.
     public Unit getUnit(int id) {
 	return idUnitMap.get(id);
+    }
+
+    public Set<Integer> getAllUnits() {
+	return idUnitMap.keySet();
     }
 
     public Set<Integer> getUnitsIdByUnitKind(UnitKind unitKind) {
@@ -168,7 +175,13 @@ public class UnitManager {
 	    // 유닛의 초기 상태는 Idle이다.
 	    lastStatusMap.put(id, UnitStatus.IDLE);
 
+	    // 건물일 경우, 유닛의 마지막 위치를 기록한다.
+	    if (unit.getType().isBuilding()) {
+		lastTilePositoin.put(id, unit.getTilePosition());
+	    }
+
 	    unitList.add(unit);
+
 	} else {
 	    idUnitMap.remove(id);
 
@@ -178,6 +191,10 @@ public class UnitManager {
 
 	    lastActionMap.remove(id);
 	    lastStatusMap.remove(id);
+
+	    if (lastTilePositoin.containsKey(id)) {
+		lastTilePositoin.remove(id);
+	    }
 
 	    unitList.remove(unit);
 	}
@@ -211,8 +228,10 @@ public class UnitManager {
     public String toString() {
 	String result = "";
 
+	result += "\nUnits Size: " + unitList.size();
+
 	for (Unit unit : unitList) {
-	    result += "(" + UnitUtil.toString(unit) + ") ";
+	    result += "\n\t(" + UnitUtil.toString(unit) + ") ";
 	}
 
 	return result;
@@ -256,13 +275,17 @@ public class UnitManager {
 	    }
 	}
 
-	if (null == notAssignedMineral) {
-	    worker.gather(assignedMineral);
-	    Log.debug("worker(%d) mining assigned mineral(%d)", worker.getID(), assignedMineral.getID());
+	if (null == notAssignedMineral && null != assignedMineral) {
+	    if (assignedMineral.isVisible()) {
+		Log.debug("worker(%d) mining assigned mineral(%d)", worker.getID(), assignedMineral.getID());
+		worker.gather(assignedMineral);
+	    }
 	} else {
-	    worker.gather(notAssignedMineral);
-	    assignedMineralMap.put(notAssignedMineral.getID(), true);
-	    Log.debug("worker(%d) mining new mineral(%d)", worker.getID(), notAssignedMineral.getID());
+	    if (null != notAssignedMineral && notAssignedMineral.isVisible()) {
+		Log.debug("worker(%d) mining new mineral(%d)", worker.getID(), notAssignedMineral.getID());
+		assignedMineralMap.put(notAssignedMineral.getID(), true);
+		worker.gather(notAssignedMineral);
+	    }
 	}
     }
 
@@ -354,6 +377,63 @@ public class UnitManager {
 	    }
 	} else {
 	    Log.warn("Invalid Parameter: unitset: %s, position: %s", unitSet, position);
+	}
+
+	return result;
+    }
+
+    // 메모리에 저장된 unitSet 중에서 position에 제일 가까운 unit을 리턴한다.
+    public Unit getClosestUnitWithLastTilePosition(Set<Integer> unitSet, Position position) {
+	return getClosestUnitWithLastTilePosition(unitSet, position, null);
+    }
+
+    // 메모리에 저장된 unitSet 중에서 position에 제일 가까운 unit을 리턴한다. excludeUnitType은 계산에서 제외한다.
+    public Unit getClosestUnitWithLastTilePosition(Set<Integer> unitSet, Position position, Set<UnitType> excludeUnitType) {
+	Unit result = null;
+
+	if (null != unitSet && null != position) {
+	    int minDistance = Integer.MAX_VALUE;
+	    for (Integer unitId : unitSet) {
+		Unit unit = getUnit(unitId);
+		if (null != unit) {
+		    if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
+			continue;
+		    }
+		    TilePosition lastTilePosition = lastTilePositoin.get(unitId);
+		    if (null != lastTilePosition) {
+			int distance = UnitUtil.getDistance(lastTilePosition.toPosition(), position);
+			if (distance < minDistance) {
+			    minDistance = distance;
+			    result = unit;
+			}
+		    }
+		} else {
+		    Log.warn("getClosestUnit(): Failed to getting unit by unitId(%d)", unitId);
+		}
+	    }
+	} else {
+	    Log.warn("Invalid Parameter: unitset: %s, position: %s", unitSet, position);
+	}
+
+	return result;
+    }
+
+    public TilePosition getLastTilePosition(Integer unitId) {
+	return lastTilePositoin.get(unitId);
+    }
+
+    public String toBuildingString() {
+	String result = "";
+
+	Set<Integer> buildings = getUnitsIdByUnitKind(UnitKind.Building);
+
+	result += "\nBuilding size: " + buildings.size();
+
+	for (Integer buildingId : buildings) {
+	    Unit building = getUnit(buildingId);
+	    if (null != building) {
+		result += "\n\t(" + UnitUtil.toString(building) + ") ";
+	    }
 	}
 
 	return result;

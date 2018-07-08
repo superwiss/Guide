@@ -126,6 +126,7 @@ public class MicroControlManager {
 	if (gameData.getFrameCount() % 42 != 0) {
 	    return;
 	}
+
 	Position newPosition = null;
 	Set<Integer> bionicSet = null;
 	if (true == hasAttackTilePosition()) {
@@ -200,7 +201,9 @@ public class MicroControlManager {
     }
 
     public void setAttackTilePosition(TilePosition attackTilePosition) {
-	this.attackTilePosition = attackTilePosition;
+	if (null == attackTilePosition) {
+	    this.attackTilePosition = attackTilePosition;
+	}
     }
 
     // 유닛의 이동 거리를 측정하기 위한 테스트용 메서드
