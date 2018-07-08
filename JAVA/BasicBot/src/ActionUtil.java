@@ -39,6 +39,10 @@ public class ActionUtil {
 	return result;
     }
 
+    public static boolean moveToPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position) {
+	return moveToPosition(allianceUnitManager, allianceUnit, position, 0);
+    }
+
     public static boolean moveToPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position, int margin) {
 	boolean result = false;
 

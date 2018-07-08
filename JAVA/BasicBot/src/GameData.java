@@ -48,6 +48,10 @@ public class GameData {
 	return broodwar.isExplored(position);
     }
 
+    public boolean isVisible(TilePosition tilePosition) {
+	return broodwar.isVisible(tilePosition);
+    }
+
     public void setScreen(Position position) {
 	// 화면 하단의 게임 인터페이스 공간을 고려해서, y 좌표는 64 pixel만큼 더해서 계산한다. 
 	broodwar.setScreenPosition(position.getX() - 320, position.getY() - 240 + 64);

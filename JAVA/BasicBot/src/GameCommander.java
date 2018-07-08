@@ -77,6 +77,7 @@ public class GameCommander {
     public void onUnitDestroy(Unit unit) {
 	try {
 	    if (true == UnitUtil.isAllianceUnit(unit)) {
+		scoutManager.onUnitDestroy(unit, gameData);
 		gameData.getAllianceUnitManager().remove(unit);
 	    } else if (true == UnitUtil.isEnemyUnit(unit)) {
 		gameData.getEnemyUnitManager().remove(unit);

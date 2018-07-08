@@ -21,6 +21,7 @@ public class MagiBuildManager {
 	return instance;
     }
 
+    private MagiScoutManager scoutManager = MagiScoutManager.Instance();
     private boolean initialBuildFinished = false;
     private int supplyBuildingCount = 0;
 
@@ -73,14 +74,9 @@ public class MagiBuildManager {
 	    queue.poll();
 	    break;
 	case SCOUTING:
-	    // TODO first chock point에서 제일 가까운 유닛으로 변경하기
-	    Unit workerForScout = allianceUnitManager.getBuildableWorker(allianceUnitManager.getFirstUnitTilePositionByUnitKind(UnitKind.Terran_Command_Center));
-	    if (null != workerForScout) {
-		allianceUnitManager.setScoutUnit(workerForScout);
-		Log.info("정찰 시작. 정찰 유닛 ID: %d", workerForScout.getID());
+	    boolean didScout = scoutManager.doFirstSearch(gameData);
+	    if (true == didScout) {
 		queue.poll();
-	    } else {
-		Log.warn("정찰할 유닛이 없습니다.");
 	    }
 	    break;
 	case TRAINING_WORKER:

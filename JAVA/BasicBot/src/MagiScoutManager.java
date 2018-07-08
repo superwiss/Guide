@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 
 import bwapi.TilePosition;
@@ -15,89 +17,109 @@ public class MagiScoutManager {
     }
 
     private LocationManager locationManager = LocationManager.Instance();
-    private boolean scouting = false;
-    private TilePosition enemyBaseLocation = null;
+    private Queue<TilePosition> searchQueue = new LinkedList<>();
 
+    // TODO 정찰은 1개만 가능하도록 구현됨. 다중 유닛 정찰 구현하기.
     public void onFrame(GameData gameData) {
-	// 50프레임에 한 번씩 수행된다.
-	if (0 != gameData.getFrameCount() % 50) {
+	// 42프레임에 한 번씩 수행된다.
+	if (0 != gameData.getFrameCount() % 42) {
 	    return;
 	}
 
 	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
-	UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
-	Set<Integer> scoutUnits = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Scouting_Unit);
-	// 적 건물을 발견했으면 일꾼을 릴리즈 한다.
-	if (true == scouting && 0 < enemyUnitManager.getUnitsIdByUnitKind(UnitKind.MAIN_BUILDING).size()) {
-	    for (Integer scoutUnitId : scoutUnits) {
-		Unit scoutUnit = allianceUnitManager.getUnit(scoutUnitId);
-		if (null != scoutUnit && scoutUnit.exists()) {
-		    allianceUnitManager.releaseScoutUnit(scoutUnit);
-		    scoutUnit.stop();
-		}
-		enemyBaseLocation = enemyUnitManager.getUnit(enemyUnitManager.getFirstUnitIdByUnitKind(UnitKind.MAIN_BUILDING)).getTilePosition();
+	Unit scoutUnit = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Scouting_Unit);
+
+	if (null == scoutUnit) {
+	    return;
+	}
+
+	// 정찰을 완료했으면, 정찰 유닛을 릴리즈 한다.
+	if (true == searchQueue.isEmpty()) {
+	    if (scoutUnit.exists()) {
+		allianceUnitManager.releaseScoutUnit(scoutUnit);
+		scoutUnit.stop();
 	    }
 	    Log.info("정찰을 완료했다.");
-	    scouting = false;
-	} else if (false == scouting && gameData.getFrameCount() > 1) {
-	    // 정찰을 시작하지 않았으면, 정찰을 시작한다.
-	    // TODO 정찰은 1개만 가능하도록 구현됨. 다중 유닛 정찰 구현하기.
-	    if (scoutUnits.size() > 0) {
-		Integer scoutUnitId = scoutUnits.iterator().next();
-		Unit scoutUnit = allianceUnitManager.getUnit(scoutUnitId);
-		LocationManager.ClockLocation myStarting = locationManager.getClockLocation();
-		scouting = true;
-		switch (myStarting) {
-		case ONE:
-		    // 1시면 5시부터 정찰
-		    // 5시
-		    scoutUnit.move(new TilePosition(117, 117).toPosition());
-		    // 7시
-		    scoutUnit.move(new TilePosition(33, 110).toPosition(), true);
-		    scoutUnit.move(new TilePosition(29, 117).toPosition(), true);
-		    scoutUnit.move(new TilePosition(7, 117).toPosition(), true);
-		    // 11시
-		    scoutUnit.move(new TilePosition(7, 7).toPosition(), true);
-		    break;
-		case FIVE:
-		    // 5시면 7시부터 정찰
-		    // 7시
-		    scoutUnit.move(new TilePosition(33, 110).toPosition());
-		    scoutUnit.move(new TilePosition(29, 117).toPosition(), true);
-		    scoutUnit.move(new TilePosition(7, 117).toPosition(), true);
-		    // 11시
-		    scoutUnit.move(new TilePosition(7, 7).toPosition(), true);
-		    // 1시
-		    scoutUnit.move(new TilePosition(117, 7).toPosition(), true);
-		    break;
-		case SEVEN:
-		    // 7시면 11시부터 정찰
-		    // 11시
-		    scoutUnit.move(new TilePosition(7, 7).toPosition());
-		    // 1시
-		    scoutUnit.move(new TilePosition(117, 7).toPosition(), true);
-		    // 5시
-		    scoutUnit.move(new TilePosition(117, 117).toPosition(), true);
-		    break;
-		case ELEVEN:
-		    // 시작 위치가 11시일 경우,
-		    // 1시
-		    scoutUnit.move(new TilePosition(117, 7).toPosition());
-		    // 5시
-		    scoutUnit.move(new TilePosition(117, 117).toPosition(), true);
-		    // 7시
-		    scoutUnit.move(new TilePosition(33, 110).toPosition(), true);
-		    scoutUnit.move(new TilePosition(29, 117).toPosition(), true);
-		    scoutUnit.move(new TilePosition(7, 117).toPosition(), true);
-		    break;
-		default:
+	} else {
+	    TilePosition target = searchQueue.peek();
+
+	    if (gameData.isVisible(target)) {
+		// 정찰 위치의 fog of war가 사라지면 Queue에서 제거하고 다음 위치로 이동한다.
+		Log.info("위치(%s) 정찰 완료.", target);
+		searchQueue.poll();
+		checkEnemyStartingLocation(gameData.getEnemyUnitManager());
+		if (null != locationManager.getEnemyStartLocation()) {
+		    Log.info("적 본진을 발견했으므로, 정찰 일꾼(%d)을 릴리즈 한다.", scoutUnit.getID());
+		    allianceUnitManager.releaseScoutUnit(scoutUnit);
+		    return;
+		} else {
+		    // 다음 지점으로 이동한다.
+		    onFrame(gameData);
+		}
+	    } else {
+		// 정찰을 계속한다.
+		ActionUtil.moveToPosition(allianceUnitManager, scoutUnit, target.toPosition());
+	    }
+
+	}
+    }
+
+    public void addSearchQueue(TilePosition tilePosition) {
+	searchQueue.add(tilePosition);
+    }
+
+    public void onUnitDestroy(Unit unit, GameData gameData) {
+	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+	UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
+	// 정찰중인 유닛이 죽었을 경우를 처리...
+	if (allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Scouting_Unit).contains(Integer.valueOf(unit.getID()))) {
+	    // 적 Main건물(커맨드센터, 넥서스, 해처리 류)을 찾기 전이지만, 적 건물이 존재할 경우, 적 건물의 위치를 기반으로 적 본진을 유추한다. 
+	    if (null == locationManager.getEnemyStartLocation()) {
+		checkEnemyStartingLocation(enemyUnitManager);
+	    }
+	    if (null == locationManager.getEnemyStartLocation()) {
+		Log.info("정찰을 완료하기 전에 정찰 유닛(%d)이 죽었다. 다시 정찰하자.", unit.getID());
+		allianceUnitManager.releaseScoutUnit(unit);
+		doFirstSearch(gameData);
+	    }
+	}
+    }
+
+    private void checkEnemyStartingLocation(UnitManager enemyUnitManager) {
+	Set<Integer> enemyBuildingUnitIds = enemyUnitManager.getUnitsIdByUnitKind(UnitKind.Building);
+	for (Integer enemyBuildingUnitId : enemyBuildingUnitIds) {
+	    // 적 본진을 찾았으면 계산을 중단한다.
+	    if (null != locationManager.getEnemyStartLocation()) {
+		break;
+	    }
+
+	    // 발견한 적 건물의 위치와 Starting Location이 가까우면, 적의 본진을 발견한 것으로 유추할 수 있다.
+	    Unit enemyBuildingUnit = enemyUnitManager.getUnit(enemyBuildingUnitId);
+	    for (TilePosition tilePosition : locationManager.getSearchList()) {
+		double distance = tilePosition.getDistance(enemyBuildingUnit.getTilePosition());
+		if (32 >= distance) {
+		    Log.info("적 본진을 찾았습니다. 발견한 적 건물의 Tile Position=%s, 적 본진의 Tile Position=%s, 발견한 적 건물과 적 본진의 거리: %f", enemyBuildingUnit.getTilePosition(), tilePosition,
+			    distance);
+		    locationManager.setEnemyStartLocation(tilePosition);
 		    break;
 		}
 	    }
 	}
     }
 
-    public TilePosition getEnemyBaseLocation() {
-	return enemyBaseLocation;
+    public boolean doFirstSearch(GameData gameData) {
+	boolean result = true;
+
+	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+	Unit unitForScout = allianceUnitManager.getBuildableWorker(locationManager.getChokePoint2());
+	if (null != unitForScout) {
+	    allianceUnitManager.setScoutUnit(unitForScout);
+	    searchQueue.addAll(locationManager.getSearchList());
+	    Log.info("정찰 시작: unitId=%d", unitForScout.getID());
+	} else {
+	    Log.warn("정찰 가능한 유닛이 없습니다.");
+	    result = false;
+	}
+	return result;
     }
 }

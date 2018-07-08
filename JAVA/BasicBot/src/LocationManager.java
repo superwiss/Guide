@@ -16,18 +16,23 @@ public class LocationManager {
 	ONE, FIVE, SEVEN, ELEVEN
     }
 
-    private ClockLocation clockLocation;
+    private static final TilePosition ONE_TILE_POSITION = new TilePosition(117, 7);
+    private static final TilePosition FIVE_TILE_POSITION = new TilePosition(117, 117);
+    private static final TilePosition SEVEN_TILE_POSITION = new TilePosition(7, 117);
+    private static final TilePosition ELEVEN_TILE_POSITION = new TilePosition(7, 7);
+    private ClockLocation allianceStartLocation;
+    private TilePosition enemyStartLocation = null;
 
     // 최초 커맨드센터의 위치를 기반으로 건물 심시티를 결정한다. 
     public void init(Unit commandCenter) {
-	if (commandCenter.getTilePosition().equals(new TilePosition(7, 117))) {
-	    clockLocation = ClockLocation.SEVEN;
-	} else if (commandCenter.getTilePosition().equals(new TilePosition(117, 117))) {
-	    clockLocation = ClockLocation.FIVE;
-	} else if (commandCenter.getTilePosition().equals(new TilePosition(117, 7))) {
-	    clockLocation = ClockLocation.ONE;
-	} else if (commandCenter.getTilePosition().equals(new TilePosition(7, 7))) {
-	    clockLocation = ClockLocation.ELEVEN;
+	if (commandCenter.getTilePosition().equals(ONE_TILE_POSITION)) {
+	    allianceStartLocation = ClockLocation.ONE;
+	} else if (commandCenter.getTilePosition().equals(FIVE_TILE_POSITION)) {
+	    allianceStartLocation = ClockLocation.FIVE;
+	} else if (commandCenter.getTilePosition().equals(SEVEN_TILE_POSITION)) {
+	    allianceStartLocation = ClockLocation.SEVEN;
+	} else if (commandCenter.getTilePosition().equals(ELEVEN_TILE_POSITION)) {
+	    allianceStartLocation = ClockLocation.ELEVEN;
 	}
     }
 
@@ -35,7 +40,7 @@ public class LocationManager {
 	// 가로 4, 세로 3
 	List<TilePosition> result = new ArrayList<>();
 
-	switch (clockLocation) {
+	switch (allianceStartLocation) {
 	case ONE:
 	    result.add(new TilePosition(108, 14));
 	    result.add(new TilePosition(108, 18));
@@ -99,7 +104,7 @@ public class LocationManager {
 	// 가로 4, 세로 3
 	List<TilePosition> result = new ArrayList<>();
 
-	switch (clockLocation) {
+	switch (allianceStartLocation) {
 	case ONE:
 	    result.add(new TilePosition(105, 15));
 	    break;
@@ -123,7 +128,7 @@ public class LocationManager {
 	// 가로 3, 세로 2
 	List<TilePosition> result = new ArrayList<>();
 
-	switch (clockLocation) {
+	switch (allianceStartLocation) {
 	case ONE:
 	    result.add(new TilePosition(110, 12));
 	    result.add(new TilePosition(102, 16));
@@ -254,7 +259,7 @@ public class LocationManager {
     public List<TilePosition> getRefinery() {
 	List<TilePosition> result = new ArrayList<>();
 
-	switch (clockLocation) {
+	switch (allianceStartLocation) {
 	case ONE:
 	    result.add(new TilePosition(117, 2));
 	    break;
@@ -277,7 +282,7 @@ public class LocationManager {
     public List<TilePosition> getTurret() {
 	List<TilePosition> result = new ArrayList<>();
 
-	switch (clockLocation) {
+	switch (allianceStartLocation) {
 	case ONE:
 	    result.add(new TilePosition(105, 17));
 	    result.add(new TilePosition(119, 10));
@@ -304,7 +309,7 @@ public class LocationManager {
     public TilePosition getChokePoint1() {
 	TilePosition result = null;
 
-	switch (clockLocation) {
+	switch (allianceStartLocation) {
 	case ONE:
 	    result = new TilePosition(107, 14);
 	    break;
@@ -327,7 +332,7 @@ public class LocationManager {
     public TilePosition getChokePoint2() {
 	TilePosition result = null;
 
-	switch (clockLocation) {
+	switch (allianceStartLocation) {
 	case ONE:
 	    result = new TilePosition(93, 18);
 	    break;
@@ -348,7 +353,51 @@ public class LocationManager {
     }
 
     // 몇시 방향인지 리턴한다.
-    public ClockLocation getClockLocation() {
-	return clockLocation;
+    public ClockLocation getAllianceStartLocation() {
+	return allianceStartLocation;
+    }
+
+    // 정찰 순서를 리턴한다.
+    public List<TilePosition> getSearchList() {
+	List<TilePosition> result = new ArrayList<>(4);
+
+	switch (allianceStartLocation) {
+	case ONE:
+	    // 5시, 11시, 7시 순서로 정찰
+	    result.add(FIVE_TILE_POSITION);
+	    result.add(ELEVEN_TILE_POSITION);
+	    result.add(SEVEN_TILE_POSITION);
+	    break;
+	case FIVE:
+	    // 7시, 1시, 11시 순서로 정찰
+	    result.add(SEVEN_TILE_POSITION);
+	    result.add(ONE_TILE_POSITION);
+	    result.add(ELEVEN_TILE_POSITION);
+	    break;
+	case SEVEN:
+	    // 11시, 5시, 1시 순서로 정찰
+	    result.add(ELEVEN_TILE_POSITION);
+	    result.add(FIVE_TILE_POSITION);
+	    result.add(ONE_TILE_POSITION);
+	    break;
+	case ELEVEN:
+	    // 1시, 7시, 5시 순서로 정찰 
+	    result.add(ONE_TILE_POSITION);
+	    result.add(SEVEN_TILE_POSITION);
+	    result.add(FIVE_TILE_POSITION);
+	    break;
+	default:
+	    break;
+	}
+
+	return result;
+    }
+
+    public TilePosition getEnemyStartLocation() {
+	return enemyStartLocation;
+    }
+
+    public void setEnemyStartLocation(TilePosition enemyStartLocation) {
+	this.enemyStartLocation = enemyStartLocation;
     }
 }

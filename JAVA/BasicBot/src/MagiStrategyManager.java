@@ -21,7 +21,6 @@ public class MagiStrategyManager {
     private Set<StrategyItem> strategyItems = new HashSet<>();
 
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
-    private MagiScoutManager scoutManager = MagiScoutManager.Instance();
     private LocationManager locationManager = LocationManager.Instance();
     private MicroControlManager microControlManager = MicroControlManager.Instance();
     // 벙커는 SCV 4마리만 수리한다.
@@ -60,7 +59,6 @@ public class MagiStrategyManager {
 	    }
 	}
 	if (strategyItems.contains(StrategyItem.MARINE_AUTO_TRAIN)) {
-	    Log.debug("wiss: isBuildingSupply: %b, getSupplyRemain: %d", buildManager.isBuildingSupply(), gameData.getSupplyRemain());
 	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
 		// 서플 여유가 4개 이하면 서플을 짓는다.
 		if (false == buildManager.isBuildingSupply() && gameData.getSupplyRemain() <= 4 * 2) {
@@ -101,16 +99,16 @@ public class MagiStrategyManager {
 	// 모든 공격 가능한 유닛셋을 가져온다.
 	Set<Integer> attackableUnits = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 20마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
-	if (false == microControlManager.hasAttackTilePosition() && attackableUnits.size() > 60 && null != scoutManager.getEnemyBaseLocation()) {
+	if (false == microControlManager.hasAttackTilePosition() && attackableUnits.size() > 60 && null != locationManager.getEnemyStartLocation()) {
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnits.size());
-	    microControlManager.setAttackTilePosition(scoutManager.getEnemyBaseLocation());
+	    microControlManager.setAttackTilePosition(locationManager.getEnemyStartLocation());
 	}
 
 	if (true == microControlManager.hasAttackTilePosition()) {
 	    for (Integer unitId : attackableUnits) {
 		Unit unit = allianceUnitManager.getUnit(unitId);
 		if (unit.isIdle()) {
-		    ActionUtil.attackPosition(allianceUnitManager, unit, scoutManager.getEnemyBaseLocation().toPosition());
+		    ActionUtil.attackPosition(allianceUnitManager, unit, microControlManager.getAttackTilePosition().toPosition());
 		}
 	    }
 	}
