@@ -2,9 +2,13 @@ import bwapi.Unit;
 
 public abstract class Manager {
     protected GameStatus gameStatus = null;
+    protected UnitManager allianceUnitManager = null;
+    protected UnitManager enemyUnitManager = null;
 
     protected void onStart(GameStatus gameStatus) {
 	this.gameStatus = gameStatus;
+	this.allianceUnitManager = gameStatus.getAllianceUnitManager();
+	this.enemyUnitManager = gameStatus.getEnemyUnitManager();
     }
 
     protected void onFrame() {

@@ -18,7 +18,6 @@ public class MagiStrategyManager extends Manager {
 
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
     private MagiLocationManager locationManager = MagiLocationManager.Instance();
-    private MagiMicroControlManager microControlManager = MagiMicroControlManager.Instance();
     private MagiEliminateManager magiEliminateManager = MagiEliminateManager.Instance();
     // 벙커는 SCV 4마리만 수리한다.
     private static int repairCount = 4;
@@ -42,7 +41,6 @@ public class MagiStrategyManager extends Manager {
     public void onFrame() {
 	super.onFrame();
 
-	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	Set<Integer> bunkerSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Bunker);
 	for (Integer bunkerId : bunkerSet) {
 	    Unit bunker = allianceUnitManager.getUnit(bunkerId);
@@ -99,14 +97,13 @@ public class MagiStrategyManager extends Manager {
 	// 모든 공격 가능한 유닛셋을 가져온다.
 	Set<Integer> attackableUnits = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
-	if (false == microControlManager.hasAttackTilePosition() && attackableUnits.size() > 60 && null != locationManager.getEnemyStartTilePosition()) {
+	if (true == gameStatus.hasAttackTilePosition() || (attackableUnits.size() > 60 && null != locationManager.getEnemyStartTilePosition())) {
 	    // 5초에 한 번만 수행한다.
 	    if (0 != gameStatus.getFrameCount() % (42 * 5)) {
 		return;
 	    }
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnits.size());
 	    TilePosition attackTilePosition = null;
-	    UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
 
 	    // 내 본진의 위치
 	    TilePosition allianceStartTilePosition = locationManager.getAllianceStartTilePosition();
@@ -129,8 +126,9 @@ public class MagiStrategyManager extends Manager {
 		}
 	    }
 
-	    Log.info("공격할 위치: %s", attackTilePosition);
 	    if (null != attackTilePosition) {
+		gameStatus.setAttackTilePosition(attackTilePosition);
+		Log.info("총 공격! 공격할 위치: %s", attackTilePosition);
 		for (Integer unitId : attackableUnits) {
 		    Unit unit = allianceUnitManager.getUnit(unitId);
 		    if (unit.isIdle()) {
@@ -138,6 +136,7 @@ public class MagiStrategyManager extends Manager {
 		    }
 		}
 	    } else {
+		gameStatus.clearAttackTilePosition();
 		magiEliminateManager.search(allianceUnitManager);
 		Log.info("Eliminate Manager 동작 시작.");
 	    }
