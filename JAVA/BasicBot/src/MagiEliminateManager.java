@@ -5,21 +5,15 @@ import java.util.Set;
 import bwapi.TilePosition;
 import bwapi.Unit;
 
-/// 게임 초반에 일꾼 유닛 중에서 정찰 유닛을 하나 지정하고, 정찰 유닛을 이동시켜 정찰을 수행하는 class<br>
-/// 적군의 BaseLocation 위치를 알아내는 것까지만 개발되어있습니다
-public class MagiEliminateManager {
+public class MagiEliminateManager extends Manager {
 
     private static MagiEliminateManager instance = new MagiEliminateManager();
 
-    /// static singleton 객체를 리턴합니다
     public static MagiEliminateManager Instance() {
 	return instance;
     }
 
     private Queue<TilePosition> eliminateQueue = new LinkedList<>();
-
-    public void onFrame(GameData gameData) {
-    }
 
     public void search(UnitManager allianceUnitManager) {
 	if (eliminateQueue.isEmpty()) {

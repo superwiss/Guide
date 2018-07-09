@@ -7,7 +7,7 @@ import bwapi.Unit;
 import bwapi.UnitType;
 
 /// 일꾼 유닛들의 상태를 관리하고 컨트롤하는 class
-public class MagiWorkerManager {
+public class MagiWorkerManager extends Manager {
     private static MagiWorkerManager instance = new MagiWorkerManager();
 
     /// static singleton 객체를 리턴합니다
@@ -18,19 +18,22 @@ public class MagiWorkerManager {
     private Map<Integer, MagiBuildOrderItem> buildWorker = new HashMap<>();
     private Map<Integer, Integer> buildWorkerFailCount = new HashMap<>();
 
-    public void onFrame(GameData gameData) {
-	if (1 == gameData.getFrameCount()) {
-	    gameData.getAllianceUnitManager().initMimeralInfo();
+    @Override
+    public void onFrame() {
+	super.onFrame();
+
+	if (1 == gameStatus.getFrameCount()) {
+	    gameStatus.getAllianceUnitManager().initMimeralInfo();
 	    // 일꾼분배
-	    assignWorkersToMineral(gameData.getAllianceUnitManager());
-	} else if (1 < gameData.getFrameCount()) {
-	    assignWorkersToMineral(gameData.getAllianceUnitManager());
+	    assignWorkersToMineral(gameStatus.getAllianceUnitManager());
+	} else if (1 < gameStatus.getFrameCount()) {
+	    assignWorkersToMineral(gameStatus.getAllianceUnitManager());
 	}
 
 	Log.debug("Build Worker size: %d", buildWorker.keySet().size());
 	Set<Unit> releaseWorker = new HashSet<>();
 	for (Integer workerId : buildWorker.keySet()) {
-	    Unit worker = gameData.getAllianceUnitManager().getUnit(workerId);
+	    Unit worker = gameStatus.getAllianceUnitManager().getUnit(workerId);
 	    if (null == worker) {
 		// TODO 어떤 경우에 이런 상황이 발생하는지 분석 필요
 		Log.warn("분석 필요...");
@@ -57,6 +60,22 @@ public class MagiWorkerManager {
 	}
 	for (Unit unit : releaseWorker) {
 	    releaseBuildWorker(unit);
+	}
+    }
+
+    @Override
+    protected void onUnitComplete(Unit unit) {
+	super.onUnitComplete(unit);
+
+	if (UnitUtil.isAllianceUnit(unit)) {
+	    if (unit.getType().isWorker()) {
+
+	    }
+	}
+	if (unit.getPlayer() == MyBotModule.Broodwar.self()) {
+	    if (unit.getType().isWorker()) {
+		assignWorkersToMineral(gameStatus.getAllianceUnitManager());
+	    }
 	}
     }
 
@@ -100,18 +119,6 @@ public class MagiWorkerManager {
 		    // 적절한 미네랄을 채취한다.
 		    allianceUnitManager.mining(worker, commandCenter);
 		}
-	    }
-	}
-    }
-
-    /// 일꾼 유닛들의 상태를 저장하는 workerData 객체를 업데이트하고, 일꾼 유닛들이 자원 채취 등 임무 수행을 하도록 합니다
-    public void update() {
-    }
-
-    public void onUnitComplete(Unit unit, GameData gameData) {
-	if (0 != gameData.getFrameCount()) {
-	    if (unit.getType().isWorker() && unit.getPlayer() == MyBotModule.Broodwar.self()) {
-		assignWorkersToMineral(gameData.getAllianceUnitManager());
 	    }
 	}
     }

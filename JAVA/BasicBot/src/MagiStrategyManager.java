@@ -6,15 +6,10 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 
-/// 상황을 판단하여, 정찰, 빌드, 공격, 방어 등을 수행하도록 총괄 지휘를 하는 class <br>
-/// InformationManager 에 있는 정보들로부터 상황을 판단하고, <br>
-/// BuildManager 의 buildQueue에 빌드 (건물 건설 / 유닛 훈련 / 테크 리서치 / 업그레이드) 명령을 입력합니다.<br>
-/// 정찰, 빌드, 공격, 방어 등을 수행하는 코드가 들어가는 class
-public class MagiStrategyManager {
+public class MagiStrategyManager extends Manager {
 
     private static MagiStrategyManager instance = new MagiStrategyManager();
 
-    /// static singleton 객체를 리턴합니다
     public static MagiStrategyManager Instance() {
 	return instance;
     }
@@ -22,8 +17,8 @@ public class MagiStrategyManager {
     private Set<StrategyItem> strategyItems = new HashSet<>();
 
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
-    private LocationManager locationManager = LocationManager.Instance();
-    private MicroControlManager microControlManager = MicroControlManager.Instance();
+    private MagiLocationManager locationManager = MagiLocationManager.Instance();
+    private MagiMicroControlManager microControlManager = MagiMicroControlManager.Instance();
     private MagiEliminateManager magiEliminateManager = MagiEliminateManager.Instance();
     // 벙커는 SCV 4마리만 수리한다.
     private static int repairCount = 4;
@@ -36,12 +31,18 @@ public class MagiStrategyManager {
     }
 
     /// 경기가 시작될 때 일회적으로 전략 초기 세팅 관련 로직을 실행합니다
-    public void onStart() {
+    @Override
+    public void onStart(GameStatus gameStatus) {
+	super.onStart(gameStatus);
+
 	defense6droneBuildOrder();
     }
 
-    public void onFrame(GameData gameData) {
-	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+    @Override
+    public void onFrame() {
+	super.onFrame();
+
+	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	Set<Integer> bunkerSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Bunker);
 	for (Integer bunkerId : bunkerSet) {
 	    Unit bunker = allianceUnitManager.getUnit(bunkerId);
@@ -51,7 +52,7 @@ public class MagiStrategyManager {
 		}
 	    }
 	    if (strategyItems.contains(StrategyItem.REPAIR_BUNKER)) {
-		if (gameData.getMineral() > 0) {
+		if (gameStatus.getMineral() > 0) {
 		    if (UnitType.Terran_Bunker.maxHitPoints() > bunker.getHitPoints()) {
 			repairBunker(allianceUnitManager, bunker);
 		    } else {
@@ -63,13 +64,13 @@ public class MagiStrategyManager {
 	if (strategyItems.contains(StrategyItem.MARINE_AUTO_TRAIN)) {
 	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
 		// 서플 여유가 4개 이하면 서플을 짓는다.
-		if (false == buildManager.isBuildingSupply() && gameData.getSupplyRemain() <= 4 * 2) {
+		if (false == buildManager.isBuildingSupply() && gameStatus.getSupplyRemain() <= 4 * 2) {
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-		} else if (gameData.getMineral() > 200 && null != allianceUnitManager.getFirstUnitIdByUnitKind(UnitKind.Terran_Academy)
+		} else if (gameStatus.getMineral() > 200 && null != allianceUnitManager.getFirstUnitIdByUnitKind(UnitKind.Terran_Academy)
 			&& 5 > allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
 		    // 아카데미가 존재하고, 배럭이 5개 미만이고, BuildOrder Queue가 비어있으면 세 번째 배럭을 짓는다.
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
-		} else if (gameData.getMineral() >= 50) {
+		} else if (gameStatus.getMineral() >= 50) {
 		    Unit barracks = buildManager.getTrainableBarracks(allianceUnitManager);
 		    if (null != barracks) {
 			Set<Integer> medicIds = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Medic);
@@ -100,12 +101,12 @@ public class MagiStrategyManager {
 	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
 	if (false == microControlManager.hasAttackTilePosition() && attackableUnits.size() > 60 && null != locationManager.getEnemyStartTilePosition()) {
 	    // 5초에 한 번만 수행한다.
-	    if (0 != gameData.getFrameCount() % (42 * 5)) {
+	    if (0 != gameStatus.getFrameCount() % (42 * 5)) {
 		return;
 	    }
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnits.size());
 	    TilePosition attackTilePosition = null;
-	    UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
+	    UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
 
 	    // 내 본진의 위치
 	    TilePosition allianceStartTilePosition = locationManager.getAllianceStartTilePosition();
@@ -190,14 +191,6 @@ public class MagiStrategyManager {
 	}
     }
 
-    ///  경기가 종료될 때 일회적으로 전략 결과 정리 관련 로직을 실행합니다
-    public void onEnd(boolean isWinner) {
-    }
-
-    /// 경기 진행 중 매 프레임마다 경기 전략 관련 로직을 실행합니다
-    public void update() {
-    }
-
     public void defense6droneBuildOrder() {
 	// 초기 빌드 오더
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
@@ -230,7 +223,10 @@ public class MagiStrategyManager {
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
     }
 
-    public void onUnitComplete(Unit unit, GameData gameData) {
+    @Override
+    public void onUnitComplete(Unit unit) {
+	super.onUnitComplete(unit);
+
 	if (null != unit && unit.getType().equals(UnitType.Terran_Barracks)) {
 	    unit.setRallyPoint(locationManager.getChokePoint1().toPosition());
 	}

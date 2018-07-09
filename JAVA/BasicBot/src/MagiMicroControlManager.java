@@ -8,25 +8,26 @@ import bwapi.Unit;
 import bwapi.UnitType;
 
 // MagiBot을 빠르게 연습시키기 위해서, 유즈맵으로 미션을 만들어 MagiBot이 미션을 해결하는 방식으로 훈련한다.
-public class MicroControlManager {
-    private static MicroControlManager instance = new MicroControlManager();
+public class MagiMicroControlManager extends Manager {
+    private static MagiMicroControlManager instance = new MagiMicroControlManager();
 
-    public static MicroControlManager Instance() {
+    public static MagiMicroControlManager Instance() {
 	return instance;
     }
 
-    private MicroControlManager() {
+    private MagiMicroControlManager() {
 	medicUnitTypeSet.add(UnitType.Terran_Medic);
     }
 
-    private GameData gameData;
     private TilePosition attackTilePosition = null;
     private final Set<UnitType> medicUnitTypeSet = new HashSet<>();
 
-    public void onFrame(GameData gameData) {
-	this.gameData = gameData;
-	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
-	UnitManager enemyUnitManager = gameData.getEnemyUnitManager();
+    @Override
+    public void onFrame() {
+	super.onFrame();
+
+	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
+	UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
 
 	medicControl(allianceUnitManager);
 
@@ -41,7 +42,7 @@ public class MicroControlManager {
 
 	    // 속도 테스트
 	    /*
-	    if (false == speedTest(gameData, allianceUnit)) {
+	    if (false == speedTest(gameStatus, allianceUnit)) {
 	    return;
 	    }
 	    */
@@ -64,7 +65,7 @@ public class MicroControlManager {
 
 	    // 게임 속도 제어
 	    /*
-	    if (false == speedControl(gameData, allianceUnit, enemyUnit)) {
+	    if (false == speedControl(gameStatus, allianceUnit, enemyUnit)) {
 	    return;
 	    }
 	    */
@@ -123,7 +124,7 @@ public class MicroControlManager {
     // 메딕을 컨트롤 한다.
     private void medicControl(UnitManager allianceUnitManager) {
 	// 메딕은 42프레임에 1번만 컨트롤 한다.
-	if (gameData.getFrameCount() % 42 != 0) {
+	if (gameStatus.getFrameCount() % 42 != 0) {
 	    return;
 	}
 
@@ -157,15 +158,15 @@ public class MicroControlManager {
     }
 
     // 필요한 프레임으로 빨리 이동하기 위해서 게임 속도를 제어한다. false를 리턴하면 frmae을 종료한다.
-    private boolean speedControl(GameData gameData, Unit allianceUnit, Unit enemyUnit) {
+    private boolean speedControl(GameStatus gameStatus, Unit allianceUnit, Unit enemyUnit) {
 	boolean result = true;
 
-	Game game = gameData.getGame();
-	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+	Game game = gameStatus.getGame();
+	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 
 	// 24프레임에 한 번씩 아군 유닛을 중심으로 화면을 이동한다.
-	if (0 == gameData.getFrameCount() % 24) {
-	    gameData.setScreen(allianceUnit.getPosition());
+	if (0 == gameStatus.getFrameCount() % 24) {
+	    gameStatus.setScreen(allianceUnit.getPosition());
 	}
 
 	switch (game.getFrameCount()) {
@@ -208,11 +209,11 @@ public class MicroControlManager {
 
     // 유닛의 이동 거리를 측정하기 위한 테스트용 메서드
     /*
-    private boolean speedTest(GameData gameData, Unit allianceUnit) {
+    private boolean speedTest(gameStatus gameStatus, Unit allianceUnit) {
     boolean result = false;
     
-    Game game = gameData.getGame();
-    UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+    Game game = gameStatus.getGame();
+    UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
     
     switch (game.getFrameCount()) {
     case 1:

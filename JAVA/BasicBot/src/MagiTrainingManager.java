@@ -5,10 +5,10 @@ import bwapi.Unit;
 import bwapi.UnitType;
 
 // MagiBot을 빠르게 연습시키기 위해서, 유즈맵으로 미션을 만들어 MagiBot이 미션을 해결하는 방식으로 훈련한다.
-public class TrainingManager {
-    private static TrainingManager instance = new TrainingManager();
+public class MagiTrainingManager extends Manager {
+    private static MagiTrainingManager instance = new MagiTrainingManager();
 
-    public static TrainingManager Instance() {
+    public static MagiTrainingManager Instance() {
 	return instance;
     }
 
@@ -32,7 +32,10 @@ public class TrainingManager {
     // 미션 성공 여부
     private boolean isSuccess = false;
 
-    public void onStart() {
+    @Override
+    public void onStart(GameStatus gameStatus) {
+	super.onStart(gameStatus);
+
 	String mapName = game.mapFileName();
 	TrainingData.TrainingDataBuilder builder = TrainingData.builder();
 	switch (mapName) {
@@ -72,6 +75,26 @@ public class TrainingManager {
 	trainingData = builder.build();
     }
 
+    @Override
+    protected void onFrame() {
+	super.onFrame();
+
+	if (isTrainingMode()) {
+
+	    if (true == isFinished()) {
+		if (-1 == getExitFrame()) {
+		    setExitFrame(gameStatus.getFrameCount() + 24);
+		    printResult();
+		    Log.setLogLevel(Log.Level.NONE);
+		}
+		if (gameStatus.getFrameCount() >= getExitFrame()) {
+		    gameStatus.leaveGame();
+		    System.exit(0);
+		}
+	    }
+	}
+    }
+
     // 미션 종료 여부를 리턴한다.
     public boolean isFinished() {
 	boolean result = false;
@@ -99,8 +122,15 @@ public class TrainingManager {
 	return result;
     }
 
-    // 유닛이 없어질 때 마다 호출된다.
+    @Override
     public void onUnitEvade(Unit unit) {
+	super.onUnitEvade(unit);
+
+	// 트레이닝 모드일 경우에만 이벤트를 처리한다.
+	if (false == isTrainingMode) {
+	    return;
+	}
+
 	List<UnitType> targetUnitTypeList;
 	if (game.self().isEnemy(unit.getPlayer())) {
 	    // 적 유닛이 죽었을 경우

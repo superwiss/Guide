@@ -2,7 +2,7 @@ import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
 
-public class GameData {
+public class GameStatus {
 
     private Game broodwar;
     private UnitManager myUnitManager = new UnitManager();
@@ -12,7 +12,7 @@ public class GameData {
     // Getter & Setter
     // /////////////////////////
 
-    public GameData(Game broodwar) {
+    public GameStatus(Game broodwar) {
 	this.broodwar = broodwar;
     }
 

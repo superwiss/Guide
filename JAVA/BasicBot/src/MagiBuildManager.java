@@ -10,40 +10,47 @@ import bwapi.UnitType;
 /// 빌드(건물 건설 / 유닛 훈련 / 테크 리서치 / 업그레이드) 명령을 순차적으로 실행하기 위해 빌드 큐를 관리하고, 빌드 큐에 있는 명령을 하나씩 실행하는 class<br>
 /// 빌드 명령 중 건물 건설 명령은 ConstructionManager로 전달합니다
 /// @see ConstructionManager
-public class MagiBuildManager {
+public class MagiBuildManager extends Manager {
 
     private static MagiBuildManager instance = new MagiBuildManager();
 
-    private Queue<MagiBuildOrderItem> queue = new LinkedList<>();
-
-    /// static singleton 객체를 리턴합니다
     public static MagiBuildManager Instance() {
 	return instance;
     }
 
+    private Queue<MagiBuildOrderItem> queue = new LinkedList<>();
     private MagiScoutManager scoutManager = MagiScoutManager.Instance();
     private boolean initialBuildFinished = false;
     private int supplyBuildingCount = 0;
 
-    public void onFrame(GameData gameData) {
+    @Override
+    public void onFrame() {
+	super.onFrame();
+
 	if (!queue.isEmpty()) {
 	    MagiBuildOrderItem buildItem = queue.peek();
 	    if (false == buildItem.isInProgress()) {
 		Log.info("BuildOrder Start: %s", buildItem.toString());
 	    }
-	    process(buildItem, gameData);
+	    process(buildItem, gameStatus);
 	}
     }
 
-    public void onUnitComplete(Unit unit, GameData gameData) {
+    @Override
+    public void onUnitComplete(Unit unit) {
+	super.onUnitComplete(unit);
+
 	if (unit.getType().equals(UnitType.Terran_Supply_Depot)) {
 	    supplyBuildingCount--;
 	}
 
     }
 
-    public void onUnitDiscover(Unit unit, GameData gameData) {
-	if (!queue.isEmpty() && 0 != gameData.getFrameCount()) {
+    @Override
+    public void onUnitDiscover(Unit unit) {
+	super.onUnitDiscover(unit);
+
+	if (!queue.isEmpty() && 0 != gameStatus.getFrameCount()) {
 	    MagiBuildOrderItem buildItem = queue.peek();
 	    if (buildItem.getOrder().equals(MagiBuildOrderItem.Order.BUILD) && unit.getType().toString().equals(buildItem.getTargetUnitType().toString())) {
 		queue.poll();
@@ -64,8 +71,8 @@ public class MagiBuildManager {
 	return queue.size();
     }
 
-    private void process(MagiBuildOrderItem buildOrderItem, GameData gameData) {
-	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+    private void process(MagiBuildOrderItem buildOrderItem, GameStatus gameStatus) {
+	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	MagiBuildOrderItem.Order type = buildOrderItem.getOrder();
 	switch (type) {
 	case INITIAL_BUILDORDER_FINISH:
@@ -74,16 +81,16 @@ public class MagiBuildManager {
 	    queue.poll();
 	    break;
 	case SCOUTING:
-	    boolean didScout = scoutManager.doFirstSearch(gameData);
+	    boolean didScout = scoutManager.doFirstSearch(gameStatus);
 	    if (true == didScout) {
 		queue.poll();
 	    }
 	    break;
 	case TRAINING_WORKER:
-	    trainingWorker(gameData, buildOrderItem);
+	    trainingWorker(gameStatus, buildOrderItem);
 	    break;
 	case TRAINING_MARINE:
-	    trainingMarine(gameData, buildOrderItem);
+	    trainingMarine(gameStatus, buildOrderItem);
 	    break;
 	case GATHER_GAS:
 	    Unit refinary = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
@@ -108,15 +115,15 @@ public class MagiBuildManager {
 		List<TilePosition> tilePositionList = null; // 건물을 지을 위치
 		UnitType buildingType = buildOrderItem.getTargetUnitType(); // 건설할 건물의 종류.
 		if (UnitType.Terran_Barracks.equals(buildingType)) {
-		    tilePositionList = LocationManager.Instance().getBarracks();
+		    tilePositionList = MagiLocationManager.Instance().getBarracks();
 		} else if (UnitType.Terran_Refinery.equals(buildingType)) {
-		    tilePositionList = LocationManager.Instance().getRefinery();
+		    tilePositionList = MagiLocationManager.Instance().getRefinery();
 		} else if (UnitType.Terran_Supply_Depot.equals(buildingType)) {
-		    tilePositionList = LocationManager.Instance().getSupplyDepot();
+		    tilePositionList = MagiLocationManager.Instance().getSupplyDepot();
 		} else if (UnitType.Terran_Academy.equals(buildingType)) {
-		    tilePositionList = LocationManager.Instance().getSupplyDepot();
+		    tilePositionList = MagiLocationManager.Instance().getSupplyDepot();
 		} else if (UnitType.Terran_Bunker.equals(buildingType)) {
-		    tilePositionList = LocationManager.Instance().getBunker();
+		    tilePositionList = MagiLocationManager.Instance().getBunker();
 		}
 
 		if (null != tilePositionList) {
@@ -145,8 +152,8 @@ public class MagiBuildManager {
     }
 
     // 일꾼을 랜덤한 커맨드 센터에서 훈련한다.
-    private void trainingWorker(GameData gameData, MagiBuildOrderItem buildItem) {
-	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+    private void trainingWorker(GameStatus gameStatus, MagiBuildOrderItem buildItem) {
+	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	Unit firstCommandCenter = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Command_Center);
 	if (null != firstCommandCenter) {
 	    int oldQueueSize = firstCommandCenter.getTrainingQueue().size();
@@ -201,8 +208,8 @@ public class MagiBuildManager {
 
     }
 
-    public void trainingMarine(GameData gameData, MagiBuildOrderItem buildItem) {
-	UnitManager allianceUnitManager = gameData.getAllianceUnitManager();
+    public void trainingMarine(GameStatus gameStatus, MagiBuildOrderItem buildItem) {
+	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 
 	Unit targetBarracks = getTrainableBarracks(allianceUnitManager);
 	// 마린 훈련하기

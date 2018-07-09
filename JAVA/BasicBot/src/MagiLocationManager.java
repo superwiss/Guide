@@ -4,11 +4,11 @@ import java.util.List;
 import bwapi.TilePosition;
 import bwapi.Unit;
 
-public class LocationManager {
+public class MagiLocationManager extends Manager {
 
-    private static LocationManager instance = new LocationManager();
+    private static MagiLocationManager instance = new MagiLocationManager();
 
-    public static LocationManager Instance() {
+    public static MagiLocationManager Instance() {
 	return instance;
     }
 
@@ -23,6 +23,15 @@ public class LocationManager {
     private ClockLocation allianceStartLocation;
     private TilePosition enemyStartTilePosition = null;
     private TilePosition allianceStartTilePosition = null;
+
+    @Override
+    protected void onFrame() {
+	super.onFrame();
+
+	if (1 == gameStatus.getFrameCount()) {
+	    init(gameStatus.getAllianceUnitManager().getFirstCommandCenter());
+	}
+    }
 
     // 최초 커맨드센터의 위치를 기반으로 건물 심시티를 결정한다. 
     public void init(Unit commandCenter) {

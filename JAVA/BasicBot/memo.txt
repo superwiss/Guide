@@ -1,11 +1,19 @@
-master -> Development ->
+[기타]
+OverWatch
+1시 위치: 3808, 272
+5시 위치: 3808, 3792
+7시 위치: 288, 3792
+11시 위치: 288, 272 
 
-* Feature_Init
-  + ������Ʈ �ʱ� ����
-    - ������Ʈ �̸��� BasicBot -> MagiBot���� ����
-    - maven project�� ����
-    - Java 1.7 -> 1.8�� ����
-    - logback ���̺귯�� �߰� + logback.xml ����
-    - lombok ���̺귯�� �߰�
-    - MagiBot Java Formatter �߰� (data ���丮)
+
+[게임]
+
+* vs Zerg
+  + 111
+    - 이영호 vs 조일장; 그랜드라인; https://www.youtube.com/watch?v=Ik52Pg6wkZY
+      이영호의 전진 8배력 111 시작. 저그가 실수한 것 없는데 테란이 틈이 없이 완벽하게 이김
+    - 이영호 vs 김민철; 그라운드제로; https://www.youtube.com/watch?v=FhLiTdlqDKE
+      이영호의 111 정석. 저그도 잘했는데, 완벽하게 이김.
+  + 레이트 메카닉
+    - 이영호 강의: https://youtu.be/maiQLskbuHg
 
