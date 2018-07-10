@@ -1,8 +1,8 @@
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 import bwapi.Order;
 import bwapi.TilePosition;
@@ -23,9 +23,10 @@ public class MagiBuildManager extends Manager {
     private MagiScoutManager scoutManager = MagiScoutManager.Instance();
     private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
 
-    private Queue<MagiBuildOrderItem> queue = new LinkedList<>(); // 현재 빌드 오더 정보가 들어 있는 큐.
+    private Deque<MagiBuildOrderItem> queue = new LinkedList<>(); // 현재 빌드 오더 정보가 들어 있는 큐.
     private boolean initialBuildFinished = false; // 초기 빌드 오더가 완료되었는지 여부를 리턴.
     private Map<Integer, Integer> buildingWorkerMap = new HashMap<>(); // 건설 중인 건물과, 이 건물을 짓고 있는 일꾼을 매핑하고 있는 맵
+    private boolean isMoving = false;
 
     @Override
     public void onFrame() {
@@ -39,10 +40,23 @@ public class MagiBuildManager extends Manager {
 		// 건설 시작했는데, (돈이 없는 등의 이유로 취소되어서) 할당된 일꾼이 없으면, 건설을 다시 시작한다.
 		if (buildItem.getOrder().equals(MagiBuildOrderItem.Order.BUILD)) {
 		    Unit worker = buildItem.getWorker();
-		    if (!worker.getOrder().equals(Order.ConstructingBuilding) && !worker.getOrder().equals(Order.PlaceBuilding)) {
+		    switch (worker.getOrder().toString()) {
+		    case "ConstructingBuilding":
+		    case "PlaceBuilding":
+		    case "ResetCollision":
+		    case "Harvest3":
+			// 건물을 짓기 위해서 뭔가 하는 중이다.
+			break;
+		    default:
+			// 건물을 짓지 못하는 상황이다.
 			buildItem.setInProgress(false);
 			allianceUnitManager.addUnitKind(UnitKind.Worker, worker);
+			UnitUtil.loggingDetailUnitInfo(worker);
 			Log.info("일꾼이 건설을 하지 않아서, 다시 건설을 시작합니다. BuildOrderItem: %s", buildItem);
+			break;
+		    }
+		    if (!worker.getOrder().equals(Order.ConstructingBuilding) && !worker.getOrder().equals(Order.PlaceBuilding)
+			    && !worker.getOrder().equals(Order.ResetCollision)) {
 		    }
 
 		}
@@ -126,24 +140,39 @@ public class MagiBuildManager extends Manager {
 		}
 	    }
 	    break;
+	case MOVE_SCV:
+	    Unit moveWorker = workerManager.getInterruptableWorker(buildOrderItem.getTilePosition());
+	    ActionUtil.moveToPosition(allianceUnitManager, moveWorker, buildOrderItem.getTilePosition().toPosition());
+	    queue.poll();
+	    isMoving = true;
+	    break;
 	case BUILD:
 	    if (false == buildOrderItem.isInProgress()) {
 		List<TilePosition> tilePositionList = null; // 건물을 지을 위치
 		UnitType buildingType = buildOrderItem.getTargetUnitType(); // 건설할 건물의 종류.
 		if (UnitType.Terran_Barracks.equals(buildingType)) {
-		    tilePositionList = MagiLocationManager.Instance().getBarracks();
+		    tilePositionList = CircuitBreakerLocationManager.Instance().getBarracks();
 		} else if (UnitType.Terran_Refinery.equals(buildingType)) {
-		    tilePositionList = MagiLocationManager.Instance().getRefinery();
+		    tilePositionList = CircuitBreakerLocationManager.Instance().getRefinery();
 		} else if (UnitType.Terran_Supply_Depot.equals(buildingType)) {
-		    tilePositionList = MagiLocationManager.Instance().getSupplyDepot();
+		    tilePositionList = CircuitBreakerLocationManager.Instance().getSupplyDepot();
 		} else if (UnitType.Terran_Academy.equals(buildingType)) {
-		    tilePositionList = MagiLocationManager.Instance().getSupplyDepot();
+		    tilePositionList = CircuitBreakerLocationManager.Instance().getSupplyDepot();
 		} else if (UnitType.Terran_Bunker.equals(buildingType)) {
-		    tilePositionList = MagiLocationManager.Instance().getBunker();
+		    tilePositionList = CircuitBreakerLocationManager.Instance().getBunker();
 		}
 
 		if (null != tilePositionList) {
 		    for (TilePosition tilePosition : tilePositionList) {
+			if (!gameStatus.isExplored(tilePosition)) {
+			    if (gameStatus.getMineral() + 25 > buildOrderItem.getTargetUnitType().mineralPrice()) {
+				if (false == isMoving) {
+				    MagiBuildOrderItem moveOrder = new MagiBuildOrderItem(MagiBuildOrderItem.Order.MOVE_SCV, tilePosition);
+				    queue.addFirst(moveOrder);
+				}
+			    }
+			    break;
+			}
 			// 건설 가능한 일꾼을 가져온다.
 			Unit worker = workerManager.getInterruptableWorker(tilePosition);
 			if (null != worker) {
@@ -155,6 +184,7 @@ public class MagiBuildManager extends Manager {
 				buildOrderItem.setWorker(worker);
 				allianceUnitManager.removeUnitKind(UnitKind.Worker, worker);
 				Log.info("빌드 오더를 실행합니다: %s", buildOrderItem);
+				isMoving = false;
 				break;
 			    }
 			} else {

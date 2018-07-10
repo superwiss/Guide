@@ -15,7 +15,7 @@ public class MagiScoutManager extends Manager {
 	return instance;
     }
 
-    private MagiLocationManager locationManager = MagiLocationManager.Instance();
+    private CircuitBreakerLocationManager locationManager = CircuitBreakerLocationManager.Instance();
     private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
     private Queue<TilePosition> searchQueue = new LinkedList<>();
 

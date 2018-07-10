@@ -4,11 +4,11 @@ import java.util.List;
 import bwapi.TilePosition;
 import bwapi.Unit;
 
-public class MagiLocationManager extends Manager {
+public class OverWatchLocationManager extends Manager implements ILocation {
 
-    private static MagiLocationManager instance = new MagiLocationManager();
+    private static OverWatchLocationManager instance = new OverWatchLocationManager();
 
-    public static MagiLocationManager Instance() {
+    public static OverWatchLocationManager Instance() {
 	return instance;
     }
 
@@ -34,6 +34,7 @@ public class MagiLocationManager extends Manager {
     }
 
     // 최초 커맨드센터의 위치를 기반으로 건물 심시티를 결정한다. 
+    @Override
     public void init(Unit commandCenter) {
 	if (commandCenter.getTilePosition().equals(ONE_TILE_POSITION)) {
 	    allianceStartLocation = ClockLocation.ONE;
@@ -50,6 +51,7 @@ public class MagiLocationManager extends Manager {
 	}
     }
 
+    @Override
     public List<TilePosition> getBarracks() {
 	// 가로 4, 세로 3
 	List<TilePosition> result = new ArrayList<>();
@@ -114,6 +116,7 @@ public class MagiLocationManager extends Manager {
 	return result;
     }
 
+    @Override
     public List<TilePosition> getBunker() {
 	// 가로 4, 세로 3
 	List<TilePosition> result = new ArrayList<>();
@@ -138,6 +141,7 @@ public class MagiLocationManager extends Manager {
 	return result;
     }
 
+    @Override
     public List<TilePosition> getSupplyDepot() {
 	// 가로 3, 세로 2
 	List<TilePosition> result = new ArrayList<>();
@@ -270,6 +274,7 @@ public class MagiLocationManager extends Manager {
 	return result;
     }
 
+    @Override
     public List<TilePosition> getRefinery() {
 	List<TilePosition> result = new ArrayList<>();
 
@@ -293,6 +298,7 @@ public class MagiLocationManager extends Manager {
 	return result;
     }
 
+    @Override
     public List<TilePosition> getTurret() {
 	List<TilePosition> result = new ArrayList<>();
 
@@ -320,6 +326,7 @@ public class MagiLocationManager extends Manager {
 	return result;
     }
 
+    @Override
     public TilePosition getChokePoint1() {
 	TilePosition result = null;
 
@@ -343,6 +350,7 @@ public class MagiLocationManager extends Manager {
 	return result;
     }
 
+    @Override
     public TilePosition getChokePoint2() {
 	TilePosition result = null;
 
@@ -367,15 +375,13 @@ public class MagiLocationManager extends Manager {
     }
 
     // 몇시 방향인지 리턴한다.
-    public ClockLocation getAllianceStartLocation() {
-	return allianceStartLocation;
-    }
-
+    @Override
     public TilePosition getAllianceStartTilePosition() {
 	return allianceStartTilePosition;
     }
 
     // 정찰 순서를 리턴한다.
+    @Override
     public List<TilePosition> getSearchList() {
 	List<TilePosition> result = new ArrayList<>(4);
 
@@ -411,10 +417,12 @@ public class MagiLocationManager extends Manager {
 	return result;
     }
 
+    @Override
     public TilePosition getEnemyStartTilePosition() {
 	return enemyStartTilePosition;
     }
 
+    @Override
     public void setEnemyStartLocation(TilePosition enemyStartTilePosition) {
 	this.enemyStartTilePosition = enemyStartTilePosition;
     }

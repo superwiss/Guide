@@ -17,7 +17,7 @@ public class MagiStrategyManager extends Manager {
     private Set<StrategyItem> strategyItems = new HashSet<>();
 
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
-    private MagiLocationManager locationManager = MagiLocationManager.Instance();
+    private CircuitBreakerLocationManager locationManager = CircuitBreakerLocationManager.Instance();
     private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
     private MagiEliminateManager magiEliminateManager = MagiEliminateManager.Instance();
     // 벙커는 SCV 4마리만 수리한다.
@@ -35,12 +35,16 @@ public class MagiStrategyManager extends Manager {
     public void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
 
-	defense6droneBuildOrder();
     }
 
     @Override
     public void onFrame() {
 	super.onFrame();
+
+	if (gameStatus.getFrameCount() == 1) {
+	    defense6droneBuildOrder();
+	    return;
+	}
 
 	Set<Integer> bunkerSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Bunker);
 	for (Integer bunkerId : bunkerSet) {
@@ -198,14 +202,21 @@ public class MagiStrategyManager extends Manager {
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Refinery));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.GATHER_GAS));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
     }
 

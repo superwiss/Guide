@@ -12,7 +12,7 @@ public class GameCommander {
     private Game broodwar;
 
     private MagiGameStatusManager gameStatusManager = MagiGameStatusManager.Instance();
-    private MagiLocationManager locationManager = MagiLocationManager.Instance();
+    private CircuitBreakerLocationManager locationManager = CircuitBreakerLocationManager.Instance();
     private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
     private MagiScoutManager scoutManager = MagiScoutManager.Instance();
@@ -38,7 +38,7 @@ public class GameCommander {
 	    UnitUtil.init(gameStatus);
 
 	    // 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생한다.
-	    Log.setLogLevel(Log.Level.TRACE);
+	    Log.setLogLevel(Log.Level.WARN);
 
 	    gameStatusManager.onStart(gameStatus);
 	    locationManager.onStart(gameStatus);
@@ -235,10 +235,19 @@ public class GameCommander {
 
     /// 텍스트를 입력 후 엔터를 하여 다른 플레이어들에게 텍스트를 전달하려 할 때 발생하는 이벤트를 처리합니다
     public void onSendText(String text) {
+	boolean statusMode = false;
+	if (text.startsWith("status")) {
+	    text = text.substring(7);
+	    statusMode = true;
+	}
 	try {
 	    int number = Integer.parseInt(text);
-	    Log.info("Set game speed to %d", number);
-	    broodwar.setLocalSpeed(number);
+	    if (false == statusMode) {
+		Log.info("Set game speed to %d", number);
+		broodwar.setLocalSpeed(number);
+	    } else {
+		UnitUtil.loggingDetailUnitInfo(number);
+	    }
 	} catch (NumberFormatException e) {
 	    switch (text) {
 	    case "p":

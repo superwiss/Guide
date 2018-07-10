@@ -1,14 +1,16 @@
+import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 
 public class MagiBuildOrderItem {
     public enum Order {
-	INITIAL_BUILDORDER_FINISH, TRAINING_WORKER, BUILD, TRAINING_MARINE, SCOUTING, GATHER_GAS
+	INITIAL_BUILDORDER_FINISH, TRAINING_WORKER, BUILD, TRAINING_MARINE, SCOUTING, GATHER_GAS, MOVE_SCV
     }
 
     private Order order;
     private UnitType targetUnitType;
     private Unit worker;
+    private TilePosition tilePosition;
     private boolean inProgress = false;
 
     public MagiBuildOrderItem(Order order) {
@@ -19,6 +21,11 @@ public class MagiBuildOrderItem {
 	this.order = order;
 	this.targetUnitType = targetUnitType;
 
+    }
+
+    public MagiBuildOrderItem(Order order, TilePosition tilePosition) {
+	this.order = order;
+	this.tilePosition = tilePosition;
     }
 
     public Order getOrder() {
@@ -37,6 +44,14 @@ public class MagiBuildOrderItem {
 	this.worker = worker;
     }
 
+    public TilePosition getTilePosition() {
+	return tilePosition;
+    }
+
+    public void setTilePosition(TilePosition tilePosition) {
+	this.tilePosition = tilePosition;
+    }
+
     public boolean isInProgress() {
 	return inProgress;
     }
@@ -48,7 +63,6 @@ public class MagiBuildOrderItem {
     @Override
     public String toString() {
 	return "MagiBuildItem[Order=" + order.toString() + ",targetUnitType=" + targetUnitType + ",worker=" + (null != worker ? worker.getID() : "null") + ",inProgress="
-		+ String.valueOf(inProgress) + "]";
+		+ String.valueOf(inProgress) + ",tilePosition=" + (null != tilePosition ? tilePosition.toString() : "null") + "]";
     }
-
 }

@@ -256,11 +256,19 @@ public class UnitUtil {
 	}
     }
 
+    public static void loggingDetailUnitInfo(int id) {
+	Unit unit = allianceUnitManager.getUnit(id);
+	if (null == unit) {
+	    unit = enemyUnitManager.getUnit(id);
+	}
+	loggingDetailUnitInfo(unit);
+    }
+
     // 유닛의 정보를 엄청 자세히 로그로 남긴다.
     // 주의: 속도가 느려지므로, 디버깅할 때만 사용할 것.
     public static void loggingDetailUnitInfo(Unit unit) {
 	if (null != unit) {
-	    String unitId = "[" + unit.getID() + "] [" + unit.getType() + "] ";
+	    String unitId = "UnitDetailInfo[" + unit.getID() + "] [" + unit.getType() + "] ";
 
 	    // 현재 수행 가능한 액션을 로깅
 	    String posibility = unitId + "Possible action: ";
