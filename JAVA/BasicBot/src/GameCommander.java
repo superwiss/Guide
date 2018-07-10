@@ -35,9 +35,10 @@ public class GameCommander {
 	    gameStatus = new GameStatus(broodwar);
 
 	    ActionUtil.setGame(broodwar);
+	    UnitUtil.init(gameStatus);
 
 	    // 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생한다.
-	    Log.setLogLevel(Log.Level.WARN);
+	    Log.setLogLevel(Log.Level.TRACE);
 
 	    gameStatusManager.onStart(gameStatus);
 	    locationManager.onStart(gameStatus);
@@ -253,9 +254,9 @@ public class GameCommander {
 	    case "enemyBuilding":
 		String msg = "";
 		UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
-		Set<Integer> enemyBuildingIds = enemyUnitManager.getUnitsIdByUnitKind(UnitKind.Building);
+		Set<Integer> enemyBuildingIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Building);
 		msg += String.format("enemy building size: %d\n", enemyBuildingIds.size());
-		Set<Integer> mainBuildingIds = enemyUnitManager.getUnitsIdByUnitKind(UnitKind.MAIN_BUILDING);
+		Set<Integer> mainBuildingIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.MAIN_BUILDING);
 		for (Integer enemyBuildingId : enemyBuildingIds) {
 		    Unit enemyBuilding = enemyUnitManager.getUnit(enemyBuildingId);
 		    msg += String.format("Building id=%d, TilePosition: %s, isVisible: %b, UnitType: %s, isMainBuilding: %b\n", enemyBuildingId,

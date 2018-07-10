@@ -19,7 +19,7 @@ public class MagiEliminateManager extends Manager {
 	if (eliminateQueue.isEmpty()) {
 	    initQueue();
 	}
-	Set<Integer> combatUnitIds = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit);
+	Set<Integer> combatUnitIds = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit);
 	for (Integer combatUnitId : combatUnitIds) {
 	    Unit unit = allianceUnitManager.getUnit(combatUnitId);
 	    if (null != unit && unit.isIdle() && !eliminateQueue.isEmpty()) {

@@ -1,8 +1,10 @@
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 
+import bwapi.Order;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -18,10 +20,12 @@ public class MagiBuildManager extends Manager {
 	return instance;
     }
 
-    private Queue<MagiBuildOrderItem> queue = new LinkedList<>();
     private MagiScoutManager scoutManager = MagiScoutManager.Instance();
-    private boolean initialBuildFinished = false;
-    private int supplyBuildingCount = 0;
+    private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
+
+    private Queue<MagiBuildOrderItem> queue = new LinkedList<>(); // 현재 빌드 오더 정보가 들어 있는 큐.
+    private boolean initialBuildFinished = false; // 초기 빌드 오더가 완료되었는지 여부를 리턴.
+    private Map<Integer, Integer> buildingWorkerMap = new HashMap<>(); // 건설 중인 건물과, 이 건물을 짓고 있는 일꾼을 매핑하고 있는 맵
 
     @Override
     public void onFrame() {
@@ -31,19 +35,21 @@ public class MagiBuildManager extends Manager {
 	    MagiBuildOrderItem buildItem = queue.peek();
 	    if (false == buildItem.isInProgress()) {
 		Log.info("BuildOrder Start: %s", buildItem.toString());
+	    } else {
+		// 건설 시작했는데, (돈이 없는 등의 이유로 취소되어서) 할당된 일꾼이 없으면, 건설을 다시 시작한다.
+		if (buildItem.getOrder().equals(MagiBuildOrderItem.Order.BUILD)) {
+		    Unit worker = buildItem.getWorker();
+		    if (!worker.getOrder().equals(Order.ConstructingBuilding) && !worker.getOrder().equals(Order.PlaceBuilding)) {
+			buildItem.setInProgress(false);
+			allianceUnitManager.addUnitKind(UnitKind.Worker, worker);
+			Log.info("일꾼이 건설을 하지 않아서, 다시 건설을 시작합니다. BuildOrderItem: %s", buildItem);
+		    }
+
+		}
 	    }
-	    process(buildItem, gameStatus);
+
+	    process(buildItem);
 	}
-    }
-
-    @Override
-    public void onUnitComplete(Unit unit) {
-	super.onUnitComplete(unit);
-
-	if (unit.getType().equals(UnitType.Terran_Supply_Depot)) {
-	    supplyBuildingCount--;
-	}
-
     }
 
     @Override
@@ -52,14 +58,24 @@ public class MagiBuildManager extends Manager {
 
 	if (!queue.isEmpty() && 0 != gameStatus.getFrameCount()) {
 	    MagiBuildOrderItem buildItem = queue.peek();
-	    if (buildItem.getOrder().equals(MagiBuildOrderItem.Order.BUILD) && unit.getType().toString().equals(buildItem.getTargetUnitType().toString())) {
-		queue.poll();
+	    if (buildItem.getOrder().equals(MagiBuildOrderItem.Order.BUILD) && unit.getType().equals(buildItem.getTargetUnitType())) {
+		buildingWorkerMap.put(unit.getID(), buildItem.getWorker().getID());
 		Log.debug("BuildOrder Finish: %s", buildItem.toString());
-
-		if (unit.getType().equals(UnitType.Terran_Supply_Depot)) {
-		    supplyBuildingCount++;
-		}
+		queue.poll();
 	    }
+	}
+    }
+
+    @Override
+    protected void onUnitComplete(Unit unit) {
+	super.onUnitComplete(unit);
+
+	Integer unitId = unit.getID();
+	if (buildingWorkerMap.containsKey(unitId)) {
+	    Integer workerId = buildingWorkerMap.get(unitId);
+	    buildingWorkerMap.remove(unitId);
+	    allianceUnitManager.addUnitKind(UnitKind.Worker, allianceUnitManager.getUnit(workerId));
+
 	}
     }
 
@@ -71,7 +87,7 @@ public class MagiBuildManager extends Manager {
 	return queue.size();
     }
 
-    private void process(MagiBuildOrderItem buildOrderItem, GameStatus gameStatus) {
+    private void process(MagiBuildOrderItem buildOrderItem) {
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	MagiBuildOrderItem.Order type = buildOrderItem.getOrder();
 	switch (type) {
@@ -87,15 +103,15 @@ public class MagiBuildManager extends Manager {
 	    }
 	    break;
 	case TRAINING_WORKER:
-	    trainingWorker(gameStatus, buildOrderItem);
+	    trainingWorker(buildOrderItem);
 	    break;
 	case TRAINING_MARINE:
-	    trainingMarine(gameStatus, buildOrderItem);
+	    trainingMarine(buildOrderItem);
 	    break;
 	case GATHER_GAS:
 	    Unit refinary = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
 	    if (null != refinary) {
-		Unit workerForGatherGas = allianceUnitManager.getBuildableWorker(refinary.getTilePosition());
+		Unit workerForGatherGas = workerManager.getInterruptableWorker(refinary.getTilePosition());
 		if (null != workerForGatherGas) {
 		    if (workerForGatherGas.canGather(refinary)) {
 			workerForGatherGas.gather(refinary);
@@ -128,17 +144,21 @@ public class MagiBuildManager extends Manager {
 
 		if (null != tilePositionList) {
 		    for (TilePosition tilePosition : tilePositionList) {
-			Unit worker = allianceUnitManager.getBuildableWorker(tilePosition);
+			// 건설 가능한 일꾼을 가져온다.
+			Unit worker = workerManager.getInterruptableWorker(tilePosition);
 			if (null != worker) {
+			    // 일꾼이 건물을 지을 수 있으면 
 			    boolean canBuild = worker.canBuild(buildingType, tilePosition);
 			    if (true == canBuild) {
 				worker.build(buildingType, tilePosition);
 				buildOrderItem.setInProgress(true);
-				MagiWorkerManager.Instance().assignBuildWorker(worker, buildOrderItem);
+				buildOrderItem.setWorker(worker);
+				allianceUnitManager.removeUnitKind(UnitKind.Worker, worker);
+				Log.info("빌드 오더를 실행합니다: %s", buildOrderItem);
 				break;
 			    }
 			} else {
-			    Log.warn("건물을 건설할 일꾼이 없습니다. BuildOrderItem: %s", buildOrderItem);
+			    Log.error("건물을 건설할 일꾼이 없습니다. buildOrderItem: %s", buildOrderItem);
 			}
 		    }
 		} else {
@@ -152,8 +172,8 @@ public class MagiBuildManager extends Manager {
     }
 
     // 일꾼을 랜덤한 커맨드 센터에서 훈련한다.
-    private void trainingWorker(GameStatus gameStatus, MagiBuildOrderItem buildItem) {
-	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
+    // TODO 일꾼을 적절한 커맨드 센터에서 훈련하도록 변경하기. 그리고 Worker Manager에서 처리하도록 변경하기.
+    private void trainingWorker(MagiBuildOrderItem buildItem) {
 	Unit firstCommandCenter = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Command_Center);
 	if (null != firstCommandCenter) {
 	    int oldQueueSize = firstCommandCenter.getTrainingQueue().size();
@@ -168,50 +188,10 @@ public class MagiBuildManager extends Manager {
 	}
     }
 
-    public Unit getTrainableBarracks(UnitManager allianceUnitManager) {
-	Unit targetBarracks = null;
+    // 마린을 적절한 배럭에서 훈련한다.
+    public void trainingMarine(MagiBuildOrderItem buildItem) {
 
-	int minQueueSize = Integer.MAX_VALUE;
-	Set<Integer> barracksSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Barracks);
-	// 마린 훈련이 가능한 배럭 중에서 TrainingQueue가 가장 적은 배럭을 선택
-	// TrainingQueue는 최대 2개까지만 허용
-	for (Integer barracksId : barracksSet) {
-	    Unit barracks = allianceUnitManager.getUnit(barracksId);
-	    if (barracks.canTrain(UnitType.Terran_Marine)) {
-		if (barracks.getTrainingQueue().size() < 2) {
-		    if (minQueueSize > barracks.getTrainingQueue().size()) {
-			minQueueSize = barracks.getTrainingQueue().size();
-			targetBarracks = barracks;
-		    }
-		}
-	    }
-	}
-
-	return targetBarracks;
-    }
-
-    public int getTrainingQueueUnitCount(UnitManager allianceUnitManager, UnitType unitType) {
-	int result = 0;
-
-	Set<Integer> barracksSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Barracks);
-	for (Integer barracksId : barracksSet) {
-	    Unit barracks = allianceUnitManager.getUnit(barracksId);
-	    List<UnitType> trainingQueue = barracks.getTrainingQueue();
-	    for (UnitType trainingUnitType : trainingQueue) {
-		if (unitType.equals(trainingUnitType)) {
-		    result++;
-		}
-	    }
-	}
-
-	return result;
-
-    }
-
-    public void trainingMarine(GameStatus gameStatus, MagiBuildOrderItem buildItem) {
-	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
-
-	Unit targetBarracks = getTrainableBarracks(allianceUnitManager);
+	Unit targetBarracks = UnitUtil.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
 	// 마린 훈련하기
 	if (null != targetBarracks && targetBarracks.canTrain(UnitType.Terran_Marine)) {
 	    int beforeQueueSize = targetBarracks.getTrainingQueue().size();
@@ -224,18 +204,8 @@ public class MagiBuildManager extends Manager {
 	}
     }
 
+    // 초기 빌드 오더가 완료되었는지 여부를 리턴한다.
     public boolean isInitialBuildFinished() {
 	return initialBuildFinished;
     }
-
-    public boolean isBuildingSupply() {
-	boolean result = false;
-
-	if (supplyBuildingCount > 0) {
-	    result = true;
-	}
-
-	return result;
-    }
-
 };

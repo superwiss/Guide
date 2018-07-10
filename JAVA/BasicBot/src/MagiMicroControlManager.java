@@ -28,12 +28,12 @@ public class MagiMicroControlManager extends Manager {
 	if (true) {
 	    return;
 	}
-	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit).size());
+	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit).size());
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
 
 	// 적을 공격할 수 있는 아군 유닛을 대상으로 컨트롤을 한다.
-	for (Integer allianceUnitId : allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit)) {
+	for (Integer allianceUnitId : allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit)) {
 
 	    Unit allianceUnit = allianceUnitManager.getUnit(allianceUnitId);
 

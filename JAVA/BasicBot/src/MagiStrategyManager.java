@@ -18,6 +18,7 @@ public class MagiStrategyManager extends Manager {
 
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
     private MagiLocationManager locationManager = MagiLocationManager.Instance();
+    private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
     private MagiEliminateManager magiEliminateManager = MagiEliminateManager.Instance();
     // 벙커는 SCV 4마리만 수리한다.
     private static int repairCount = 4;
@@ -41,7 +42,7 @@ public class MagiStrategyManager extends Manager {
     public void onFrame() {
 	super.onFrame();
 
-	Set<Integer> bunkerSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Bunker);
+	Set<Integer> bunkerSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Bunker);
 	for (Integer bunkerId : bunkerSet) {
 	    Unit bunker = allianceUnitManager.getUnit(bunkerId);
 	    if (strategyItems.contains(StrategyItem.MARINE_INTO_BUNKER)) {
@@ -61,20 +62,20 @@ public class MagiStrategyManager extends Manager {
 	}
 	if (strategyItems.contains(StrategyItem.MARINE_AUTO_TRAIN)) {
 	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
-		// 서플 여유가 4개 이하면 서플을 짓는다.
-		if (false == buildManager.isBuildingSupply() && gameStatus.getSupplyRemain() <= 4 * 2) {
+		// 서플 여유가 4개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
+		if (1 > UnitUtil.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 4 * 2) {
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 		} else if (gameStatus.getMineral() > 200 && null != allianceUnitManager.getFirstUnitIdByUnitKind(UnitKind.Terran_Academy)
-			&& 5 > allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
+			&& 5 > allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
 		    // 아카데미가 존재하고, 배럭이 5개 미만이고, BuildOrder Queue가 비어있으면 세 번째 배럭을 짓는다.
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
 		} else if (gameStatus.getMineral() >= 50) {
-		    Unit barracks = buildManager.getTrainableBarracks(allianceUnitManager);
+		    Unit barracks = UnitUtil.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
 		    if (null != barracks) {
-			Set<Integer> medicIds = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Medic);
-			Set<Integer> marineIds = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Marine);
-			int medicCount = medicIds.size() + buildManager.getTrainingQueueUnitCount(allianceUnitManager, UnitType.Terran_Medic);
-			int marineCount = marineIds.size() + buildManager.getTrainingQueueUnitCount(allianceUnitManager, UnitType.Terran_Marine);
+			Set<Integer> medicIds = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Medic);
+			Set<Integer> marineIds = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Marine);
+			int medicCount = medicIds.size() + UnitUtil.getTrainingQueueUnitCount(UnitType.Terran_Barracks, UnitType.Terran_Medic);
+			int marineCount = marineIds.size() + UnitUtil.getTrainingQueueUnitCount(UnitType.Terran_Barracks, UnitType.Terran_Marine);
 			// 마린4마리당 매딕 1마리
 			Log.info("마린/매딕 생산. 마린 수: %d, 메딕 수: %d", marineCount, medicCount);
 			if (medicCount * 4 < marineCount) {
@@ -95,7 +96,7 @@ public class MagiStrategyManager extends Manager {
 	}
 
 	// 모든 공격 가능한 유닛셋을 가져온다.
-	Set<Integer> attackableUnits = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit);
+	Set<Integer> attackableUnits = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
 	if (true == gameStatus.hasAttackTilePosition() || (attackableUnits.size() > 60 && null != locationManager.getEnemyStartTilePosition())) {
 	    // 5초에 한 번만 수행한다.
@@ -109,7 +110,7 @@ public class MagiStrategyManager extends Manager {
 	    TilePosition allianceStartTilePosition = locationManager.getAllianceStartTilePosition();
 
 	    // 적 본진의 위치
-	    Set<Integer> enemyMainBuildingIds = enemyUnitManager.getUnitsIdByUnitKind(UnitKind.MAIN_BUILDING);
+	    Set<Integer> enemyMainBuildingIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.MAIN_BUILDING);
 
 	    // 가급적 본진에서 가장 가까운 적 본진부터 공격한다.
 	    Unit closestMainBuilding = enemyUnitManager.getClosestUnitWithLastTilePosition(enemyMainBuildingIds, allianceStartTilePosition.toPosition());
@@ -118,7 +119,7 @@ public class MagiStrategyManager extends Manager {
 		attackTilePosition = enemyUnitManager.getLastTilePosition(closestMainBuilding.getID());
 	    } else {
 		// 적 건물들의 위치를 가져온다.
-		Set<Integer> enemyBuildingIds = enemyUnitManager.getUnitsIdByUnitKind(UnitKind.Building);
+		Set<Integer> enemyBuildingIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Building);
 		// 내 본진에서 가장 가까운 상대 건물부터 공격한다.
 		Unit closestBuilding = enemyUnitManager.getClosestUnitWithLastTilePosition(enemyBuildingIds, allianceStartTilePosition.toPosition());
 		if (null != closestBuilding) {
@@ -145,24 +146,10 @@ public class MagiStrategyManager extends Manager {
 
     // 벙거를 수리한다.
     private void repairBunker(UnitManager allianceUnitManager, Unit bunker) {
-	Set<Integer> workerSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Worker);
-	int minDistance = Integer.MAX_VALUE;
-	Unit targetWorker = null;
-	for (Integer workerId : workerSet) {
-	    Unit worker = allianceUnitManager.getUnit(workerId);
-	    if (!allianceUnitManager.isinterruptableWorker(workerId)) {
-		// 동원 가능한 일꾼이 아니면 Skip한다.
-		continue;
-	    }
-	    int distance = bunker.getDistance(worker);
-	    if (distance < minDistance) {
-		minDistance = distance;
-		targetWorker = worker;
-	    }
-	}
+	Unit repairWorker = workerManager.getInterruptableWorker(bunker.getTilePosition());
 	if (repairCount > 0) {
-	    if (null != targetWorker) {
-		ActionUtil.repair(allianceUnitManager, targetWorker, bunker);
+	    if (null != repairWorker) {
+		ActionUtil.repair(allianceUnitManager, repairWorker, bunker);
 		--repairCount;
 	    }
 	}
@@ -170,7 +157,7 @@ public class MagiStrategyManager extends Manager {
 
     // 마린을 벙커에 넣는다.
     private void marineToBunker(UnitManager allianceUnitManager, Unit bunker) {
-	Set<Integer> marineSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Marine);
+	Set<Integer> marineSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Marine);
 	int minDistance = Integer.MAX_VALUE;
 	Unit targetMarine = null;
 	for (Integer marineId : marineSet) {

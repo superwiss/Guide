@@ -1,3 +1,4 @@
+import bwapi.Unit;
 import bwapi.UnitType;
 
 public class MagiBuildOrderItem {
@@ -7,6 +8,7 @@ public class MagiBuildOrderItem {
 
     private Order order;
     private UnitType targetUnitType;
+    private Unit worker;
     private boolean inProgress = false;
 
     public MagiBuildOrderItem(Order order) {
@@ -27,6 +29,14 @@ public class MagiBuildOrderItem {
 	return targetUnitType;
     }
 
+    public Unit getWorker() {
+	return worker;
+    }
+
+    public void setWorker(Unit worker) {
+	this.worker = worker;
+    }
+
     public boolean isInProgress() {
 	return inProgress;
     }
@@ -37,7 +47,8 @@ public class MagiBuildOrderItem {
 
     @Override
     public String toString() {
-	return "MagiBuildItem[Order=" + order.toString() + ",targetUnitType=" + targetUnitType + "]";
+	return "MagiBuildItem[Order=" + order.toString() + ",targetUnitType=" + targetUnitType + ",worker=" + (null != worker ? worker.getID() : "null") + ",inProgress="
+		+ String.valueOf(inProgress) + "]";
     }
 
 }

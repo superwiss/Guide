@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,6 +20,16 @@ public class UnitUtil {
     }
 
     private static Map<Integer, Integer> lastAttackFinishedFrame = new HashMap<>();
+
+    private static GameStatus gameStatus = null;
+    private static UnitManager allianceUnitManager = null;
+    private static UnitManager enemyUnitManager = null;
+
+    public static void init(GameStatus gameStatus) {
+	UnitUtil.gameStatus = gameStatus;
+	UnitUtil.allianceUnitManager = gameStatus.getAllianceUnitManager();
+	UnitUtil.enemyUnitManager = gameStatus.getEnemyUnitManager();
+    }
 
     // Unit의 정보를 출력한다.
     public static String toString(Unit unit) {
@@ -88,7 +99,7 @@ public class UnitUtil {
 	// TODO: Unit.getUnitsInRadius(arg0)을 활용해 보자. 
 	Unit targetUnit = null;
 	int targetDistance = Integer.MAX_VALUE;
-	for (Integer enemyUnitId : enemyUnitManager.getUnitsIdByUnitKind(UnitKind.Combat_Unit)) {
+	for (Integer enemyUnitId : enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit)) {
 	    Unit enemyUnit = enemyUnitManager.getUnit(enemyUnitId);
 	    int distance = allianceUnit.getDistance(enemyUnit);
 	    if (distance > unitSpec.getCombatDistance()) {
@@ -533,6 +544,7 @@ public class UnitUtil {
 	}
     }
 
+    // from 에서 to 방향으로 distance 거리만큼 떨어진 위치를 반환한다.
     public static Position getPositionAsDistance(Position from, Position to, int distance) {
 	Position result = null;
 
@@ -547,6 +559,100 @@ public class UnitUtil {
 		double deltaY = (from.getY() - to.getY()) * percentage;
 
 		result = new Position(from.getX() - (int) deltaX, from.getY() - (int) deltaY);
+	    }
+	}
+
+	return result;
+    }
+
+    // unitManager 소속의 unitIdSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. 유닛 타입이 excludeUnitType일 경우는 제외한다.
+    public static Unit getClosestUnit(UnitManager unitManager, Set<Integer> unitIdSet, Position position, Set<UnitType> excludeUnitType) {
+	Unit result = null;
+
+	if (null != unitManager && null != unitIdSet && null != position) {
+	    int minDistance = Integer.MAX_VALUE;
+	    for (Integer unitId : unitIdSet) {
+		Unit unit = unitManager.getUnit(unitId);
+		if (null != unit) {
+		    if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
+			continue;
+		    }
+		    int distance = unit.getDistance(position);
+		    if (distance < minDistance) {
+			minDistance = distance;
+			result = unit;
+		    }
+		} else {
+		    Log.warn("getClosestUnit(): Failed to getting unit by unitId(%d)", unitId);
+		}
+	    }
+	} else {
+	    Log.warn("Invalid Parameter: unitManager=%s, unitset= %s, position=%s, excludeUnitType=%s", unitManager, unitIdSet, position, excludeUnitType);
+	}
+
+	return result;
+    }
+
+    // unitType을 훈련할 수 있는 buildingType 건물 중, 적절한 건물을 리턴한다. 예를 들면, 마린을 뽑을 때 트레이닝 큐가 제일 짧은 배럭이 우선 순위가 높다라던가 등등...
+    public static Unit getTrainableBuilding(UnitType buildingType, UnitType unitType) {
+	Unit targetBuilding = null;
+
+	int minQueueSize = Integer.MAX_VALUE;
+	Set<Integer> candidateSet = allianceUnitManager.getUnitIdSetByUnitKind(buildingType);
+	// 마린 훈련이 가능한 배럭 중에서 TrainingQueue가 가장 적은 배럭을 선택
+	// TrainingQueue는 최대 2개까지만 허용
+	for (Integer buildingId : candidateSet) {
+	    Unit building = allianceUnitManager.getUnit(buildingId);
+	    if (building.canTrain(unitType)) {
+		if (building.getTrainingQueue().size() < 2) {
+		    if (minQueueSize > building.getTrainingQueue().size()) {
+			minQueueSize = building.getTrainingQueue().size();
+			targetBuilding = building;
+		    }
+		}
+	    }
+	}
+
+	return targetBuilding;
+    }
+
+    // buildingType 건물에서 훈련 중인 unitType의 개수를 리턴한다.
+    public static int getTrainingQueueUnitCount(UnitType buildingType, UnitType unitType) {
+	int result = 0;
+
+	Set<Integer> buildingSet = allianceUnitManager.getUnitIdSetByUnitKind(buildingType);
+	for (Integer buildingId : buildingSet) {
+	    Unit building = allianceUnitManager.getUnit(buildingId);
+	    List<UnitType> trainingQueue = building.getTrainingQueue();
+	    for (UnitType trainingUnitType : trainingQueue) {
+		if (unitType.equals(trainingUnitType)) {
+		    result++;
+		}
+	    }
+	}
+
+	return result;
+    }
+
+    // unitManager 소속의 unitIdSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. (exclude 없는 버전)
+    public static Unit getClosestUnit(UnitManager unitManager, Set<Integer> unitIdSet, Position position) {
+	return getClosestUnit(unitManager, unitIdSet, position, null);
+    }
+
+    // unitType에 해당하는 unitKind를 리턴한다.
+    public static UnitKind getUnitKindByUnitType(UnitType unitType) {
+	return UnitKind.valueOf(unitType.toString());
+    }
+
+    // 건설 중인 건물이 몇 개나 있는지 확인한다.
+    public static int getConstructionCount(UnitType underConstructBuildingType) {
+	int result = 0;
+
+	Set<Integer> unitIdSet = allianceUnitManager.getUnitIdSetByUnitKind(underConstructBuildingType);
+	for (Integer unitId : unitIdSet) {
+	    Unit unit = allianceUnitManager.getUnit(unitId);
+	    if (false == unit.isCompleted()) {
+		result += 1;
 	    }
 	}
 

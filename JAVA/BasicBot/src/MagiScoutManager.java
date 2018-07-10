@@ -16,6 +16,7 @@ public class MagiScoutManager extends Manager {
     }
 
     private MagiLocationManager locationManager = MagiLocationManager.Instance();
+    private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
     private Queue<TilePosition> searchQueue = new LinkedList<>();
 
     // TODO 정찰은 1개만 가능하도록 구현됨. 다중 유닛 정찰 구현하기.
@@ -77,7 +78,7 @@ public class MagiScoutManager extends Manager {
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
 	// 정찰중인 유닛이 죽었을 경우를 처리...
-	if (allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Scouting_Unit).contains(Integer.valueOf(unit.getID()))) {
+	if (allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Scouting_Unit).contains(Integer.valueOf(unit.getID()))) {
 	    // 적 Main건물(커맨드센터, 넥서스, 해처리 류)을 찾기 전이지만, 적 건물이 존재할 경우, 적 건물의 위치를 기반으로 적 본진을 유추한다. 
 	    if (null == locationManager.getEnemyStartTilePosition()) {
 		checkEnemyStartingLocation(enemyUnitManager);
@@ -91,7 +92,7 @@ public class MagiScoutManager extends Manager {
     }
 
     private void checkEnemyStartingLocation(UnitManager enemyUnitManager) {
-	Set<Integer> enemyBuildingUnitIds = enemyUnitManager.getUnitsIdByUnitKind(UnitKind.Building);
+	Set<Integer> enemyBuildingUnitIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Building);
 	for (Integer enemyBuildingUnitId : enemyBuildingUnitIds) {
 	    // 적 본진을 찾았으면 계산을 중단한다.
 	    if (null != locationManager.getEnemyStartTilePosition()) {
@@ -116,7 +117,7 @@ public class MagiScoutManager extends Manager {
 	boolean result = true;
 
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
-	Unit unitForScout = allianceUnitManager.getBuildableWorker(locationManager.getChokePoint2());
+	Unit unitForScout = workerManager.getInterruptableWorker(locationManager.getChokePoint2());
 	if (null != unitForScout) {
 	    allianceUnitManager.setScoutUnit(unitForScout);
 	    searchQueue.addAll(locationManager.getSearchList());

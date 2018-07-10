@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -6,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.Unit;
@@ -17,8 +15,6 @@ public class UnitManager {
     public static enum Assignment {
 	SCOUT, GATHER_GAS
     }
-
-    private Game game = MyBotModule.Broodwar;
 
     // 모든 유닛 목록
     private List<Unit> unitList = new ArrayList<>();
@@ -90,8 +86,12 @@ public class UnitManager {
 	return idUnitMap.keySet();
     }
 
-    public Set<Integer> getUnitsIdByUnitKind(UnitKind unitKind) {
+    public Set<Integer> getUnitIdSetByUnitKind(UnitKind unitKind) {
 	return unitKindMap.get(unitKind);
+    }
+
+    public Set<Integer> getUnitIdSetByUnitKind(UnitType unitType) {
+	return unitKindMap.get(UnitUtil.getUnitKindByUnitType(unitType));
     }
 
     // unitKind 유닛 중에서 아무거나 하나 가져온 뒤, 그 유닛의 ID를 리턴한다.
@@ -200,30 +200,6 @@ public class UnitManager {
 	}
     }
 
-    // command center 주변의 미네랄 정보를 업데이트 한다.
-    public void initMimeralInfo() {
-	for (Integer commandCneter : unitKindMap.get(UnitKind.Terran_Command_Center)) {
-	    insertMineralMap(commandCneter);
-	}
-    }
-
-    // id(command center) 주위의 미네랄 세팅
-    public void insertMineralMap(int commandCenterId) {
-	Set<Integer> value = new HashSet<>();
-	for (Unit mineral : game.getMinerals()) {
-	    if (getUnit(commandCenterId).getDistance(mineral) < 500) {
-		value.add(mineral.getID());
-		assignedMineralMap.put(mineral.getID(), false);
-	    }
-	}
-	mineralMap.put(commandCenterId, value);
-    }
-
-    // TODO 커맨드센터 파괴될 때 처리해주기.
-    public void removeMineralMap(Integer CommandCenterId) {
-	mineralMap.remove(CommandCenterId);
-    }
-
     @Override
     public String toString() {
 	String result = "";
@@ -252,79 +228,6 @@ public class UnitManager {
 	return result;
     }
 
-    public void mining(Unit worker, Unit commandCenter) {
-	// 커맨드 센터 주변의 미네랄 목록을 가져온다.
-	Set<Integer> minerals = mineralMap.get(commandCenter.getID());
-	int assignedDistance = Integer.MAX_VALUE;
-	int notAssignedMinDistance = Integer.MAX_VALUE;
-	Unit notAssignedMineral = null;
-	Unit assignedMineral = null;
-	for (Integer mineral : minerals) {
-	    int distance = getUnit(mineral).getDistance(worker);
-	    if (distance < assignedDistance) {
-		assignedDistance = distance;
-		assignedMineral = getUnit(mineral);
-	    }
-
-	    if (true == assignedMineralMap.get(mineral)) {
-		continue;
-	    }
-	    if (distance < notAssignedMinDistance) {
-		notAssignedMinDistance = distance;
-		notAssignedMineral = getUnit(mineral);
-	    }
-	}
-
-	if (null == notAssignedMineral && null != assignedMineral) {
-	    if (assignedMineral.isVisible()) {
-		Log.debug("worker(%d) mining assigned mineral(%d)", worker.getID(), assignedMineral.getID());
-		worker.gather(assignedMineral);
-	    }
-	} else {
-	    if (null != notAssignedMineral && notAssignedMineral.isVisible()) {
-		Log.debug("worker(%d) mining new mineral(%d)", worker.getID(), notAssignedMineral.getID());
-		assignedMineralMap.put(notAssignedMineral.getID(), true);
-		worker.gather(notAssignedMineral);
-	    }
-	}
-    }
-
-    // tilePosition에서 가장 가까운 건설 가능한 일꾼을 리턴한다.
-    public Unit getBuildableWorker(TilePosition tilePosition) {
-	Unit result = null;
-
-	if (null != tilePosition) {
-	    Set<Integer> candidate = new HashSet<>();
-	    for (Integer workerId : unitKindMap.get(UnitKind.Terran_SCV)) {
-		if (isinterruptableWorker(workerId)) {
-		    candidate.add(workerId);
-		}
-	    }
-
-	    result = getClosestUnit(candidate, tilePosition.toPosition());
-	}
-
-	return result;
-    }
-
-    public boolean isinterruptableWorker(Integer workerId) {
-	boolean result = false;
-
-	if (null != workerId) {
-	    Unit worker = getUnit(workerId);
-	    if (null != worker) {
-		if (true == unitKindMap.get(UnitKind.Worker_Gather_Gas).contains(Integer.valueOf(workerId))) {
-		    // 가스 캐는 일꾼은 건드리지 말자.
-		    result = false;
-		} else {
-		    result = worker.isCompleted() && !worker.isConstructing() && (worker.isIdle() || worker.isGatheringMinerals());
-		}
-	    }
-	}
-
-	return result;
-    }
-
     public void setScoutUnit(Unit unit) {
 	// 유닛을 관리 대상에서 삭제하고 SCOUT 타입으로 변경한다.
 	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
@@ -347,39 +250,6 @@ public class UnitManager {
 	} else {
 	    Log.trace("정찰 유닛이 죽어버렸음..");
 	}
-    }
-
-    // unitSet 중에서 position에 제일 가까운 unit을 리턴한다.
-    public Unit getClosestUnit(Set<Integer> unitSet, Position position) {
-	return getClosestUnit(unitSet, position, null);
-    }
-
-    // unitSet 중에서 position에 제일 가까운 unit을 리턴한다. excludeUnitType은 계산에서 제외한다.
-    public Unit getClosestUnit(Set<Integer> unitSet, Position position, Set<UnitType> excludeUnitType) {
-	Unit result = null;
-
-	if (null != unitSet && null != position) {
-	    int minDistance = Integer.MAX_VALUE;
-	    for (Integer unitId : unitSet) {
-		Unit unit = getUnit(unitId);
-		if (null != unit) {
-		    if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
-			continue;
-		    }
-		    int distance = unit.getDistance(position);
-		    if (distance < minDistance) {
-			minDistance = distance;
-			result = unit;
-		    }
-		} else {
-		    Log.warn("getClosestUnit(): Failed to getting unit by unitId(%d)", unitId);
-		}
-	    }
-	} else {
-	    Log.warn("Invalid Parameter: unitset: %s, position: %s", unitSet, position);
-	}
-
-	return result;
     }
 
     // 메모리에 저장된 unitSet 중에서 position에 제일 가까운 unit을 리턴한다.
@@ -425,7 +295,7 @@ public class UnitManager {
     public String toBuildingString() {
 	String result = "";
 
-	Set<Integer> buildings = getUnitsIdByUnitKind(UnitKind.Building);
+	Set<Integer> buildings = getUnitIdSetByUnitKind(UnitKind.Building);
 
 	result += "\nBuilding size: " + buildings.size();
 
@@ -437,5 +307,35 @@ public class UnitManager {
 	}
 
 	return result;
+    }
+
+    // 미네랄 정보를 assignedMineralMap에 추가한다. isAssignedSCV <- 미네랄에 SCV가 할당되어 있는지 여부 (일꾼을 미네랄에 골고루 분배하기 위한 목적)
+    public void addAssignedMineralMap(int mineralId, boolean isAssignedSCV) {
+	assignedMineralMap.put(mineralId, false);
+    }
+
+    public boolean isAssignedWorkerToMiniral(Integer mineralId) {
+	return assignedMineralMap.get(mineralId);
+    }
+
+    // 커맨드 센터에 대해서, 주변에 존재하는 미네랄 set을 할당한다.
+    public void assignMineralToCommandCenter(Unit commandCenter, Set<Integer> mineralIdSet) {
+	Log.trace("assign miniralSet near command center: %d", commandCenter.getID());
+	mineralMap.put(commandCenter.getID(), mineralIdSet);
+    }
+
+    // 커맨드 센터가 할당 받은 미네랄 set을 릴리즈 한다.
+    public void releaseMineralToCommandCenter(Unit commandCenter) {
+	Log.trace("release miniralSet near command center: %d", commandCenter.getID());
+	mineralMap.remove(commandCenter.getID());
+    }
+
+    public Set<Integer> getMineralIdSetAssignedByCommandCenter(Unit commandCenter) {
+	return mineralMap.get(commandCenter.getID());
+    }
+
+    // mineralId에 일꾼을 할당한다. (모든 미네랄에 일꾼이 할당되기 전까지, 이 미네랄을 새로운 일꾼에게 할당되지 않기 위한 목적)
+    public void assignWorkerToMiniral(int mineralId) {
+	assignedMineralMap.put(mineralId, true);
     }
 }

@@ -10,7 +10,7 @@ public class Log {
 
     public static enum Level {
 
-	NONE(10, "NONE"), ERROR(5, "ERROR"), WARN(4, "WARN"), INFO(3, "INFO"), DEBUG(2, "DEBUG"), TRACE(1, "TRACE"), ALL(0, "ALL"),;
+	NONE(10, "NONE"), ERROR(5, "ERROR"), WARN(4, "WARN"), INFO(3, "INFO"), DEBUG(2, "DEBUG"), TRACE(1, "TRACE"), ALL(0, "ALL");
 
 	private int intValue;
 	private String strValue;

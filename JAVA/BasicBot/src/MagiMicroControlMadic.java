@@ -40,9 +40,9 @@ public class MagiMicroControlMadic extends Manager {
 	Set<Integer> bionicSet = null;
 	if (true == gameStatus.hasAttackTilePosition()) {
 	    Position attackPosition = gameStatus.getAttackTilePositon().toPosition();
-	    bionicSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Bionic_Unit);
-	    // 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
-	    Unit headBionicUnit = allianceUnitManager.getClosestUnit(bionicSet, attackPosition, medicUnitTypeSet);
+	    bionicSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Bionic_Unit);
+	    // 메딕을 제외한 - 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
+	    Unit headBionicUnit = UnitUtil.getClosestUnit(allianceUnitManager, bionicSet, attackPosition, medicUnitTypeSet);
 	    if (null != headBionicUnit) {
 		// 선두 바이오닉 유닛으로부터 공격 목표 지점 방향으로 +100 position 거리의 위치를 구한다.
 		newPosition = UnitUtil.getPositionAsDistance(headBionicUnit.getPosition(), attackPosition, 100);
@@ -56,7 +56,7 @@ public class MagiMicroControlMadic extends Manager {
 			null != headBionicUnit ? headBionicUnit.getTilePosition() : "null", attackPosition);
 		// TODO 메딕 계속 이동할까? 아니면 제자리에 있을까? 일단은 제자리에 대기...
 	    } else {
-		Set<Integer> medicSet = allianceUnitManager.getUnitsIdByUnitKind(UnitKind.Terran_Medic);
+		Set<Integer> medicSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Medic);
 		for (Integer medicId : medicSet) {
 		    Unit medic = allianceUnitManager.getUnit(medicId);
 		    boolean updated = ActionUtil.attackPosition(allianceUnitManager, medic, newPosition);
