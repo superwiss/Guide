@@ -15,9 +15,15 @@ public class MagiScoutManager extends Manager {
 	return instance;
     }
 
-    private LocationManagerCircuitBreaker locationManager = LocationManagerCircuitBreaker.Instance();
+    private LocationManager locationManager;
     private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
     private Queue<TilePosition> searchQueue = new LinkedList<>();
+
+    @Override
+    protected void onStart(GameStatus gameStatus) {
+	locationManager = gameStatus.getLocationManager();
+	super.onStart(gameStatus);
+    }
 
     // TODO 정찰은 1개만 가능하도록 구현됨. 다중 유닛 정찰 구현하기.
     @Override
@@ -104,7 +110,8 @@ public class MagiScoutManager extends Manager {
 	    for (TilePosition tilePosition : locationManager.getSearchSequence()) {
 		double distance = tilePosition.getDistance(enemyBuildingUnit.getTilePosition());
 		if (32 >= distance) {
-		    Log.info("적 본진을 찾았습니다. 발견한 적 건물의 Tile Position=%s, 적 본진의 Tile Position=%s, 발견한 적 건물과 적 본진의 거리: %f", enemyBuildingUnit.getTilePosition(), tilePosition, distance);
+		    Log.info("적 본진을 찾았습니다. 발견한 적 건물의 Tile Position=%s, 적 본진의 Tile Position=%s, 발견한 적 건물과 적 본진의 거리: %f", enemyBuildingUnit.getTilePosition(), tilePosition,
+			    distance);
 		    locationManager.setEnemyStartLocation(tilePosition);
 		    break;
 		}

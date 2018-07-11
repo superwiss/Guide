@@ -17,7 +17,7 @@ public class MagiStrategyManager extends Manager {
     private Set<StrategyItem> strategyItems = new HashSet<>();
 
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
-    private LocationManagerCircuitBreaker locationManager = LocationManagerCircuitBreaker.Instance();
+    private LocationManager locationManager = null;
     private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
     private MagiEliminateManager magiEliminateManager = MagiEliminateManager.Instance();
     // 벙커는 SCV 4마리만 수리한다.
@@ -33,8 +33,8 @@ public class MagiStrategyManager extends Manager {
     /// 경기가 시작될 때 일회적으로 전략 초기 세팅 관련 로직을 실행합니다
     @Override
     public void onStart(GameStatus gameStatus) {
+	locationManager = gameStatus.getLocationManager();
 	super.onStart(gameStatus);
-
     }
 
     @Override

@@ -10,35 +10,35 @@ import bwapi.Unit;
 public class GameCommander {
     private Game broodwar;
 
-    private MagiGameStatusManager gameStatusManager = null;
+    private MagiGameStatusManager gameStatusManager = MagiGameStatusManager.Instance();
     private LocationManager locationManager = null;
-    private MagiWorkerManager workerManager = null;
-    private MagiBuildManager buildManager = null;
-    private MagiScoutManager scoutManager = null;
-    private MagiStrategyManager strategymanager = null;
-    private MagiMicroControlManager microControlManager = null;
-    private MagiEliminateManager eliminateManager = null;
-    private MagiTrainingManager trainingManager = null;
+    private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
+    private MagiBuildManager buildManager = MagiBuildManager.Instance();
+    private MagiScoutManager scoutManager = MagiScoutManager.Instance();
+    private MagiStrategyManager strategymanager = MagiStrategyManager.Instance();
+    private MagiMicroControlManager microControlManager = MagiMicroControlManager.Instance();
+    private MagiEliminateManager eliminateManager = MagiEliminateManager.Instance();
+    private MagiTrainingManager trainingManager = MagiTrainingManager.Instance();
     private GameStatus gameStatus;
 
     public GameCommander() {
 	this.broodwar = MyBotModule.Broodwar;
+    }
+
+    /// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
+    public void onStart() {
+	Log.info("Game has started");
 
 	// 게임 상태를 저장할 객체 생성
 	gameStatus = new GameStatus(broodwar);
 
-	initManagers();
+	initLocationManager();
 
 	ActionUtil.setGame(broodwar);
 	UnitUtil.init(gameStatus);
 
 	// 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생한다.
 	Log.setLogLevel(Log.Level.WARN);
-    }
-
-    /// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
-    public void onStart() {
-	Log.info("Game has started");
 
 	try {
 	    gameStatusManager.onStart(gameStatus);
@@ -55,20 +55,6 @@ public class GameCommander {
 	    e.printStackTrace();
 	    throw e;
 	}
-    }
-
-    // Manager를 가져온다.
-    private void initManagers() {
-	initLocationManager();
-
-	gameStatusManager = MagiGameStatusManager.Instance();
-	workerManager = MagiWorkerManager.Instance();
-	scoutManager = MagiScoutManager.Instance();
-	buildManager = MagiBuildManager.Instance();
-	strategymanager = MagiStrategyManager.Instance();
-	microControlManager = MagiMicroControlManager.Instance();
-	eliminateManager = MagiEliminateManager.Instance();
-	trainingManager = MagiTrainingManager.Instance();
     }
 
     // 맵 이름으로 맵 종류를 판단해서 locationManager 구현체를 선택한다.

@@ -5,11 +5,11 @@ import bwapi.TilePosition;
 
 // 투혼 맵
 // TODO 투혼 맵은 미구현 되었다.
-public class MapLocationSpirit extends LocationManager {
+public class LocationManagerSprit extends LocationManager {
 
-    private static MapLocationSpirit instance = new MapLocationSpirit();
+    private static LocationManagerSprit instance = new LocationManagerSprit();
 
-    public static MapLocationSpirit Instance() {
+    public static LocationManagerSprit Instance() {
 	return instance;
     }
 
