@@ -56,7 +56,7 @@ public class ActionUtil {
 	return result;
     }
 
-    // TODO 상대가 움직이면 position이 바뀌면서 매 프레임마다 move 명령이 내려지는 상황이 발생하는데, 큰 이슈 없는지 확인하기 
+    // TODO 상대가 움직이면 position이 바뀌면서 매 프레임마다 move 명령이 내려지는 상황이 발생하는데, 큰 이슈 없는지 확인하기
     public static boolean moveToUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
 	boolean result = false;
 
@@ -233,7 +233,7 @@ public class ActionUtil {
 
 		int diff = UnitUtil.getDistance(currentActionDetail.getPosition(), lastActionDetail.getPosition());
 
-		// 동일한 명령어에 대해서 Position이 10Pixel 이하로 차이가 나면 무시한다. 
+		// 동일한 명령어에 대해서 Position이 10Pixel 이하로 차이가 나면 무시한다.
 		if (diff <= currentActionDetail.getMargin() * currentActionDetail.getMargin()) {
 		    result = false;
 		    Log.trace("Action Rejected: " + currentActionDetail + "; Too close to last position: " + lastActionDetail.getPosition());

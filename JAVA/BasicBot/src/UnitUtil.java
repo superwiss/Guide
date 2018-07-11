@@ -96,7 +96,7 @@ public class UnitUtil {
 	UnitSpec unitSpec = UnitUtil.getUnitSpec(allianceUnit);
 
 	// 전투 반경 내의 유닛이 대상이다.
-	// TODO: Unit.getUnitsInRadius(arg0)을 활용해 보자. 
+	// TODO: Unit.getUnitsInRadius(arg0)을 활용해 보자.
 	Unit targetUnit = null;
 	int targetDistance = Integer.MAX_VALUE;
 	for (Integer enemyUnitId : enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit)) {

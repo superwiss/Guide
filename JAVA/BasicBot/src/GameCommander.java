@@ -126,7 +126,7 @@ public class GameCommander {
 
 	try {
 	    // 귀찮게도 가스 건물을 지을 때와 같은 상황에서는 onUnitDiscover가 호출되지 않고 onUnitRenegade가 호출된다.
-	    // 각 메니져는 onUnitDiscover와 onUnitRenegade를 중복해서 구현하지 않고 onUnitDiscover만 구현한다. 
+	    // 각 메니져는 onUnitDiscover와 onUnitRenegade를 중복해서 구현하지 않고 onUnitDiscover만 구현한다.
 	    // 가스 건물과 관련있는 매니져를 대상으로 onUnitRenegade() 이벤트가 발생하면 onUnitDiscover()로 바꿔서 호출해준다.
 
 	    // 유닛들의 상태를 업데이트 하기 위해서 gameStatusManager를 호출한다.

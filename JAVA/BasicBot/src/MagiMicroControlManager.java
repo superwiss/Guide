@@ -187,10 +187,10 @@ public class MagiMicroControlManager extends Manager {
     /*
     private boolean speedTest(gameStatus gameStatus, Unit allianceUnit) {
     boolean result = false;
-    
+
     Game game = gameStatus.getGame();
     UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
-    
+
     switch (game.getFrameCount()) {
     case 1:
         game.setLocalSpeed(42);
@@ -207,15 +207,15 @@ public class MagiMicroControlManager extends Manager {
     default:
         break;
     }
-    
+
     if (allianceUnit.getPosition().getX() == 2500 && allianceUnit.getPosition().getY() == 2000) {
         Log.error("============================================================= Finish (%s)", allianceUnit.getPosition());
         System.exit(0);
     }
     Log.error("Position: %s, speed: %f", allianceUnit.getPosition(), allianceUnit.getType().topSpeed());
-    
+
     return result;
-    
+
     }
     */
 }

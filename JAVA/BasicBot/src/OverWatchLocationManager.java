@@ -33,7 +33,7 @@ public class OverWatchLocationManager extends Manager implements ILocation {
 	}
     }
 
-    // 최초 커맨드센터의 위치를 기반으로 건물 심시티를 결정한다. 
+    // 최초 커맨드센터의 위치를 기반으로 건물 심시티를 결정한다.
     @Override
     public void init(Unit commandCenter) {
 	if (commandCenter.getTilePosition().equals(ONE_TILE_POSITION)) {
@@ -405,7 +405,7 @@ public class OverWatchLocationManager extends Manager implements ILocation {
 	    result.add(ONE_TILE_POSITION);
 	    break;
 	case ELEVEN:
-	    // 1시, 7시, 5시 순서로 정찰 
+	    // 1시, 7시, 5시 순서로 정찰
 	    result.add(ONE_TILE_POSITION);
 	    result.add(SEVEN_TILE_POSITION);
 	    result.add(FIVE_TILE_POSITION);

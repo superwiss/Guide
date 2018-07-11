@@ -176,7 +176,7 @@ public class MagiBuildManager extends Manager {
 			// 건설 가능한 일꾼을 가져온다.
 			Unit worker = workerManager.getInterruptableWorker(tilePosition);
 			if (null != worker) {
-			    // 일꾼이 건물을 지을 수 있으면 
+			    // 일꾼이 건물을 지을 수 있으면
 			    boolean canBuild = worker.canBuild(buildingType, tilePosition);
 			    if (true == canBuild) {
 				worker.build(buildingType, tilePosition);

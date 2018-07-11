@@ -13,7 +13,7 @@ public class TrainingData {
     // default = Integer.MAX_VALUE; 시간 제한이 없이 미션이 진행된다.
     private int frameLimitTo;
 
-    // allianceKillCount로 설정한 것보다 더 많은 아군 유닛이 죽으면 미션을 종료한다. 
+    // allianceKillCount로 설정한 것보다 더 많은 아군 유닛이 죽으면 미션을 종료한다.
     // default = 0; 아군 유닛이 하나라도 죽으면 미션이 종료된다.
     private int allianceKillCount;
 
