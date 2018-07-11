@@ -15,7 +15,7 @@ public class MagiScoutManager extends Manager {
 	return instance;
     }
 
-    private CircuitBreakerLocationManager locationManager = CircuitBreakerLocationManager.Instance();
+    private LocationManagerCircuitBreaker locationManager = LocationManagerCircuitBreaker.Instance();
     private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
     private Queue<TilePosition> searchQueue = new LinkedList<>();
 
@@ -51,7 +51,7 @@ public class MagiScoutManager extends Manager {
 		Log.info("위치(%s) 정찰 완료.", target);
 		searchQueue.poll();
 		checkEnemyStartingLocation(gameStatus.getEnemyUnitManager());
-		if (null != locationManager.getEnemyStartTilePosition()) {
+		if (null != locationManager.getEnemyBaseLocation()) {
 		    Log.info("적 본진을 발견했으므로, 정찰 일꾼(%d)을 릴리즈 한다.", scoutUnit.getID());
 		    allianceUnitManager.releaseScoutUnit(scoutUnit);
 		    return;
@@ -80,10 +80,10 @@ public class MagiScoutManager extends Manager {
 	// 정찰중인 유닛이 죽었을 경우를 처리...
 	if (allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Scouting_Unit).contains(Integer.valueOf(unit.getID()))) {
 	    // 적 Main건물(커맨드센터, 넥서스, 해처리 류)을 찾기 전이지만, 적 건물이 존재할 경우, 적 건물의 위치를 기반으로 적 본진을 유추한다. 
-	    if (null == locationManager.getEnemyStartTilePosition()) {
+	    if (null == locationManager.getEnemyBaseLocation()) {
 		checkEnemyStartingLocation(enemyUnitManager);
 	    }
-	    if (null == locationManager.getEnemyStartTilePosition()) {
+	    if (null == locationManager.getEnemyBaseLocation()) {
 		Log.info("정찰을 완료하기 전에 정찰 유닛(%d)이 죽었다. 다시 정찰하자.", unit.getID());
 		allianceUnitManager.releaseScoutUnit(unit);
 		doFirstSearch(gameStatus);
@@ -95,17 +95,16 @@ public class MagiScoutManager extends Manager {
 	Set<Integer> enemyBuildingUnitIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Building);
 	for (Integer enemyBuildingUnitId : enemyBuildingUnitIds) {
 	    // 적 본진을 찾았으면 계산을 중단한다.
-	    if (null != locationManager.getEnemyStartTilePosition()) {
+	    if (null != locationManager.getEnemyBaseLocation()) {
 		break;
 	    }
 
 	    // 발견한 적 건물의 위치와 Starting Location이 가까우면, 적의 본진을 발견한 것으로 유추할 수 있다.
 	    Unit enemyBuildingUnit = enemyUnitManager.getUnit(enemyBuildingUnitId);
-	    for (TilePosition tilePosition : locationManager.getSearchList()) {
+	    for (TilePosition tilePosition : locationManager.getSearchSequence()) {
 		double distance = tilePosition.getDistance(enemyBuildingUnit.getTilePosition());
 		if (32 >= distance) {
-		    Log.info("적 본진을 찾았습니다. 발견한 적 건물의 Tile Position=%s, 적 본진의 Tile Position=%s, 발견한 적 건물과 적 본진의 거리: %f", enemyBuildingUnit.getTilePosition(), tilePosition,
-			    distance);
+		    Log.info("적 본진을 찾았습니다. 발견한 적 건물의 Tile Position=%s, 적 본진의 Tile Position=%s, 발견한 적 건물과 적 본진의 거리: %f", enemyBuildingUnit.getTilePosition(), tilePosition, distance);
 		    locationManager.setEnemyStartLocation(tilePosition);
 		    break;
 		}
@@ -117,10 +116,10 @@ public class MagiScoutManager extends Manager {
 	boolean result = true;
 
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
-	Unit unitForScout = workerManager.getInterruptableWorker(locationManager.getChokePoint2());
+	Unit unitForScout = workerManager.getInterruptableWorker(locationManager.getFirstExtensionChokePoint());
 	if (null != unitForScout) {
 	    allianceUnitManager.setScoutUnit(unitForScout);
-	    searchQueue.addAll(locationManager.getSearchList());
+	    searchQueue.addAll(locationManager.getSearchSequence());
 	    Log.info("정찰 시작: unitId=%d", unitForScout.getID());
 	} else {
 	    Log.warn("정찰 가능한 유닛이 없습니다.");

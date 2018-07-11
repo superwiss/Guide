@@ -1,4 +1,3 @@
-
 import java.util.Set;
 
 import bwapi.Game;
@@ -11,19 +10,30 @@ import bwapi.Unit;
 public class GameCommander {
     private Game broodwar;
 
-    private MagiGameStatusManager gameStatusManager = MagiGameStatusManager.Instance();
-    private CircuitBreakerLocationManager locationManager = CircuitBreakerLocationManager.Instance();
-    private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
-    private MagiBuildManager buildManager = MagiBuildManager.Instance();
-    private MagiScoutManager scoutManager = MagiScoutManager.Instance();
-    private MagiStrategyManager strategymanager = MagiStrategyManager.Instance();
-    private MagiMicroControlManager microControlManager = MagiMicroControlManager.Instance();
-    private MagiEliminateManager eliminateManager = MagiEliminateManager.Instance();
-    private MagiTrainingManager trainingManager = MagiTrainingManager.Instance();
+    private MagiGameStatusManager gameStatusManager = null;
+    private LocationManager locationManager = null;
+    private MagiWorkerManager workerManager = null;
+    private MagiBuildManager buildManager = null;
+    private MagiScoutManager scoutManager = null;
+    private MagiStrategyManager strategymanager = null;
+    private MagiMicroControlManager microControlManager = null;
+    private MagiEliminateManager eliminateManager = null;
+    private MagiTrainingManager trainingManager = null;
     private GameStatus gameStatus;
 
     public GameCommander() {
 	this.broodwar = MyBotModule.Broodwar;
+
+	// 게임 상태를 저장할 객체 생성
+	gameStatus = new GameStatus(broodwar);
+
+	initManagers();
+
+	ActionUtil.setGame(broodwar);
+	UnitUtil.init(gameStatus);
+
+	// 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생한다.
+	Log.setLogLevel(Log.Level.WARN);
     }
 
     /// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
@@ -31,15 +41,6 @@ public class GameCommander {
 	Log.info("Game has started");
 
 	try {
-	    // 게임 상태를 저장할 객체 생성
-	    gameStatus = new GameStatus(broodwar);
-
-	    ActionUtil.setGame(broodwar);
-	    UnitUtil.init(gameStatus);
-
-	    // 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생한다.
-	    Log.setLogLevel(Log.Level.WARN);
-
 	    gameStatusManager.onStart(gameStatus);
 	    locationManager.onStart(gameStatus);
 	    workerManager.onStart(gameStatus);
@@ -56,6 +57,36 @@ public class GameCommander {
 	}
     }
 
+    // Manager를 가져온다.
+    private void initManagers() {
+	initLocationManager();
+
+	gameStatusManager = MagiGameStatusManager.Instance();
+	workerManager = MagiWorkerManager.Instance();
+	scoutManager = MagiScoutManager.Instance();
+	buildManager = MagiBuildManager.Instance();
+	strategymanager = MagiStrategyManager.Instance();
+	microControlManager = MagiMicroControlManager.Instance();
+	eliminateManager = MagiEliminateManager.Instance();
+	trainingManager = MagiTrainingManager.Instance();
+    }
+
+    // 맵 이름으로 맵 종류를 판단해서 locationManager 구현체를 선택한다.
+    private void initLocationManager() {
+	String mapFileName = gameStatus.getGame().mapFileName();
+	if (mapFileName.contains("ircuit")) {
+	    // 서킷 브레이커
+	    locationManager = LocationManagerCircuitBreaker.Instance();
+	} else if (mapFileName.contains("atch")) {
+	    // 오버워치
+	    locationManager = LocationManagerOverWatch.Instance();
+	} else if (mapFileName.contains("pirit")) {
+	    // 투혼
+	    locationManager = LocationManagerOverWatch.Instance();
+	}
+	gameStatus.setLocationManager(locationManager);
+    }
+
     /// 경기가 종료될 때 일회적으로 발생하는 이벤트를 처리합니다
     public void onEnd(boolean isWinner) {
 	Log.info("Game has finished");
@@ -67,7 +98,6 @@ public class GameCommander {
 
 	if (MyBotModule.Broodwar.isPaused() || MyBotModule.Broodwar.self() == null || MyBotModule.Broodwar.self().isDefeated() || MyBotModule.Broodwar.self().leftGame()
 		|| MyBotModule.Broodwar.enemy() == null || MyBotModule.Broodwar.enemy().isDefeated() || MyBotModule.Broodwar.enemy().leftGame()) {
-	    Log.warn("onFrame skipped");
 	    return;
 	}
 

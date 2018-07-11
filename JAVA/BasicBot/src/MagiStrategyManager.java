@@ -17,7 +17,7 @@ public class MagiStrategyManager extends Manager {
     private Set<StrategyItem> strategyItems = new HashSet<>();
 
     private MagiBuildManager buildManager = MagiBuildManager.Instance();
-    private CircuitBreakerLocationManager locationManager = CircuitBreakerLocationManager.Instance();
+    private LocationManagerCircuitBreaker locationManager = LocationManagerCircuitBreaker.Instance();
     private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
     private MagiEliminateManager magiEliminateManager = MagiEliminateManager.Instance();
     // 벙커는 SCV 4마리만 수리한다.
@@ -102,7 +102,7 @@ public class MagiStrategyManager extends Manager {
 	// 모든 공격 가능한 유닛셋을 가져온다.
 	Set<Integer> attackableUnits = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
-	if (true == gameStatus.hasAttackTilePosition() || (attackableUnits.size() > 60 && null != locationManager.getEnemyStartTilePosition())) {
+	if (true == gameStatus.hasAttackTilePosition() || (attackableUnits.size() > 60 && null != locationManager.getEnemyBaseLocation())) {
 	    // 5초에 한 번만 수행한다.
 	    if (0 != gameStatus.getFrameCount() % (42 * 5)) {
 		return;
@@ -111,7 +111,7 @@ public class MagiStrategyManager extends Manager {
 	    TilePosition attackTilePosition = null;
 
 	    // 내 본진의 위치
-	    TilePosition allianceStartTilePosition = locationManager.getAllianceStartTilePosition();
+	    TilePosition allianceStartTilePosition = locationManager.getAllianceBaseLocation();
 
 	    // 적 본진의 위치
 	    Set<Integer> enemyMainBuildingIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.MAIN_BUILDING);
@@ -225,7 +225,7 @@ public class MagiStrategyManager extends Manager {
 	super.onUnitComplete(unit);
 
 	if (null != unit && unit.getType().equals(UnitType.Terran_Barracks)) {
-	    unit.setRallyPoint(locationManager.getChokePoint1().toPosition());
+	    unit.setRallyPoint(locationManager.getBaseEntranceChokePoint().toPosition());
 	}
     }
 }

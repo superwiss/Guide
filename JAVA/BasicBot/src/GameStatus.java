@@ -17,6 +17,9 @@ public class GameStatus {
     // 공격 지점이 설정되면, 유닛들은 해당 지점으로 Attack Position을 수행한다.
     private TilePosition attackTilePosition = null;
 
+    // 맵 정보 구현체
+    private LocationManager locationManager = null;
+
     public GameStatus(Game broodwar) {
 	this.broodwar = broodwar;
     }
@@ -31,6 +34,14 @@ public class GameStatus {
 
     public UnitManager getEnemyUnitManager() {
 	return enemyUnitManager;
+    }
+
+    public void setLocationManager(LocationManager locationManager) {
+	this.locationManager = locationManager;
+    }
+
+    public LocationManager getLocationManager() {
+	return locationManager;
     }
 
     public boolean hasAttackTilePosition() {

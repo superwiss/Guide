@@ -22,11 +22,18 @@ public class MagiBuildManager extends Manager {
 
     private MagiScoutManager scoutManager = MagiScoutManager.Instance();
     private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
+    private LocationManager locationManager = null;
 
     private Deque<MagiBuildOrderItem> queue = new LinkedList<>(); // 현재 빌드 오더 정보가 들어 있는 큐.
     private boolean initialBuildFinished = false; // 초기 빌드 오더가 완료되었는지 여부를 리턴.
     private Map<Integer, Integer> buildingWorkerMap = new HashMap<>(); // 건설 중인 건물과, 이 건물을 짓고 있는 일꾼을 매핑하고 있는 맵
     private boolean isMoving = false;
+
+    @Override
+    protected void onStart(GameStatus gameStatus) {
+	locationManager = gameStatus.getLocationManager();
+	super.onStart(gameStatus);
+    }
 
     @Override
     public void onFrame() {
@@ -151,15 +158,15 @@ public class MagiBuildManager extends Manager {
 		List<TilePosition> tilePositionList = null; // 건물을 지을 위치
 		UnitType buildingType = buildOrderItem.getTargetUnitType(); // 건설할 건물의 종류.
 		if (UnitType.Terran_Barracks.equals(buildingType)) {
-		    tilePositionList = CircuitBreakerLocationManager.Instance().getBarracks();
+		    tilePositionList = locationManager.getTrainingBuildings();
 		} else if (UnitType.Terran_Refinery.equals(buildingType)) {
-		    tilePositionList = CircuitBreakerLocationManager.Instance().getRefinery();
+		    tilePositionList = locationManager.getBaseRefinery();
 		} else if (UnitType.Terran_Supply_Depot.equals(buildingType)) {
-		    tilePositionList = CircuitBreakerLocationManager.Instance().getSupplyDepot();
+		    tilePositionList = locationManager.get3by2SizeBuildings();
 		} else if (UnitType.Terran_Academy.equals(buildingType)) {
-		    tilePositionList = CircuitBreakerLocationManager.Instance().getSupplyDepot();
+		    tilePositionList = locationManager.get3by2SizeBuildings();
 		} else if (UnitType.Terran_Bunker.equals(buildingType)) {
-		    tilePositionList = CircuitBreakerLocationManager.Instance().getBunker();
+		    tilePositionList = locationManager.getBaseEntranceBunker();
 		}
 
 		if (null != tilePositionList) {
