@@ -17,13 +17,12 @@ public class UXManager {
 	return instance;
     }
 
-    /// 경기가 시작될 때 일회적으로 추가 정보를 출력합니다
-    public void onStart(GameStatus gameStatus) {
-	locationManager = gameStatus.getLocationManager();
-    }
-
     /// 경기 진행 중 매 프레임마다 추가 정보를 출력하고 사용자 입력을 처리합니다
     public void update() {
+
+	if (null == locationManager) {
+	    locationManager = MagiGameStatusManager.Instance().gameStatus.getLocationManager();
+	}
 
 	List<TilePosition> tilePositionList = null; // 건물을 지을 위치
 	//배럭스 & 팩토리 건설 위치
