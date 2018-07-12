@@ -62,7 +62,8 @@ public class MagiBuildManager extends Manager {
 			Log.info("일꾼이 건설을 하지 않아서, 다시 건설을 시작합니다. BuildOrderItem: %s", buildItem);
 			break;
 		    }
-		    if (!worker.getOrder().equals(Order.ConstructingBuilding) && !worker.getOrder().equals(Order.PlaceBuilding) && !worker.getOrder().equals(Order.ResetCollision)) {
+		    if (!worker.getOrder().equals(Order.ConstructingBuilding) && !worker.getOrder().equals(Order.PlaceBuilding)
+			    && !worker.getOrder().equals(Order.ResetCollision)) {
 		    }
 
 		}
@@ -129,6 +130,9 @@ public class MagiBuildManager extends Manager {
 		queue.poll();
 		Log.debug("BuildOrder Finish: %s", buildOrderItem.toString());
 	    }
+	    break;
+	case ADD_ON:
+	    allianceUnitManager.buildAddon(UnitType.Terran_Comsat_Station);
 	    break;
 	case GATHER_GAS:
 	    Unit refinary = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);

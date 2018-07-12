@@ -19,13 +19,13 @@ public abstract class LocationManager extends Manager implements IMapLocation {
     private TilePosition baseEntranceChokePoint = null; // 본진 입구 방어를 위한 위치
     private TilePosition firstExtensionChokePoint = null; // 앞마당 입구 방어를 위한 위치
 
-	@Override
-	protected void onFrame() {
-		super.onFrame();
-		if (1 == gameStatus.getFrameCount()) {
-			init(gameStatus.getAllianceUnitManager().getFirstCommandCenter());
-		}
+    @Override
+    protected void onFrame() {
+	super.onFrame();
+	if (1 == gameStatus.getFrameCount()) {
+	    init(gameStatus.getAllianceUnitManager().getFirstCommandCenter());
 	}
+    }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
     @Override
@@ -103,13 +103,13 @@ public abstract class LocationManager extends Manager implements IMapLocation {
     public List<TilePosition> getBaseTurret() {
 	return baseTurrets;
     }
-    
+
     // 첫번째 확장에 위치한 터렛의 위치를 리턴한다.
     @Override
     public List<TilePosition> getFirstExpansionTurret() {
 	return firstExpansionTurrets;
     }
-    
+
     // 엔지니어링 베이의 위치를 리턴한다.
     @Override
     public List<TilePosition> getEngineeringBay() {

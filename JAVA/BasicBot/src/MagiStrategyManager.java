@@ -218,6 +218,7 @@ public class MagiStrategyManager extends Manager {
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.GATHER_GAS));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	//buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.ADD_ON, UnitType.Terran_Comsat_Station));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
     }
 

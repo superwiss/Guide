@@ -349,13 +349,13 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	return result;
     }
 
-	@Override
-	public List<TilePosition> initEngineeringBay() {
-		return null;
-	}
+    @Override
+    public List<TilePosition> initEngineeringBay() {
+	return null;
+    }
 
-	@Override
-	public List<TilePosition> initFirstExpansionTurret() {
-		return null;
-	}
+    @Override
+    public List<TilePosition> initFirstExpansionTurret() {
+	return null;
+    }
 }

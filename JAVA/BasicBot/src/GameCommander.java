@@ -38,7 +38,7 @@ public class GameCommander {
 	ActionUtil.setGame(broodwar);
 
 	// 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생한다.
-	Log.setLogLevel(Log.Level.WARN);
+	Log.setLogLevel(Log.Level.TRACE);
 
 	try {
 	    gameStatusManager.onStart(gameStatus);

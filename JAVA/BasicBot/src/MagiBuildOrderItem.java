@@ -4,7 +4,7 @@ import bwapi.UnitType;
 
 public class MagiBuildOrderItem {
     public enum Order {
-	INITIAL_BUILDORDER_FINISH, TRAINING, BUILD, SCOUTING, GATHER_GAS, MOVE_SCV
+	INITIAL_BUILDORDER_FINISH, TRAINING, BUILD, SCOUTING, GATHER_GAS, MOVE_SCV, ADD_ON
     }
 
     private Order order;
