@@ -67,19 +67,19 @@ public class MagiStrategyManager extends Manager {
 	if (strategyItems.contains(StrategyItem.MARINE_AUTO_TRAIN)) {
 	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
 		// 서플 여유가 4개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
-		if (1 > UnitUtil.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 4 * 2) {
+		if (1 > allianceUnitManager.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 4 * 2) {
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 		} else if (gameStatus.getMineral() > 200 && null != allianceUnitManager.getFirstUnitIdByUnitKind(UnitKind.Terran_Academy)
 			&& 5 > allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
 		    // 아카데미가 존재하고, 배럭이 5개 미만이고, BuildOrder Queue가 비어있으면 세 번째 배럭을 짓는다.
 		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
 		} else if (gameStatus.getMineral() >= 50) {
-		    Unit barracks = UnitUtil.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
+		    Unit barracks = allianceUnitManager.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
 		    if (null != barracks) {
 			Set<Integer> medicIds = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Medic);
 			Set<Integer> marineIds = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Marine);
-			int medicCount = medicIds.size() + UnitUtil.getTrainingQueueUnitCount(UnitType.Terran_Barracks, UnitType.Terran_Medic);
-			int marineCount = marineIds.size() + UnitUtil.getTrainingQueueUnitCount(UnitType.Terran_Barracks, UnitType.Terran_Marine);
+			int medicCount = medicIds.size() + allianceUnitManager.getTrainingQueueUnitCount(UnitType.Terran_Barracks, UnitType.Terran_Medic);
+			int marineCount = marineIds.size() + allianceUnitManager.getTrainingQueueUnitCount(UnitType.Terran_Barracks, UnitType.Terran_Marine);
 			// 마린4마리당 매딕 1마리
 			Log.info("마린/매딕 생산. 마린 수: %d, 메딕 수: %d", marineCount, medicCount);
 			if (medicCount * 4 < marineCount) {

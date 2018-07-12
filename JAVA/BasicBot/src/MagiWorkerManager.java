@@ -57,7 +57,7 @@ public class MagiWorkerManager extends Manager {
 	    }
 
 	    // unitIdSet 중에서 tilePosition과 가장 가까운 유닛을 리턴한다.
-	    result = UnitUtil.getClosestUnit(allianceUnitManager, unitIdSetCache, tilePosition.toPosition());
+	    result = allianceUnitManager.getClosestUnit(unitIdSetCache, tilePosition.toPosition());
 	}
 
 	return result;

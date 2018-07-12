@@ -1,6 +1,5 @@
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,16 +19,6 @@ public class UnitUtil {
     }
 
     private static Map<Integer, Integer> lastAttackFinishedFrame = new HashMap<>();
-
-    private static GameStatus gameStatus = null;
-    private static UnitManager allianceUnitManager = null;
-    private static UnitManager enemyUnitManager = null;
-
-    public static void init(GameStatus gameStatus) {
-	UnitUtil.gameStatus = gameStatus;
-	UnitUtil.allianceUnitManager = gameStatus.getAllianceUnitManager();
-	UnitUtil.enemyUnitManager = gameStatus.getEnemyUnitManager();
-    }
 
     // Unit의 정보를 출력한다.
     public static String toString(Unit unit) {
@@ -254,14 +243,6 @@ public class UnitUtil {
 	    game.drawCircleMap(targetPosition, 2, Color.Purple, true);
 	    game.drawLineMap(unit.getPosition(), targetPosition, Color.Purple);
 	}
-    }
-
-    public static void loggingDetailUnitInfo(int id) {
-	Unit unit = allianceUnitManager.getUnit(id);
-	if (null == unit) {
-	    unit = enemyUnitManager.getUnit(id);
-	}
-	loggingDetailUnitInfo(unit);
     }
 
     // 유닛의 정보를 엄청 자세히 로그로 남긴다.
@@ -573,97 +554,8 @@ public class UnitUtil {
 	return result;
     }
 
-    // unitManager 소속의 unitIdSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. 유닛 타입이 excludeUnitType일 경우는 제외한다.
-    public static Unit getClosestUnit(UnitManager unitManager, Set<Integer> unitIdSet, Position position, Set<UnitType> excludeUnitType) {
-	Unit result = null;
-
-	if (null != unitManager && null != unitIdSet && null != position) {
-	    int minDistance = Integer.MAX_VALUE;
-	    for (Integer unitId : unitIdSet) {
-		Unit unit = unitManager.getUnit(unitId);
-		if (null != unit) {
-		    if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
-			continue;
-		    }
-		    int distance = unit.getDistance(position);
-		    if (distance < minDistance) {
-			minDistance = distance;
-			result = unit;
-		    }
-		} else {
-		    Log.warn("getClosestUnit(): Failed to getting unit by unitId(%d)", unitId);
-		}
-	    }
-	} else {
-	    Log.warn("Invalid Parameter: unitManager=%s, unitset= %s, position=%s, excludeUnitType=%s", unitManager, unitIdSet, position, excludeUnitType);
-	}
-
-	return result;
-    }
-
-    // unitType을 훈련할 수 있는 buildingType 건물 중, 적절한 건물을 리턴한다. 예를 들면, 마린을 뽑을 때 트레이닝 큐가 제일 짧은 배럭이 우선 순위가 높다라던가 등등...
-    public static Unit getTrainableBuilding(UnitType buildingType, UnitType unitType) {
-	Unit targetBuilding = null;
-
-	int minQueueSize = Integer.MAX_VALUE;
-	Set<Integer> candidateSet = allianceUnitManager.getUnitIdSetByUnitKind(buildingType);
-	// 마린 훈련이 가능한 배럭 중에서 TrainingQueue가 가장 적은 배럭을 선택
-	// TrainingQueue는 최대 2개까지만 허용
-	for (Integer buildingId : candidateSet) {
-	    Unit building = allianceUnitManager.getUnit(buildingId);
-	    if (building.canTrain(unitType)) {
-		if (building.getTrainingQueue().size() < 2) {
-		    if (minQueueSize > building.getTrainingQueue().size()) {
-			minQueueSize = building.getTrainingQueue().size();
-			targetBuilding = building;
-		    }
-		}
-	    }
-	}
-
-	return targetBuilding;
-    }
-
-    // buildingType 건물에서 훈련 중인 unitType의 개수를 리턴한다.
-    public static int getTrainingQueueUnitCount(UnitType buildingType, UnitType unitType) {
-	int result = 0;
-
-	Set<Integer> buildingSet = allianceUnitManager.getUnitIdSetByUnitKind(buildingType);
-	for (Integer buildingId : buildingSet) {
-	    Unit building = allianceUnitManager.getUnit(buildingId);
-	    List<UnitType> trainingQueue = building.getTrainingQueue();
-	    for (UnitType trainingUnitType : trainingQueue) {
-		if (unitType.equals(trainingUnitType)) {
-		    result++;
-		}
-	    }
-	}
-
-	return result;
-    }
-
-    // unitManager 소속의 unitIdSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. (exclude 없는 버전)
-    public static Unit getClosestUnit(UnitManager unitManager, Set<Integer> unitIdSet, Position position) {
-	return getClosestUnit(unitManager, unitIdSet, position, null);
-    }
-
     // unitType에 해당하는 unitKind를 리턴한다.
     public static UnitKind getUnitKindByUnitType(UnitType unitType) {
 	return UnitKind.valueOf(unitType.toString());
-    }
-
-    // 건설 중인 건물이 몇 개나 있는지 확인한다.
-    public static int getConstructionCount(UnitType underConstructBuildingType) {
-	int result = 0;
-
-	Set<Integer> unitIdSet = allianceUnitManager.getUnitIdSetByUnitKind(underConstructBuildingType);
-	for (Integer unitId : unitIdSet) {
-	    Unit unit = allianceUnitManager.getUnit(unitId);
-	    if (false == unit.isCompleted()) {
-		result += 1;
-	    }
-	}
-
-	return result;
     }
 }

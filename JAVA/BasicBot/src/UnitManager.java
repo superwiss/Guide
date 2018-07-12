@@ -338,4 +338,93 @@ public class UnitManager {
     public void assignWorkerToMiniral(int mineralId) {
 	assignedMineralMap.put(mineralId, true);
     }
+
+    // 건설 중인 건물이 몇 개나 있는지 확인한다.
+    public int getConstructionCount(UnitType underConstructBuildingType) {
+	int result = 0;
+
+	Set<Integer> unitIdSet = getUnitIdSetByUnitKind(underConstructBuildingType);
+	for (Integer unitId : unitIdSet) {
+	    Unit unit = getUnit(unitId);
+	    if (false == unit.isCompleted()) {
+		result += 1;
+	    }
+	}
+
+	return result;
+    }
+
+    // unitIdSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. 유닛 타입이 excludeUnitType일 경우는 제외한다.
+    public Unit getClosestUnit(Set<Integer> unitIdSet, Position position, Set<UnitType> excludeUnitType) {
+	Unit result = null;
+
+	if (null != unitIdSet && null != position) {
+	    int minDistance = Integer.MAX_VALUE;
+	    for (Integer unitId : unitIdSet) {
+		Unit unit = getUnit(unitId);
+		if (null != unit) {
+		    if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
+			continue;
+		    }
+		    int distance = unit.getDistance(position);
+		    if (distance < minDistance) {
+			minDistance = distance;
+			result = unit;
+		    }
+		} else {
+		    Log.warn("getClosestUnit(): Failed to getting unit by unitId(%d)", unitId);
+		}
+	    }
+	} else {
+	    Log.warn("Invalid Parameter: unitset= %s, position=%s, excludeUnitType=%s", unitIdSet, position, excludeUnitType);
+	}
+
+	return result;
+    }
+
+    // unitManager 소속의 unitIdSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. (exclude 없는 버전)
+    public Unit getClosestUnit(Set<Integer> unitIdSet, Position position) {
+	return getClosestUnit(unitIdSet, position, null);
+    }
+
+    // buildingType 건물에서 훈련 중인 unitType의 개수를 리턴한다.
+    public int getTrainingQueueUnitCount(UnitType buildingType, UnitType unitType) {
+	int result = 0;
+
+	Set<Integer> buildingSet = getUnitIdSetByUnitKind(buildingType);
+	for (Integer buildingId : buildingSet) {
+	    Unit building = getUnit(buildingId);
+	    List<UnitType> trainingQueue = building.getTrainingQueue();
+	    for (UnitType trainingUnitType : trainingQueue) {
+		if (unitType.equals(trainingUnitType)) {
+		    result++;
+		}
+	    }
+	}
+
+	return result;
+    }
+
+    // unitType을 훈련할 수 있는 buildingType 건물 중, 적절한 건물을 리턴한다. 예를 들면, 마린을 뽑을 때 트레이닝 큐가 제일 짧은 배럭이 우선 순위가 높다라던가 등등...
+    public Unit getTrainableBuilding(UnitType buildingType, UnitType unitType) {
+	Unit targetBuilding = null;
+
+	int minQueueSize = Integer.MAX_VALUE;
+	Set<Integer> candidateSet = getUnitIdSetByUnitKind(buildingType);
+	// 마린 훈련이 가능한 배럭 중에서 TrainingQueue가 가장 적은 배럭을 선택
+	// TrainingQueue는 최대 2개까지만 허용
+	for (Integer buildingId : candidateSet) {
+	    Unit building = getUnit(buildingId);
+	    if (building.canTrain(unitType)) {
+		if (building.getTrainingQueue().size() < 2) {
+		    if (minQueueSize > building.getTrainingQueue().size()) {
+			minQueueSize = building.getTrainingQueue().size();
+			targetBuilding = building;
+		    }
+		}
+	    }
+	}
+
+	return targetBuilding;
+    }
 }

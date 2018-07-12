@@ -42,7 +42,7 @@ public class MagiMicroControlMadic extends Manager {
 	    Position attackPosition = gameStatus.getAttackTilePositon().toPosition();
 	    bionicSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Bionic_Unit);
 	    // 메딕을 제외한 - 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
-	    Unit headBionicUnit = UnitUtil.getClosestUnit(allianceUnitManager, bionicSet, attackPosition, medicUnitTypeSet);
+	    Unit headBionicUnit = allianceUnitManager.getClosestUnit(bionicSet, attackPosition, medicUnitTypeSet);
 	    if (null != headBionicUnit) {
 		// 선두 바이오닉 유닛으로부터 공격 목표 지점 방향으로 +100 position 거리의 위치를 구한다.
 		newPosition = UnitUtil.getPositionAsDistance(headBionicUnit.getPosition(), attackPosition, 100);

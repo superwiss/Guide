@@ -55,7 +55,7 @@ public class MagiMicroControlWorker extends Manager {
 	TilePosition allianceBaseTilePosition = locationManager.getAllianceBaseLocation();
 
 	Set<Integer> enemyWorkerIdSet = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Worker);
-	Unit closestEnemyWorker = UnitUtil.getClosestUnit(enemyUnitManager, enemyWorkerIdSet, allianceBaseTilePosition.toPosition());
+	Unit closestEnemyWorker = enemyUnitManager.getClosestUnit(enemyWorkerIdSet, allianceBaseTilePosition.toPosition());
 	if (null != closestEnemyWorker) {
 	    int distance = closestEnemyWorker.getDistance(allianceBaseTilePosition.toPosition());
 	    Log.debug("적군 일꾼이(%d) 아군 영역에 들어왔다. 거리: %d", closestEnemyWorker.getID(), distance);

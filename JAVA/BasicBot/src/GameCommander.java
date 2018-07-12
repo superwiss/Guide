@@ -35,7 +35,6 @@ public class GameCommander {
 	initLocationManager();
 
 	ActionUtil.setGame(broodwar);
-	UnitUtil.init(gameStatus);
 
 	// 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생한다.
 	Log.setLogLevel(Log.Level.WARN);
@@ -262,7 +261,11 @@ public class GameCommander {
 		Log.info("Set game speed to %d", number);
 		broodwar.setLocalSpeed(number);
 	    } else {
-		UnitUtil.loggingDetailUnitInfo(number);
+		Unit unit = gameStatus.getAllianceUnitManager().getUnit(number);
+		if (null == unit) {
+		    unit = gameStatus.getEnemyUnitManager().getUnit(number);
+		}
+		UnitUtil.loggingDetailUnitInfo(unit);
 	    }
 	} catch (NumberFormatException e) {
 	    switch (text) {

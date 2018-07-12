@@ -62,8 +62,7 @@ public class MagiBuildManager extends Manager {
 			Log.info("일꾼이 건설을 하지 않아서, 다시 건설을 시작합니다. BuildOrderItem: %s", buildItem);
 			break;
 		    }
-		    if (!worker.getOrder().equals(Order.ConstructingBuilding) && !worker.getOrder().equals(Order.PlaceBuilding)
-			    && !worker.getOrder().equals(Order.ResetCollision)) {
+		    if (!worker.getOrder().equals(Order.ConstructingBuilding) && !worker.getOrder().equals(Order.PlaceBuilding) && !worker.getOrder().equals(Order.ResetCollision)) {
 		    }
 
 		}
@@ -228,7 +227,7 @@ public class MagiBuildManager extends Manager {
     // 마린을 적절한 배럭에서 훈련한다.
     public void trainingMarine(MagiBuildOrderItem buildItem) {
 
-	Unit targetBarracks = UnitUtil.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
+	Unit targetBarracks = allianceUnitManager.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
 	// 마린 훈련하기
 	if (null != targetBarracks && targetBarracks.canTrain(UnitType.Terran_Marine)) {
 	    int beforeQueueSize = targetBarracks.getTrainingQueue().size();
