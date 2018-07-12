@@ -295,7 +295,7 @@ public class LocationManagerOverWatch extends LocationManager {
 
     // 본진 입구에 위치한 터렛의 위치를 설정한다.
     @Override
-    public List<TilePosition> initBaseEntranceTurret() {
+    public List<TilePosition> initBaseTurret() {
 	// TODO 아직 미 구현됨.
 	List<TilePosition> result = new ArrayList<>();
 
@@ -355,4 +355,14 @@ public class LocationManagerOverWatch extends LocationManager {
 
 	return result;
     }
+
+	@Override
+	public List<TilePosition> initEngineeringBay() {
+		return null;
+	}
+
+	@Override
+	public List<TilePosition> initFirstExpansionTurret() {
+		return null;
+	}
 }

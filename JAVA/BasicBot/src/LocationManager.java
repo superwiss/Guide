@@ -13,18 +13,19 @@ public abstract class LocationManager extends Manager implements IMapLocation {
     protected List<TilePosition> baseEntranceBunkers = null; // 본진 입구 벙커를 지을 위치
     protected List<TilePosition> size3by2Buildings = null; // 3*2 사이즈 건물을 짓기 위한 위치들 (서플라이 디팟, 아마데미 등)
     protected List<TilePosition> baseRefineries = null; // 본진 가스를 짓기 위한 위치
-    protected List<TilePosition> baseEntranceTurrets = null; // 본진 입구에 위치한 터렛의 위치
+    protected List<TilePosition> baseTurrets = null; // 본진에 위치한 터렛의 위치
+    protected List<TilePosition> firstExpansionTurrets = null; // 본진에 위치한 터렛의 위치
+    protected List<TilePosition> engineeringBay = null; // 엔지니어링 베이 타일의 위치
     private TilePosition baseEntranceChokePoint = null; // 본진 입구 방어를 위한 위치
     private TilePosition firstExtensionChokePoint = null; // 앞마당 입구 방어를 위한 위치
 
-    @Override
-    protected void onFrame() {
-	super.onFrame();
-
-	if (1 == gameStatus.getFrameCount()) {
-	    init(gameStatus.getAllianceUnitManager().getFirstCommandCenter());
+	@Override
+	protected void onFrame() {
+		super.onFrame();
+		if (1 == gameStatus.getFrameCount()) {
+			init(gameStatus.getAllianceUnitManager().getFirstCommandCenter());
+		}
 	}
-    }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
     @Override
@@ -36,7 +37,9 @@ public abstract class LocationManager extends Manager implements IMapLocation {
 	baseEntranceBunkers = initBaseEntranceBunker();
 	size3by2Buildings = init3by2SizeBuildings();
 	baseRefineries = initBaseRefinery();
-	baseEntranceTurrets = initBaseEntranceTurret();
+	baseTurrets = initBaseTurret();
+	firstExpansionTurrets = initFirstExpansionTurret();
+	engineeringBay = initEngineeringBay();
 	baseEntranceChokePoint = initBaseEntranceChokePoint();
 	firstExtensionChokePoint = initFirstExtensionChokePoint();
     }
@@ -95,10 +98,22 @@ public abstract class LocationManager extends Manager implements IMapLocation {
 	return baseRefineries;
     }
 
-    // 본진 입구에 위치한 터렛의 위치를 리턴한다.
+    // 본진에 위치한 터렛의 위치를 리턴한다.
     @Override
-    public List<TilePosition> getBaseEntranceTurret() {
-	return baseEntranceTurrets;
+    public List<TilePosition> getBaseTurret() {
+	return baseTurrets;
+    }
+    
+    // 첫번째 확장에 위치한 터렛의 위치를 리턴한다.
+    @Override
+    public List<TilePosition> getFirstExpansionTurret() {
+	return firstExpansionTurrets;
+    }
+    
+    // 엔지니어링 베이의 위치를 리턴한다.
+    @Override
+    public List<TilePosition> getEngineeringBay() {
+	return engineeringBay;
     }
 
     // 본진 입구 방어를 위한 위치를 리턴한다.

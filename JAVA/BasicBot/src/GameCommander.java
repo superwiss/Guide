@@ -19,6 +19,7 @@ public class GameCommander {
     private MagiMicroControlManager microControlManager = MagiMicroControlManager.Instance();
     private MagiEliminateManager eliminateManager = MagiEliminateManager.Instance();
     private MagiTrainingManager trainingManager = MagiTrainingManager.Instance();
+    private UXManager uxManager = UXManager.Instance();
     private GameStatus gameStatus;
 
     public GameCommander() {
@@ -49,6 +50,7 @@ public class GameCommander {
 	    microControlManager.onStart(gameStatus);
 	    eliminateManager.onStart(gameStatus);
 	    trainingManager.onStart(gameStatus);
+	    uxManager.onStart(gameStatus);
 	} catch (Exception e) {
 	    Log.error("onStart() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -67,7 +69,7 @@ public class GameCommander {
 	    locationManager = LocationManagerOverWatch.Instance();
 	} else if (mapFileName.contains("pirit")) {
 	    // 투혼
-	    locationManager = LocationManagerOverWatch.Instance();
+	    locationManager = LocationManagerSprit.Instance();
 	}
 	gameStatus.setLocationManager(locationManager);
     }

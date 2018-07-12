@@ -54,10 +54,22 @@ public interface IMapLocation {
     abstract List<TilePosition> getBaseRefinery();
 
     // 본진 입구에 위치한 터렛의 위치를 설정한다.
-    abstract List<TilePosition> initBaseEntranceTurret();
+    abstract List<TilePosition> initBaseTurret();
+    
+    // 첫번째 확장에 위치한 터렛의 위치를 설정한다.
+    abstract List<TilePosition> initFirstExpansionTurret();
+    
+    // 엔지니어링 베이의 위치를 설정한다.
+    abstract List<TilePosition> initEngineeringBay();
 
     // 본진 입구에 위치한 터렛의 위치를 리턴한다.
-    abstract List<TilePosition> getBaseEntranceTurret();
+    abstract List<TilePosition> getBaseTurret();
+    
+    // 첫번째 확장에 위치한 터렛의 위치를 리턴한다.
+    abstract List<TilePosition> getFirstExpansionTurret();
+    
+    // 엔지니어링 베이의 위치를 리턴한다.
+    abstract List<TilePosition> getEngineeringBay();
 
     // 본진 입구 방어를 위한 위치를 설정한다.
     abstract TilePosition initBaseEntranceChokePoint();
