@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import bwapi.Position;
+import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -465,6 +466,66 @@ public class UnitManager {
 	    if (afterQueueSize > beforeQueueSize) {
 		result = true;
 	    }
+	}
+
+	return result;
+    }
+
+    // 애드온 건물을 건설한다.
+    public boolean buildAddon(UnitType addOnUnitType) {
+	boolean result = false;
+
+	UnitType addonableBuildingtType = null;
+	switch (addOnUnitType.toString()) {
+	case "Terran_Comsat_Station":
+	case "Terran_Nuclear_Silo":
+	    addonableBuildingtType = UnitType.Terran_Command_Center;
+	    break;
+	case "Terran_Machine_Shop":
+	    addonableBuildingtType = UnitType.Terran_Factory;
+	    break;
+	case "Terran_Control_Tower":
+	    addonableBuildingtType = UnitType.Terran_Starport;
+	    break;
+	case "Terran_Physics_Lab":
+	case "Terran_Covert_Ops":
+	    addonableBuildingtType = UnitType.Terran_Science_Facility;
+	    break;
+	default:
+	    break;
+
+	}
+
+	Set<Integer> addonableBuildingIdSet = getUnitIdSetByUnitKind(addonableBuildingtType);
+	for (Integer addonableBuildingId : addonableBuildingIdSet) {
+	    Unit addonableBuilding = getUnit(addonableBuildingId);
+	    if (null != addonableBuilding && addonableBuilding.canBuildAddon(addOnUnitType)) {
+		addonableBuilding.buildAddon(addOnUnitType);
+		result = true;
+	    }
+	}
+
+	return result;
+    }
+
+    public boolean doScan(Position position) {
+	boolean result = false;
+
+	int maxEnergy = Integer.MIN_VALUE;
+	Unit targetComsat = null;
+
+	Set<Integer> comsatIdSet = getUnitIdSetByUnitKind(UnitType.Terran_Comsat_Station);
+	for (Integer comsatId : comsatIdSet) {
+	    Unit comsat = getUnit(comsatId);
+	    if (maxEnergy < comsat.getEnergy()) {
+		maxEnergy = comsat.getEnergy();
+		targetComsat = comsat;
+	    }
+	}
+
+	if (null != targetComsat && targetComsat.canUseTechPosition(TechType.Scanner_Sweep)) {
+	    targetComsat.useTech(TechType.Scanner_Sweep, position);
+	    result = true;
 	}
 
 	return result;
