@@ -325,7 +325,7 @@ public class LocationManagerOverWatch extends LocationManager {
 	    result = new TilePosition(112, 106);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result = new TilePosition(22, 112);
+	    result = new TilePosition(22, 111);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
 	    result = new TilePosition(15, 21);

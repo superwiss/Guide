@@ -26,7 +26,7 @@ public class MagiMicroControlWorker extends Manager {
     protected void onFrame() {
 	super.onFrame();
 
-	// 메딕은 42프레임(1초)에 1번만 컨트롤 한다.
+	// SCV는 42프레임(1초)에 1번만 컨트롤 한다.
 	if (0 == gameStatus.getFrameCount() || gameStatus.getFrameCount() % 42 != 0) {
 	    return;
 	}

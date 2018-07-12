@@ -146,9 +146,7 @@ public class MagiStrategyManager extends Manager {
 		Log.info("총 공격! 공격할 위치: %s", attackTilePosition);
 		for (Integer unitId : attackableUnits) {
 		    Unit unit = allianceUnitManager.getUnit(unitId);
-		    if (unit.isIdle()) {
-			ActionUtil.attackPosition(allianceUnitManager, unit, attackTilePosition.toPosition());
-		    }
+		    ActionUtil.attackPosition(allianceUnitManager, unit, attackTilePosition.toPosition());
 		}
 	    } else {
 		gameStatus.clearAttackTilePosition();
