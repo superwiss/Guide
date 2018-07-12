@@ -434,6 +434,9 @@ public class UnitManager {
 
 	UnitType trainableBuildingType = null;
 	switch (targetUnitType.toString()) {
+	case "Terran_SCV":
+	    trainableBuildingType = UnitType.Terran_Command_Center;
+	    break;
 	case "Terran_Marine":
 	case "Terran_Firebat":
 	case "Terran_Ghost":
