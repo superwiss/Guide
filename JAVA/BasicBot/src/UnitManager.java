@@ -411,7 +411,7 @@ public class UnitManager {
 
 	int minQueueSize = Integer.MAX_VALUE;
 	Set<Integer> candidateSet = getUnitIdSetByUnitKind(buildingType);
-	// 마린 훈련이 가능한 배럭 중에서 TrainingQueue가 가장 적은 배럭을 선택
+	// 훈련이 가능한 건물 중에서 TrainingQueue가 가장 적은 건물을 선택
 	// TrainingQueue는 최대 2개까지만 허용
 	for (Integer buildingId : candidateSet) {
 	    Unit building = getUnit(buildingId);
@@ -426,5 +426,47 @@ public class UnitManager {
 	}
 
 	return targetBuilding;
+    }
+
+    public boolean trainingUnit(UnitType targetUnitType) {
+	boolean result = false;
+
+	UnitType trainableBuildingType = null;
+	switch (targetUnitType.toString()) {
+	case "Terran_Marine":
+	case "Terran_Firebat":
+	case "Terran_Ghost":
+	case "Terran_Medic":
+	    trainableBuildingType = UnitType.Terran_Barracks;
+	    break;
+	case "Terran_Vulture":
+	case "Terran_Siege_Tank_Siege_Mode":
+	case "Terran_Goliath":
+	    trainableBuildingType = UnitType.Terran_Factory;
+	    break;
+	case "Terran_Wraith":
+	case "Terran_Dropship":
+	case "Terran_Science_Vessel":
+	case "Terran_Battlecruiser":
+	case "Terran_Valkyrie":
+	    trainableBuildingType = UnitType.Terran_Starport;
+	    break;
+	default:
+	    break;
+
+	}
+
+	Unit trainableBuilding = getTrainableBuilding(trainableBuildingType, targetUnitType);
+	// 훈련하기
+	if (null != trainableBuilding) {
+	    int beforeQueueSize = trainableBuilding.getTrainingQueue().size();
+	    trainableBuilding.train(targetUnitType);
+	    int afterQueueSize = trainableBuilding.getTrainingQueue().size();
+	    if (afterQueueSize > beforeQueueSize) {
+		result = true;
+	    }
+	}
+
+	return result;
     }
 }

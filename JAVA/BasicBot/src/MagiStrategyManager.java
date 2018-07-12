@@ -183,40 +183,41 @@ public class MagiStrategyManager extends Manager {
 
     public void defense6droneBuildOrder() {
 	// 초기 빌드 오더
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.SCOUTING));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Bunker));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Refinery));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.GATHER_GAS));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_MARINE));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING_WORKER));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
     }
 

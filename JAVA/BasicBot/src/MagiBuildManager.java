@@ -122,11 +122,13 @@ public class MagiBuildManager extends Manager {
 		queue.poll();
 	    }
 	    break;
-	case TRAINING_WORKER:
-	    trainingWorker(buildOrderItem);
-	    break;
-	case TRAINING_MARINE:
-	    trainingMarine(buildOrderItem);
+	case TRAINING:
+	    UnitType targetUnitType = buildOrderItem.getTargetUnitType();
+
+	    if (true == allianceUnitManager.trainingUnit(targetUnitType)) {
+		queue.poll();
+		Log.debug("BuildOrder Finish: %s", buildOrderItem.toString());
+	    }
 	    break;
 	case GATHER_GAS:
 	    Unit refinary = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
@@ -204,39 +206,6 @@ public class MagiBuildManager extends Manager {
 	    break;
 	default:
 	    break;
-	}
-    }
-
-    // 일꾼을 랜덤한 커맨드 센터에서 훈련한다.
-    // TODO 일꾼을 적절한 커맨드 센터에서 훈련하도록 변경하기. 그리고 Worker Manager에서 처리하도록 변경하기.
-    private void trainingWorker(MagiBuildOrderItem buildItem) {
-	Unit firstCommandCenter = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Command_Center);
-	if (null != firstCommandCenter) {
-	    int oldQueueSize = firstCommandCenter.getTrainingQueue().size();
-	    firstCommandCenter.build(UnitType.Terran_SCV);
-	    int newQueueSie = firstCommandCenter.getTrainingQueue().size();
-	    if (newQueueSie > oldQueueSize) {
-		queue.poll();
-		Log.debug("BuildOrder Finish: %s", buildItem.toString());
-	    }
-	} else {
-	    Log.warn("trainingWorker() failed. Command Center does not exist.");
-	}
-    }
-
-    // 마린을 적절한 배럭에서 훈련한다.
-    public void trainingMarine(MagiBuildOrderItem buildItem) {
-
-	Unit targetBarracks = allianceUnitManager.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
-	// 마린 훈련하기
-	if (null != targetBarracks && targetBarracks.canTrain(UnitType.Terran_Marine)) {
-	    int beforeQueueSize = targetBarracks.getTrainingQueue().size();
-	    targetBarracks.train(UnitType.Terran_Marine);
-	    int afterQueueSize = targetBarracks.getTrainingQueue().size();
-	    if (afterQueueSize > beforeQueueSize) {
-		queue.poll();
-		Log.debug("BuildOrder Finish: %s", buildItem.toString());
-	    }
 	}
     }
 
