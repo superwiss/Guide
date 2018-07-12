@@ -533,4 +533,18 @@ public class UnitManager {
 
 	return result;
     }
+
+    public Set<Unit> getUnitsInRange(Position position, UnitKind unitKind, int distance) {
+	Set<Unit> result = new HashSet<>();
+
+	Set<Integer> unitIdSet = getUnitIdSetByUnitKind(unitKind);
+	for (Integer unitId : unitIdSet) {
+	    Unit unit = getUnit(unitId);
+	    if (distance >= unit.getDistance(position)) {
+		result.add(unit);
+	    }
+	}
+
+	return result;
+    }
 }

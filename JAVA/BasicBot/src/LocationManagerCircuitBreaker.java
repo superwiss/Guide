@@ -93,7 +93,7 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result.add(new TilePosition(0, 101));
 	    result.add(new TilePosition(0, 105));
 	    result.add(new TilePosition(4, 106));
-	    result.add(new TilePosition(7, 105));
+	    result.add(new TilePosition(0, 109));
 	    result.add(new TilePosition(7, 109));
 	    result.add(new TilePosition(13, 105));
 	    result.add(new TilePosition(13, 109));
@@ -211,8 +211,6 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result.add(new TilePosition(20, 125));
 	    result.add(new TilePosition(23, 125));
 	    result.add(new TilePosition(26, 125));
-	    result.add(new TilePosition(29, 125));
-	    result.add(new TilePosition(29, 123));
 	    result.add(new TilePosition(26, 123));
 	    result.add(new TilePosition(23, 123));
 	    result.add(new TilePosition(20, 123));
@@ -230,6 +228,9 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result.add(new TilePosition(13, 103));
 	    result.add(new TilePosition(8, 121));
 	    result.add(new TilePosition(8, 123));
+	    // 이거 두 개 위치 조금 애매함. 막힐 수 있음.
+	    result.add(new TilePosition(29, 125));
+	    result.add(new TilePosition(29, 123));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
 	    result.add(new TilePosition(7, 24));
@@ -315,10 +316,10 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result = new TilePosition(122, 26);
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result = new TilePosition(121, 100);
+	    result = new TilePosition(123, 101);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result = new TilePosition(5, 102);
+	    result = new TilePosition(6, 101);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
 	    result = new TilePosition(4, 25);

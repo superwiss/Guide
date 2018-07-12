@@ -9,6 +9,8 @@ public enum UnitKind {
 
     Bionic_Unit, // 바이오닉 유닛
 
+    Clocked, // 클로킹 유닛
+
     Scouting_Unit, // 정찰 유닛
 
     Building, // 건물

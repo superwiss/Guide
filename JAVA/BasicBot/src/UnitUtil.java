@@ -59,6 +59,17 @@ public class UnitUtil {
 	    } else if (strUnitType.equals("Resource_Vespene_Geyser")) {
 		result.add(UnitKind.Resource_Vespene_Geyser);
 	    }
+
+	    switch (strUnitType) {
+	    case "Zerg_Lurker":
+	    case "Protoss_Dark_Templar":
+	    case "Terran_Wraith":
+		result.add(UnitKind.Clocked);
+		break;
+	    default:
+		break;
+	    }
+
 	}
 
 	return result;

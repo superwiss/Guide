@@ -30,6 +30,8 @@ public class MagiStrategyManager extends Manager {
 	strategyItems.add(StrategyItem.SET_BARRACKS_RALLY);
     }
 
+    private int lastScanFrameCount = 0;
+
     /// 경기가 시작될 때 일회적으로 전략 초기 세팅 관련 로직을 실행합니다
     @Override
     public void onStart(GameStatus gameStatus) {
@@ -64,6 +66,7 @@ public class MagiStrategyManager extends Manager {
 		}
 	    }
 	}
+
 	if (strategyItems.contains(StrategyItem.MARINE_AUTO_TRAIN)) {
 	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
 		// 서플 여유가 4개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
@@ -91,13 +94,20 @@ public class MagiStrategyManager extends Manager {
 		}
 	    }
 	}
+
 	Integer academyId = allianceUnitManager.getFirstUnitIdByUnitKind(UnitKind.Terran_Academy);
 	if (null != academyId) {
+	    // 사거리 업그레이드를 한다.
 	    Unit academy = allianceUnitManager.getUnit(academyId);
 	    if (academy.canUpgrade(UpgradeType.U_238_Shells)) {
 		academy.upgrade(UpgradeType.U_238_Shells);
 	    }
+
+	    // Comsat Station Add on
+	    allianceUnitManager.buildAddon(UnitType.Terran_Comsat_Station);
 	}
+
+	checkIfuseScan();
 
 	// 모든 공격 가능한 유닛셋을 가져온다.
 	Set<Integer> attackableUnits = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit);
@@ -144,6 +154,30 @@ public class MagiStrategyManager extends Manager {
 		gameStatus.clearAttackTilePosition();
 		magiEliminateManager.search(allianceUnitManager);
 		Log.info("Eliminate Manager 동작 시작.");
+	    }
+	}
+    }
+
+    private void checkIfuseScan() {
+	// 스캔은 3초 이내에는 또 뿌리지 않는다.
+	if (gameStatus.getFrameCount() < lastScanFrameCount + 3 * 42) {
+	    return;
+	}
+	// 적 클로킹 유닛을 찾는다.
+	Set<Integer> clockedUnitIdSet = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Clocked);
+	Log.trace("Clocked Unit Size: %d", clockedUnitIdSet.size());
+	for (Integer clockedUnitId : clockedUnitIdSet) {
+	    Unit clockedUnit = enemyUnitManager.getUnit(clockedUnitId);
+	    if (null != clockedUnitId && clockedUnit.exists()) {
+		// 적 클로킹 유닛 150 거리 미만에 존재하는 아군 유닛이 5기 이상이면 스캔을 뿌린다.
+		Set<Unit> allianceUnitSet = allianceUnitManager.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Terran_Marine, 150);
+		Log.info("적 클로킹 유닛 발견: %d. 주변의 마린 수: %d", clockedUnitId, allianceUnitSet.size());
+		if (5 <= allianceUnitSet.size()) {
+		    Log.info("스캔 뿌림: %s", clockedUnit.getPosition());
+		    allianceUnitManager.doScan(clockedUnit.getPosition());
+		    lastScanFrameCount = gameStatus.getFrameCount();
+		    break;
+		}
 	    }
 	}
     }
