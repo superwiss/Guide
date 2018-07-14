@@ -4,23 +4,9 @@ import bwapi.TilePosition;
 import bwapi.Unit;
 
 // 매딕을 컨트롤 한다.
-public class MagiMicroControlWorker extends Manager {
-    private static MagiMicroControlWorker instance = new MagiMicroControlWorker();
-
-    public static MagiMicroControlWorker Instance() {
-	return instance;
-    }
-
-    private LocationManager locationManager = null;;
-    private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
+public class MicroControlWorker extends Manager {
     private Unit enemyWorker = null;
     private Unit enemyWorkerKiller = null;
-
-    @Override
-    protected void onStart(GameStatus gameStatus) {
-	locationManager = gameStatus.getLocationManager();
-	super.onStart(gameStatus);
-    }
 
     @Override
     protected void onFrame() {
@@ -52,6 +38,7 @@ public class MagiMicroControlWorker extends Manager {
 	    }
 	}
 
+	LocationManager locationManager = gameStatus.getLocationManager();
 	TilePosition allianceBaseTilePosition = locationManager.getAllianceBaseLocation();
 
 	Set<Integer> enemyWorkerIdSet = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Worker);
@@ -72,6 +59,7 @@ public class MagiMicroControlWorker extends Manager {
 		}
 	    } else if (1000 > distance) {
 		// 적 일꾼이 아군 본진까지 다가왔다. 적에게 가장 가까운 아군 일꾼 하나를 선택한다.
+		WorkerManager workerManager = gameStatus.getWorkerManager();
 		Unit allianceWorker = workerManager.getInterruptableWorker(closestEnemyWorker.getTilePosition());
 		if (null != allianceWorker) {
 		    Log.info("아군 일꾼(%d)이 본진에 들어온 적군 일꾼(%d)를 공격한다.", allianceWorker.getID(), closestEnemyWorker.getID());

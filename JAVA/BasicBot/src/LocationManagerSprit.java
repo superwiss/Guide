@@ -5,13 +5,6 @@ import bwapi.TilePosition;
 
 // 투혼 맵
 public class LocationManagerSprit extends LocationManager {
-
-    private static LocationManagerSprit instance = new LocationManagerSprit();
-
-    public static LocationManagerSprit Instance() {
-	return instance;
-    }
-
     private static final int ONE_CLOCK = 0;
     private static final int FIVE_CLOCK = 1;
     private static final int SEVEN_CLOCK = 2;

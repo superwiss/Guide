@@ -5,14 +5,7 @@ import java.util.Set;
 import bwapi.TilePosition;
 import bwapi.Unit;
 
-public class MagiEliminateManager extends Manager {
-
-    private static MagiEliminateManager instance = new MagiEliminateManager();
-
-    public static MagiEliminateManager Instance() {
-	return instance;
-    }
-
+public class EliminateManager extends Manager {
     private Queue<TilePosition> eliminateQueue = new LinkedList<>();
 
     public void search(UnitManager allianceUnitManager) {

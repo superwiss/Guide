@@ -6,24 +6,13 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 
-public class MagiStrategyManager extends Manager {
-
-    private static MagiStrategyManager instance = new MagiStrategyManager();
-
-    public static MagiStrategyManager Instance() {
-	return instance;
-    }
-
+public class StrategyManager extends Manager {
     private Set<StrategyItem> strategyItems = new HashSet<>();
 
-    private MagiBuildManager buildManager = MagiBuildManager.Instance();
-    private LocationManager locationManager = null;
-    private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
-    private MagiEliminateManager magiEliminateManager = MagiEliminateManager.Instance();
     // 벙커는 SCV 4마리만 수리한다.
     private static int repairCount = 4;
 
-    public MagiStrategyManager() {
+    public StrategyManager() {
 	strategyItems.add(StrategyItem.MARINE_INTO_BUNKER);
 	strategyItems.add(StrategyItem.REPAIR_BUNKER);
 	strategyItems.add(StrategyItem.MARINE_AUTO_TRAIN);
@@ -31,13 +20,6 @@ public class MagiStrategyManager extends Manager {
     }
 
     private int lastScanFrameCount = 0;
-
-    /// 경기가 시작될 때 일회적으로 전략 초기 세팅 관련 로직을 실행합니다
-    @Override
-    public void onStart(GameStatus gameStatus) {
-	locationManager = gameStatus.getLocationManager();
-	super.onStart(gameStatus);
-    }
 
     @Override
     public void onFrame() {
@@ -47,6 +29,10 @@ public class MagiStrategyManager extends Manager {
 	    defense6droneBuildOrder();
 	    return;
 	}
+
+	BuildManager buildManager = gameStatus.getBuildManager();
+	LocationManager locationManager = gameStatus.getLocationManager();
+	EliminateManager magiEliminateManager = gameStatus.getEliminateManager();
 
 	Set<Integer> bunkerSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Bunker);
 	for (Integer bunkerId : bunkerSet) {
@@ -71,11 +57,11 @@ public class MagiStrategyManager extends Manager {
 	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
 		// 서플 여유가 4개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
 		if (1 > allianceUnitManager.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 4 * 2) {
-		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+		    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 		} else if (gameStatus.getMineral() > 200 && null != allianceUnitManager.getFirstUnitIdByUnitKind(UnitKind.Terran_Academy)
 			&& 5 > allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
 		    // 아카데미가 존재하고, 배럭이 5개 미만이고, BuildOrder Queue가 비어있으면 세 번째 배럭을 짓는다.
-		    buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
+		    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
 		} else if (gameStatus.getMineral() >= 50) {
 		    Unit barracks = allianceUnitManager.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
 		    if (null != barracks) {
@@ -182,6 +168,7 @@ public class MagiStrategyManager extends Manager {
 
     // 벙거를 수리한다.
     private void repairBunker(UnitManager allianceUnitManager, Unit bunker) {
+	WorkerManager workerManager = gameStatus.getWorkerManager();
 	Unit repairWorker = workerManager.getInterruptableWorker(bunker.getTilePosition());
 	if (repairCount > 0) {
 	    if (null != repairWorker) {
@@ -214,49 +201,52 @@ public class MagiStrategyManager extends Manager {
     }
 
     public void defense6droneBuildOrder() {
+	BuildManager buildManager = gameStatus.getBuildManager();
 	// 초기 빌드 오더
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.SCOUTING));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Bunker));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Refinery));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.GATHER_GAS));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Bunker));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	//buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.ADD_ON, UnitType.Terran_Comsat_Station));
-	buildManager.add(new MagiBuildOrderItem(MagiBuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
     }
 
     @Override
     public void onUnitComplete(Unit unit) {
 	super.onUnitComplete(unit);
+
+	LocationManager locationManager = gameStatus.getLocationManager();
 
 	if (null != unit && unit.getType().equals(UnitType.Terran_Barracks)) {
 	    unit.setRallyPoint(locationManager.getBaseEntranceChokePoint().toPosition());

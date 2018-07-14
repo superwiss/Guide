@@ -6,24 +6,11 @@ import bwapi.Unit;
 import bwapi.UnitType;
 
 // 매딕을 컨트롤 한다.
-public class MagiMicroControlMarine extends Manager {
-    private static MagiMicroControlMarine instance = new MagiMicroControlMarine();
-
-    public static MagiMicroControlMarine Instance() {
-	return instance;
-    }
-
-    private LocationManager locationManager = null;;
+public class MicroControlMarine extends Manager {
     private final Set<UnitType> medicUnitTypeSet = new HashSet<>();
 
-    public MagiMicroControlMarine() {
+    public MicroControlMarine() {
 	medicUnitTypeSet.add(UnitType.Terran_Medic);
-    }
-
-    @Override
-    protected void onStart(GameStatus gameStatus) {
-	locationManager = gameStatus.getLocationManager();
-	super.onStart(gameStatus);
     }
 
     @Override

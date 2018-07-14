@@ -12,26 +12,14 @@ import bwapi.UnitType;
 /// 빌드(건물 건설 / 유닛 훈련 / 테크 리서치 / 업그레이드) 명령을 순차적으로 실행하기 위해 빌드 큐를 관리하고, 빌드 큐에 있는 명령을 하나씩 실행하는 class<br>
 /// 빌드 명령 중 건물 건설 명령은 ConstructionManager로 전달합니다
 /// @see ConstructionManager
-public class MagiBuildManager extends Manager {
-
-    private static MagiBuildManager instance = new MagiBuildManager();
-
-    public static MagiBuildManager Instance() {
-	return instance;
-    }
-
-    private MagiScoutManager scoutManager = MagiScoutManager.Instance();
-    private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
-    private LocationManager locationManager = null;
-
-    private Deque<MagiBuildOrderItem> queue = new LinkedList<>(); // 현재 빌드 오더 정보가 들어 있는 큐.
+public class BuildManager extends Manager {
+    private Deque<BuildOrderItem> queue = new LinkedList<>(); // 현재 빌드 오더 정보가 들어 있는 큐.
     private boolean initialBuildFinished = false; // 초기 빌드 오더가 완료되었는지 여부를 리턴.
     private Map<Integer, Integer> buildingWorkerMap = new HashMap<>(); // 건설 중인 건물과, 이 건물을 짓고 있는 일꾼을 매핑하고 있는 맵
     private boolean isMoving = false;
 
     @Override
     protected void onStart(GameStatus gameStatus) {
-	locationManager = gameStatus.getLocationManager();
 	super.onStart(gameStatus);
     }
 
@@ -40,12 +28,12 @@ public class MagiBuildManager extends Manager {
 	super.onFrame();
 
 	if (!queue.isEmpty()) {
-	    MagiBuildOrderItem buildItem = queue.peek();
+	    BuildOrderItem buildItem = queue.peek();
 	    if (false == buildItem.isInProgress()) {
 		Log.info("BuildOrder Start: %s", buildItem.toString());
 	    } else {
 		// 건설 시작했는데, (돈이 없는 등의 이유로 취소되어서) 할당된 일꾼이 없으면, 건설을 다시 시작한다.
-		if (buildItem.getOrder().equals(MagiBuildOrderItem.Order.BUILD)) {
+		if (buildItem.getOrder().equals(BuildOrderItem.Order.BUILD)) {
 		    Unit worker = buildItem.getWorker();
 		    switch (worker.getOrder().toString()) {
 		    case "ConstructingBuilding":
@@ -78,8 +66,8 @@ public class MagiBuildManager extends Manager {
 	super.onUnitDiscover(unit);
 
 	if (!queue.isEmpty() && 0 != gameStatus.getFrameCount()) {
-	    MagiBuildOrderItem buildItem = queue.peek();
-	    if (buildItem.getOrder().equals(MagiBuildOrderItem.Order.BUILD) && unit.getType().equals(buildItem.getTargetUnitType())) {
+	    BuildOrderItem buildItem = queue.peek();
+	    if (buildItem.getOrder().equals(BuildOrderItem.Order.BUILD) && unit.getType().equals(buildItem.getTargetUnitType())) {
 		buildingWorkerMap.put(unit.getID(), buildItem.getWorker().getID());
 		Log.debug("BuildOrder Finish: %s", buildItem.toString());
 		queue.poll();
@@ -100,7 +88,7 @@ public class MagiBuildManager extends Manager {
 	}
     }
 
-    public void add(MagiBuildOrderItem buildItem) {
+    public void add(BuildOrderItem buildItem) {
 	queue.offer(buildItem);
     }
 
@@ -108,9 +96,13 @@ public class MagiBuildManager extends Manager {
 	return queue.size();
     }
 
-    private void process(MagiBuildOrderItem buildOrderItem) {
+    private void process(BuildOrderItem buildOrderItem) {
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
-	MagiBuildOrderItem.Order type = buildOrderItem.getOrder();
+	LocationManager locationManager = gameStatus.getLocationManager();
+	ScoutManager scoutManager = gameStatus.getScoutManager();
+	WorkerManager workerManager = gameStatus.getWorkerManager();
+
+	BuildOrderItem.Order type = buildOrderItem.getOrder();
 	switch (type) {
 	case INITIAL_BUILDORDER_FINISH:
 	    initialBuildFinished = true;
@@ -179,7 +171,7 @@ public class MagiBuildManager extends Manager {
 			if (!gameStatus.isExplored(tilePosition)) {
 			    if (gameStatus.getMineral() + 25 > buildOrderItem.getTargetUnitType().mineralPrice()) {
 				if (false == isMoving) {
-				    MagiBuildOrderItem moveOrder = new MagiBuildOrderItem(MagiBuildOrderItem.Order.MOVE_SCV, tilePosition);
+				    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
 				    queue.addFirst(moveOrder);
 				}
 			    }

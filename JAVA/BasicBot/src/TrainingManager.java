@@ -5,13 +5,7 @@ import bwapi.Unit;
 import bwapi.UnitType;
 
 // MagiBot을 빠르게 연습시키기 위해서, 유즈맵으로 미션을 만들어 MagiBot이 미션을 해결하는 방식으로 훈련한다.
-public class MagiTrainingManager extends Manager {
-    private static MagiTrainingManager instance = new MagiTrainingManager();
-
-    public static MagiTrainingManager Instance() {
-	return instance;
-    }
-
+public class TrainingManager extends Manager {
     private static Game game = MyBotModule.Broodwar;
 
     private TrainingData trainingData;

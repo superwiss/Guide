@@ -1,54 +1,59 @@
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Set;
 
-import bwapi.Game;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Unit;
 
 /// 실제 봇프로그램의 본체가 되는 class<br>
 /// 스타크래프트 경기 도중 발생하는 이벤트들이 적절하게 처리되도록 해당 Manager 객체에게 이벤트를 전달하는 관리자 Controller 역할을 합니다
-public class GameCommander {
-    private Game broodwar;
-
-    private MagiGameStatusManager gameStatusManager = MagiGameStatusManager.Instance();
-    private LocationManager locationManager = null;
-    private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
-    private MagiBuildManager buildManager = MagiBuildManager.Instance();
-    private MagiScoutManager scoutManager = MagiScoutManager.Instance();
-    private MagiStrategyManager strategymanager = MagiStrategyManager.Instance();
-    private MagiMicroControlManager microControlManager = MagiMicroControlManager.Instance();
-    private MagiEliminateManager eliminateManager = MagiEliminateManager.Instance();
-    private MagiTrainingManager trainingManager = MagiTrainingManager.Instance();
+public class GameCommander implements EventDispatcher {
     private GameStatus gameStatus;
+    private Deque<EventHandler> eventHandlers = new LinkedList<>();
 
     public GameCommander() {
-	this.broodwar = MyBotModule.Broodwar;
+	gameStatus = new GameStatus();
+
+	// GameStatus에 각종 Manager 등록
+	gameStatus.setGameStatusManager(new GameStatusManager());
+	gameStatus.setWorkerManager(new WorkerManager());
+	gameStatus.setBuildManager(new BuildManager());
+	gameStatus.setScoutManager(new ScoutManager());
+	gameStatus.setStrategyManager(new StrategyManager());
+	gameStatus.setMicroControlManager(new MicroControlManager());
+	gameStatus.setEliminateManager(new EliminateManager());
+	gameStatus.setTrainingManager(new TrainingManager());
+	gameStatus.setUxManager(new MagiUXManager());
+
+	// Event Handler 등록
+	eventHandlers.add(gameStatus.getGameStatusManager());
+	eventHandlers.add(gameStatus.getWorkerManager());
+	eventHandlers.add(gameStatus.getBuildManager());
+	eventHandlers.add(gameStatus.getScoutManager());
+	eventHandlers.add(gameStatus.getStrategyManager());
+	eventHandlers.add(gameStatus.getMicroControlManager());
+	eventHandlers.add(gameStatus.getEliminateManager());
+	eventHandlers.add(gameStatus.getTrainingManager());
+	eventHandlers.add(gameStatus.getUxManager());
     }
 
     /// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
     public void onStart() {
 	Log.info("Game has started");
 
-	// 게임 상태를 저장할 객체 생성
-	gameStatus = new GameStatus(broodwar);
+	// 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생한다.
+	Log.setLogLevel(Log.Level.WARN);
+
+	gameStatus.setGame(MyBotModule.Broodwar);
 
 	initLocationManager();
 
-	ActionUtil.setGame(broodwar);
-
-	// 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생한다.
-	Log.setLogLevel(Log.Level.TRACE);
+	ActionUtil.setGame(gameStatus.getGame());
 
 	try {
-	    gameStatusManager.onStart(gameStatus);
-	    locationManager.onStart(gameStatus);
-	    workerManager.onStart(gameStatus);
-	    buildManager.onStart(gameStatus);
-	    scoutManager.onStart(gameStatus);
-	    strategymanager.onStart(gameStatus);
-	    microControlManager.onStart(gameStatus);
-	    eliminateManager.onStart(gameStatus);
-	    trainingManager.onStart(gameStatus);
+	    Event event = new Event(Event.ON_START, gameStatus);
+	    executeEventHandler(event);
 	} catch (Exception e) {
 	    Log.error("onStart() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -58,18 +63,23 @@ public class GameCommander {
 
     // 맵 이름으로 맵 종류를 판단해서 locationManager 구현체를 선택한다.
     private void initLocationManager() {
+	LocationManager locationManager = null;
 	String mapFileName = gameStatus.getGame().mapFileName();
 	if (mapFileName.contains("ircuit")) {
 	    // 서킷 브레이커
-	    locationManager = LocationManagerCircuitBreaker.Instance();
+	    locationManager = new LocationManagerCircuitBreaker();
+	    locationManager.setMapName("CircuitBreaker");
 	} else if (mapFileName.contains("atch")) {
 	    // 오버워치
-	    locationManager = LocationManagerOverWatch.Instance();
+	    locationManager = new LocationManagerOverWatch();
+	    locationManager.setMapName("Overwatch");
 	} else if (mapFileName.contains("pirit")) {
 	    // 투혼
-	    locationManager = LocationManagerSprit.Instance();
+	    locationManager = new LocationManagerSprit();
+	    locationManager.setMapName("Sprit");
 	}
 	gameStatus.setLocationManager(locationManager);
+	eventHandlers.addFirst(locationManager);
     }
 
     /// 경기가 종료될 때 일회적으로 발생하는 이벤트를 처리합니다
@@ -87,15 +97,8 @@ public class GameCommander {
 	}
 
 	try {
-	    gameStatusManager.onFrame();
-	    locationManager.onFrame();
-	    workerManager.onFrame();
-	    buildManager.onFrame();
-	    scoutManager.onFrame();
-	    strategymanager.onFrame();
-	    microControlManager.onFrame();
-	    eliminateManager.onFrame();
-	    trainingManager.onFrame();
+	    Event event = new Event(Event.ON_FRAME);
+	    executeEventHandler(event);
 	} catch (Exception e) {
 	    Log.error("onFrame() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -112,15 +115,8 @@ public class GameCommander {
 	Log.info("onUnitDestroy(%s)", UnitUtil.toString(unit));
 
 	try {
-	    gameStatusManager.onUnitDestroy(unit);
-	    locationManager.onUnitDestroy(unit);
-	    workerManager.onUnitDestroy(unit);
-	    buildManager.onUnitDestroy(unit);
-	    scoutManager.onUnitDestroy(unit);
-	    strategymanager.onUnitDestroy(unit);
-	    microControlManager.onUnitDestroy(unit);
-	    eliminateManager.onUnitDestroy(unit);
-	    trainingManager.onUnitDestroy(unit);
+	    Event event = new Event(Event.ON_UNIT_DESTROY, unit);
+	    executeEventHandler(event);
 	} catch (Exception e) {
 	    Log.error("onUnitDestroy() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -142,13 +138,13 @@ public class GameCommander {
 	try {
 	    // 귀찮게도 가스 건물을 지을 때와 같은 상황에서는 onUnitDiscover가 호출되지 않고 onUnitRenegade가 호출된다.
 	    // 각 메니져는 onUnitDiscover와 onUnitRenegade를 중복해서 구현하지 않고 onUnitDiscover만 구현한다.
-	    // 가스 건물과 관련있는 매니져를 대상으로 onUnitRenegade() 이벤트가 발생하면 onUnitDiscover()로 바꿔서 호출해준다.
+	    // 즉 onUnitRenegade() 이벤트가 발생하면 onUnitDiscover()로 바꿔서 호출해준다.
+	    Event event = new Event(Event.ON_UNIT_DISCOVER, unit);
 
-	    // 유닛들의 상태를 업데이트 하기 위해서 gameStatusManager를 호출한다.
-	    gameStatusManager.onUnitDiscover(unit);
+	    executeEventHandler(event);
 
 	    // 가스 건물을 지었는지 확인하기 위해서 buildManager를 호출한다.
-	    buildManager.onUnitDiscover(unit);
+	    //buildManager.onUnitDiscover(unit);
 	} catch (Exception e) {
 	    Log.error("onUnitRenegade() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -161,15 +157,8 @@ public class GameCommander {
 	Log.info("onUnitComplete(%s)", UnitUtil.toString(unit));
 
 	try {
-	    gameStatusManager.onUnitComplete(unit);
-	    locationManager.onUnitComplete(unit);
-	    workerManager.onUnitComplete(unit);
-	    buildManager.onUnitComplete(unit);
-	    scoutManager.onUnitComplete(unit);
-	    strategymanager.onUnitComplete(unit);
-	    microControlManager.onUnitComplete(unit);
-	    eliminateManager.onUnitComplete(unit);
-	    trainingManager.onUnitComplete(unit);
+	    Event event = new Event(Event.ON_UNIT_COMPLETE, unit);
+	    executeEventHandler(event);
 	} catch (Exception e) {
 	    Log.error("onUnitComplete() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -183,15 +172,8 @@ public class GameCommander {
 	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
 
 	try {
-	    gameStatusManager.onUnitDiscover(unit);
-	    locationManager.onUnitDiscover(unit);
-	    workerManager.onUnitDiscover(unit);
-	    buildManager.onUnitDiscover(unit);
-	    scoutManager.onUnitDiscover(unit);
-	    strategymanager.onUnitDiscover(unit);
-	    microControlManager.onUnitDiscover(unit);
-	    eliminateManager.onUnitDiscover(unit);
-	    trainingManager.onUnitDiscover(unit);
+	    Event event = new Event(Event.ON_UNIT_DISCOVER, unit);
+	    executeEventHandler(event);
 	} catch (Exception e) {
 	    Log.error("onUnitDiscover() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -205,15 +187,8 @@ public class GameCommander {
 	Log.info("onUnitEvade(%s)", UnitUtil.toString(unit));
 
 	try {
-	    gameStatusManager.onUnitEvade(unit);
-	    locationManager.onUnitEvade(unit);
-	    workerManager.onUnitEvade(unit);
-	    buildManager.onUnitEvade(unit);
-	    scoutManager.onUnitEvade(unit);
-	    strategymanager.onUnitEvade(unit);
-	    microControlManager.onUnitEvade(unit);
-	    eliminateManager.onUnitEvade(unit);
-	    trainingManager.onUnitEvade(unit);
+	    Event event = new Event(Event.ON_UNIT_EVADE, unit);
+	    executeEventHandler(event);
 	} catch (Exception e) {
 	    Log.error("onUnitEvade() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -259,7 +234,7 @@ public class GameCommander {
 	    int number = Integer.parseInt(text);
 	    if (false == statusMode) {
 		Log.info("Set game speed to %d", number);
-		broodwar.setLocalSpeed(number);
+		gameStatus.getGame().setLocalSpeed(number);
 	    } else {
 		Unit unit = gameStatus.getAllianceUnitManager().getUnit(number);
 		if (null == unit) {
@@ -274,7 +249,7 @@ public class GameCommander {
 	    case "ppp":
 		// 일시 정지를 위해서 3초만 대기한다.
 		Log.info("Set game speed to 3000");
-		broodwar.setLocalSpeed(3000);
+		gameStatus.getGame().setLocalSpeed(3000);
 		break;
 	    case "enemy":
 		Log.info("[EnemyUnits] %s", gameStatus.getEnemyUnitManager().toString());
@@ -304,5 +279,22 @@ public class GameCommander {
 
     /// 다른 플레이어로부터 텍스트를 전달받았을 때 발생하는 이벤트를 처리합니다
     public void onReceiveText(Player player, String text) {
+    }
+
+    @Override
+    public void addEventHandler(EventHandler eventHandler) {
+	eventHandlers.add(eventHandler);
+    }
+
+    @Override
+    public void removeEventHandler(EventHandler eventHandler) {
+	eventHandlers.remove(eventHandler);
+    }
+
+    @Override
+    public void executeEventHandler(Event event) {
+	for (EventHandler eventHandler : eventHandlers) {
+	    eventHandler.onEvent(event);
+	}
     }
 }

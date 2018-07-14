@@ -2,7 +2,7 @@ import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
 
-public class MagiBuildOrderItem {
+public class BuildOrderItem {
     public enum Order {
 	INITIAL_BUILDORDER_FINISH, TRAINING, BUILD, SCOUTING, GATHER_GAS, MOVE_SCV, ADD_ON
     }
@@ -13,17 +13,17 @@ public class MagiBuildOrderItem {
     private TilePosition tilePosition;
     private boolean inProgress = false;
 
-    public MagiBuildOrderItem(Order order) {
+    public BuildOrderItem(Order order) {
 	this.order = order;
     }
 
-    public MagiBuildOrderItem(Order order, UnitType targetUnitType) {
+    public BuildOrderItem(Order order, UnitType targetUnitType) {
 	this.order = order;
 	this.targetUnitType = targetUnitType;
 
     }
 
-    public MagiBuildOrderItem(Order order, TilePosition tilePosition) {
+    public BuildOrderItem(Order order, TilePosition tilePosition) {
 	this.order = order;
 	this.tilePosition = tilePosition;
     }

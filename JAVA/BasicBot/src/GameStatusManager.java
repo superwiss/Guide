@@ -4,13 +4,7 @@ import java.util.Set;
 import bwapi.Unit;
 import bwapi.UnitType;
 
-public class MagiGameStatusManager extends Manager {
-
-    private static MagiGameStatusManager instance = new MagiGameStatusManager();
-
-    public static MagiGameStatusManager Instance() {
-	return instance;
-    }
+public class GameStatusManager extends Manager {
 
     private UnitManager allianceUnitManager = null;
     private UnitManager enemyUnitManager = null;

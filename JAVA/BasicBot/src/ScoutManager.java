@@ -7,23 +7,8 @@ import bwapi.Unit;
 
 /// 게임 초반에 일꾼 유닛 중에서 정찰 유닛을 하나 지정하고, 정찰 유닛을 이동시켜 정찰을 수행하는 class<br>
 /// 적군의 BaseLocation 위치를 알아내는 것까지만 개발되어있습니다
-public class MagiScoutManager extends Manager {
-
-    private static MagiScoutManager instance = new MagiScoutManager();
-
-    public static MagiScoutManager Instance() {
-	return instance;
-    }
-
-    private LocationManager locationManager;
-    private MagiWorkerManager workerManager = MagiWorkerManager.Instance();
+public class ScoutManager extends Manager {
     private Queue<TilePosition> searchQueue = new LinkedList<>();
-
-    @Override
-    protected void onStart(GameStatus gameStatus) {
-	locationManager = gameStatus.getLocationManager();
-	super.onStart(gameStatus);
-    }
 
     // TODO 정찰은 1개만 가능하도록 구현됨. 다중 유닛 정찰 구현하기.
     @Override
@@ -36,6 +21,7 @@ public class MagiScoutManager extends Manager {
 	}
 
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
+	LocationManager locationManager = gameStatus.getLocationManager();
 	Unit scoutUnit = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Scouting_Unit);
 
 	if (null == scoutUnit) {
@@ -83,6 +69,8 @@ public class MagiScoutManager extends Manager {
 
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
+	LocationManager locationManager = gameStatus.getLocationManager();
+
 	// 정찰중인 유닛이 죽었을 경우를 처리...
 	if (allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Scouting_Unit).contains(Integer.valueOf(unit.getID()))) {
 	    // 적 Main건물(커맨드센터, 넥서스, 해처리 류)을 찾기 전이지만, 적 건물이 존재할 경우, 적 건물의 위치를 기반으로 적 본진을 유추한다. 
@@ -98,6 +86,8 @@ public class MagiScoutManager extends Manager {
     }
 
     private void checkEnemyStartingLocation(UnitManager enemyUnitManager) {
+	LocationManager locationManager = gameStatus.getLocationManager();
+
 	Set<Integer> enemyBuildingUnitIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Building);
 	for (Integer enemyBuildingUnitId : enemyBuildingUnitIds) {
 	    // 적 본진을 찾았으면 계산을 중단한다.
@@ -121,6 +111,8 @@ public class MagiScoutManager extends Manager {
 
     public boolean doFirstSearch(GameStatus gameStatus) {
 	boolean result = true;
+	LocationManager locationManager = gameStatus.getLocationManager();
+	WorkerManager workerManager = gameStatus.getWorkerManager();
 
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	Unit unitForScout = workerManager.getInterruptableWorker(locationManager.getFirstExtensionChokePoint());

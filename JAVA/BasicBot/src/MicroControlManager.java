@@ -1,35 +1,34 @@
+import java.util.LinkedList;
+import java.util.List;
+
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.Unit;
 
 // MagiBot을 빠르게 연습시키기 위해서, 유즈맵으로 미션을 만들어 MagiBot이 미션을 해결하는 방식으로 훈련한다.
-public class MagiMicroControlManager extends Manager {
-    private static MagiMicroControlManager instance = new MagiMicroControlManager();
+public class MicroControlManager extends Manager implements EventDispatcher {
+    private List<EventHandler> eventHandlers = new LinkedList<>();
 
-    public static MagiMicroControlManager Instance() {
-	return instance;
+    public MicroControlManager() {
+	eventHandlers.add(new MicroControlWorker());
+	eventHandlers.add(new MicroControlMarine());
+	eventHandlers.add(new MicroControlMadic());
     }
-
-    private MagiMicroControlWorker workerControl = MagiMicroControlWorker.Instance();
-    private MagiMicroControlMarine marineControl = MagiMicroControlMarine.Instance();
-    private MagiMicroControlMadic madicControl = MagiMicroControlMadic.Instance();
 
     @Override
     protected void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
 
-	workerControl.onStart(gameStatus);
-	marineControl.onStart(gameStatus);
-	madicControl.onStart(gameStatus);
+	Event event = new Event(Event.ON_START, gameStatus);
+	executeEventHandler(event);
     }
 
     @Override
     public void onFrame() {
 	super.onFrame();
 
-	workerControl.onFrame();
-	marineControl.onFrame();
-	madicControl.onFrame();
+	Event event = new Event(Event.ON_FRAME);
+	executeEventHandler(event);
 
 	if (true) {
 	    return;
@@ -128,45 +127,32 @@ public class MagiMicroControlManager extends Manager {
     protected void onUnitComplete(Unit unit) {
 	super.onUnitComplete(unit);
 
-	workerControl.onUnitComplete(unit);
-	marineControl.onUnitComplete(unit);
-	madicControl.onUnitComplete(unit);
-    }
-
-    @Override
-    protected void onUnitCreate(Unit unit) {
-	super.onUnitCreate(unit);
-
-	workerControl.onUnitCreate(unit);
-	marineControl.onUnitCreate(unit);
-	madicControl.onUnitCreate(unit);
+	Event event = new Event(Event.ON_UNIT_COMPLETE, unit);
+	executeEventHandler(event);
     }
 
     @Override
     protected void onUnitDestroy(Unit unit) {
 	super.onUnitDestroy(unit);
 
-	workerControl.onUnitDestroy(unit);
-	marineControl.onUnitDestroy(unit);
-	madicControl.onUnitDestroy(unit);
+	Event event = new Event(Event.ON_UNIT_DESTROY, unit);
+	executeEventHandler(event);
     }
 
     @Override
     protected void onUnitDiscover(Unit unit) {
 	super.onUnitDiscover(unit);
 
-	workerControl.onUnitDestroy(unit);
-	marineControl.onUnitDestroy(unit);
-	madicControl.onUnitDestroy(unit);
+	Event event = new Event(Event.ON_UNIT_DISCOVER, unit);
+	executeEventHandler(event);
     }
 
     @Override
     protected void onUnitEvade(Unit unit) {
 	super.onUnitEvade(unit);
 
-	workerControl.onUnitDestroy(unit);
-	marineControl.onUnitDestroy(unit);
-	madicControl.onUnitDestroy(unit);
+	Event event = new Event(Event.ON_UNIT_EVADE, unit);
+	executeEventHandler(event);
     }
 
     // 필요한 프레임으로 빨리 이동하기 위해서 게임 속도를 제어한다. false를 리턴하면 frmae을 종료한다.
@@ -197,6 +183,23 @@ public class MagiMicroControlManager extends Manager {
 	}
 
 	return result;
+    }
+
+    @Override
+    public void addEventHandler(EventHandler eventHandler) {
+	eventHandlers.add(eventHandler);
+    }
+
+    @Override
+    public void removeEventHandler(EventHandler eventHandler) {
+	eventHandlers.remove(eventHandler);
+    }
+
+    @Override
+    public void executeEventHandler(Event event) {
+	for (EventHandler eventHandler : eventHandlers) {
+	    eventHandler.onEvent(event);
+	}
     }
 
     // 유닛의 이동 거리를 측정하기 위한 테스트용 메서드

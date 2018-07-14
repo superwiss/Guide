@@ -3,8 +3,9 @@ import java.util.List;
 import bwapi.TilePosition;
 import bwapi.Unit;
 
-public abstract class LocationManager extends Manager implements IMapLocation {
+public abstract class LocationManager extends Manager implements MapInfo {
 
+    protected String mapName; // 지도 이름
     protected TilePosition allianceBaseLocation = null; // 아군 본진 위치
     protected TilePosition enemyBaseLocation = null; // 적군 본진 위치
     protected List<TilePosition> baseLocations = null; // 맵 전체의 스타팅 포인트 위치들.
@@ -19,9 +20,20 @@ public abstract class LocationManager extends Manager implements IMapLocation {
     private TilePosition baseEntranceChokePoint = null; // 본진 입구 방어를 위한 위치
     private TilePosition firstExtensionChokePoint = null; // 앞마당 입구 방어를 위한 위치
 
+    public LocationManager() {
+    }
+
+    @Override
+    protected void onStart(GameStatus gameStatus) {
+	super.onStart(gameStatus);
+
+	Log.debug("3. LocationManager.onStart()");
+    }
+
     @Override
     protected void onFrame() {
 	super.onFrame();
+	// 0 frame에서는 아군 Command Center의 위치를 아직 알 수 없어서 LocationManager를 초기화할 수 없으므로, 1프레임일 때 초기화를 한다.
 	if (1 == gameStatus.getFrameCount()) {
 	    init(gameStatus.getAllianceUnitManager().getFirstCommandCenter());
 	}
@@ -126,5 +138,15 @@ public abstract class LocationManager extends Manager implements IMapLocation {
     @Override
     public TilePosition getFirstExtensionChokePoint() {
 	return firstExtensionChokePoint;
+    }
+
+    @Override
+    public void setMapName(String mapName) {
+	this.mapName = mapName;
+    }
+
+    @Override
+    public String getMapName() {
+	return this.mapName;
     }
 }

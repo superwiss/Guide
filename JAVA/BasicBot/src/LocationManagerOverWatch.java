@@ -5,13 +5,6 @@ import bwapi.TilePosition;
 
 // 오버워치 맵
 public class LocationManagerOverWatch extends LocationManager {
-
-    private static LocationManagerOverWatch instance = new LocationManagerOverWatch();
-
-    public static LocationManagerOverWatch Instance() {
-	return instance;
-    }
-
     private static final int ONE_CLOCK = 0;
     private static final int FIVE_CLOCK = 1;
     private static final int SEVEN_CLOCK = 2;
@@ -358,11 +351,11 @@ public class LocationManagerOverWatch extends LocationManager {
 
     @Override
     public List<TilePosition> initEngineeringBay() {
-	return null;
+	return new ArrayList<TilePosition>();
     }
 
     @Override
     public List<TilePosition> initFirstExpansionTurret() {
-	return null;
+	return new ArrayList<TilePosition>();
     }
 }

@@ -6,17 +6,7 @@ import bwapi.TilePosition;
 import bwapi.Unit;
 
 /// 일꾼 유닛들의 상태를 관리하고 컨트롤하는 class
-public class MagiWorkerManager extends Manager {
-    private static MagiWorkerManager instance = new MagiWorkerManager();
-
-    /// static singleton 객체를 리턴합니다
-    public static MagiWorkerManager Instance() {
-	return instance;
-    }
-
-    // unitIdSet을 저장할 캐시 자료구조. single thread에서 동작하니까, 이렇게 과감하게 동기화를 무시한 cache를 사용한다.
-    private Set<Integer> unitIdSetCache = new HashSet<>();
-
+public class WorkerManager extends Manager {
     @Override
     public void onFrame() {
 	super.onFrame();
@@ -48,16 +38,15 @@ public class MagiWorkerManager extends Manager {
 	Unit result = null;
 
 	if (null != tilePosition) {
-	    // 대상 일꾼을 저장할 unitIdSet 초기화
-	    unitIdSetCache.clear();
+	    Set<Integer> candidate = new HashSet<>();
 	    for (Integer workerId : allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Worker)) {
 		if (isinterruptableWorker(workerId)) {
-		    unitIdSetCache.add(workerId);
+		    candidate.add(workerId);
 		}
 	    }
 
 	    // unitIdSet 중에서 tilePosition과 가장 가까운 유닛을 리턴한다.
-	    result = allianceUnitManager.getClosestUnit(unitIdSetCache, tilePosition.toPosition());
+	    result = allianceUnitManager.getClosestUnit(candidate, tilePosition.toPosition());
 	}
 
 	return result;

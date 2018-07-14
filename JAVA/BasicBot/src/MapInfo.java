@@ -3,7 +3,13 @@ import java.util.List;
 import bwapi.TilePosition;
 import bwapi.Unit;
 
-public interface IMapLocation {
+public interface MapInfo {
+
+    // Map 이름에 대한 Setter
+    abstract void setMapName(String mapName);
+
+    // Map 이름에 대한 Getter
+    abstract String getMapName();
 
     // 스타팅 위치를 리턴한다. 12시 위치부터 시계 방향으로 본진 위치를 리턴한다.
     abstract List<TilePosition> initBaseLocations();

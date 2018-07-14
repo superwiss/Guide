@@ -6,16 +6,10 @@ import bwapi.Unit;
 import bwapi.UnitType;
 
 // 매딕을 컨트롤 한다.
-public class MagiMicroControlMadic extends Manager {
-    private static MagiMicroControlMadic instance = new MagiMicroControlMadic();
-
-    public static MagiMicroControlMadic Instance() {
-	return instance;
-    }
-
+public class MicroControlMadic extends Manager {
     private final Set<UnitType> medicUnitTypeSet = new HashSet<>();
 
-    public MagiMicroControlMadic() {
+    public MicroControlMadic() {
 	medicUnitTypeSet.add(UnitType.Terran_Medic);
     }
 
