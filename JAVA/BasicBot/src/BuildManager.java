@@ -127,17 +127,17 @@ public class BuildManager extends Manager {
 	    allianceUnitManager.buildAddon(UnitType.Terran_Comsat_Station);
 	    break;
 	case GATHER_GAS:
-	    Unit refinary = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
-	    if (null != refinary) {
-		Unit workerForGatherGas = workerManager.getInterruptableWorker(refinary.getTilePosition());
+	    Unit refinery = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
+	    if (null != refinery && refinery.isCompleted()) {
+		Unit workerForGatherGas = workerManager.getInterruptableWorker(refinery.getTilePosition());
 		if (null != workerForGatherGas) {
-		    if (workerForGatherGas.canGather(refinary)) {
-			workerForGatherGas.gather(refinary);
-			Log.info("일꾼 가스 투입: %d -> %d", workerForGatherGas.getID(), refinary.getID());
+		    if (workerForGatherGas.canGather(refinery)) {
+			workerForGatherGas.gather(refinery);
+			Log.info("일꾼 가스 투입: %d -> %d", workerForGatherGas.getID(), refinery.getID());
 			allianceUnitManager.addUnitKind(UnitKind.Worker_Gather_Gas, workerForGatherGas);
 			queue.poll();
 		    } else {
-			Log.warn("일꾼 가스 투입 실패: %d -> %d", workerForGatherGas.getID(), refinary.getID());
+			Log.warn("일꾼 가스 투입 실패: %d -> %d", workerForGatherGas.getID(), refinery.getID());
 		    }
 		} else {
 		    Log.warn("가스를 캘 일꾼이 없음.");

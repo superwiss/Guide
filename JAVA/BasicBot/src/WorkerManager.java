@@ -21,7 +21,7 @@ public class WorkerManager extends Manager {
 	    idleWorkerCheck();
 	}
 
-	loggingDetailSCVInfo();
+	//loggingDetailSCVInfo();
     }
 
     @Override
