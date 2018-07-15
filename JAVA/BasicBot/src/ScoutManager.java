@@ -88,6 +88,21 @@ public class ScoutManager extends Manager {
     private void checkEnemyStartingLocation(UnitManager enemyUnitManager) {
 	LocationManager locationManager = gameStatus.getLocationManager();
 
+	int notFoundSize = 0;
+	int notFoundIndex = -1;
+	for (int i = 0; i < 4; ++i) {
+	    TilePosition baseLocation = locationManager.getBaseLocations(i);
+	    if (!gameStatus.isExplored(baseLocation)) {
+		notFoundSize += 1;
+		notFoundIndex = i;
+	    }
+	}
+
+	if (notFoundSize == 1 && -1 != notFoundIndex) {
+	    locationManager.setEnemyStartLocation(locationManager.getBaseLocations(notFoundIndex));
+	    return;
+	}
+
 	Set<Integer> enemyBuildingUnitIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Building);
 	for (Integer enemyBuildingUnitId : enemyBuildingUnitIds) {
 	    // 적 본진을 찾았으면 계산을 중단한다.
