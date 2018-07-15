@@ -70,6 +70,10 @@ public class BuildManager extends Manager {
 	    if (buildItem.getOrder().equals(BuildOrderItem.Order.BUILD) && unit.getType().equals(buildItem.getTargetUnitType())) {
 		buildingWorkerMap.put(unit.getID(), buildItem.getWorker().getID());
 		Log.debug("BuildOrder Finish: %s", buildItem.toString());
+		if (buildItem.getTargetUnitType().equals(UnitType.Terran_Refinery)) {
+		    allianceUnitManager.removeUnitKind(UnitKind.Worker, buildItem.getWorker());
+		    allianceUnitManager.addUnitKind(UnitKind.Worker_Gather_Gas, buildItem.getWorker());
+		}
 		queue.poll();
 	    }
 	}
@@ -127,17 +131,18 @@ public class BuildManager extends Manager {
 	    allianceUnitManager.buildAddon(UnitType.Terran_Comsat_Station);
 	    break;
 	case GATHER_GAS:
-	    Unit refinary = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
-	    if (null != refinary) {
-		Unit workerForGatherGas = workerManager.getInterruptableWorker(refinary.getTilePosition());
+	    Unit refinery = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
+	    if (null != refinery && refinery.isCompleted()) {
+		Unit workerForGatherGas = workerManager.getInterruptableWorker(refinery.getTilePosition());
 		if (null != workerForGatherGas) {
-		    if (workerForGatherGas.canGather(refinary)) {
-			workerForGatherGas.gather(refinary);
-			Log.info("일꾼 가스 투입: %d -> %d", workerForGatherGas.getID(), refinary.getID());
+		    if (workerForGatherGas.canGather(refinery)) {
+			workerForGatherGas.gather(refinery);
+			Log.info("일꾼 가스 투입: %d -> %d", workerForGatherGas.getID(), refinery.getID());
+			allianceUnitManager.removeUnitKind(UnitKind.Worker, workerForGatherGas);
 			allianceUnitManager.addUnitKind(UnitKind.Worker_Gather_Gas, workerForGatherGas);
 			queue.poll();
 		    } else {
-			Log.warn("일꾼 가스 투입 실패: %d -> %d", workerForGatherGas.getID(), refinary.getID());
+			Log.warn("일꾼 가스 투입 실패: %d -> %d", workerForGatherGas.getID(), refinery.getID());
 		    }
 		} else {
 		    Log.warn("가스를 캘 일꾼이 없음.");
@@ -169,7 +174,7 @@ public class BuildManager extends Manager {
 		if (null != tilePositionList) {
 		    for (TilePosition tilePosition : tilePositionList) {
 			if (!gameStatus.isExplored(tilePosition)) {
-			    if (gameStatus.getMineral() + 25 > buildOrderItem.getTargetUnitType().mineralPrice()) {
+			    if (gameStatus.getMineral() + 50 > buildOrderItem.getTargetUnitType().mineralPrice()) {
 				if (false == isMoving) {
 				    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
 				    queue.addFirst(moveOrder);

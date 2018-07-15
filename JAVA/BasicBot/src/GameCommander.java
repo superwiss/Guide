@@ -5,6 +5,7 @@ import java.util.Set;
 import bwapi.Player;
 import bwapi.Position;
 import bwapi.Unit;
+import bwapi.UnitType;
 
 /// 실제 봇프로그램의 본체가 되는 class<br>
 /// 스타크래프트 경기 도중 발생하는 이벤트들이 적절하게 처리되도록 해당 Manager 객체에게 이벤트를 전달하는 관리자 Controller 역할을 합니다
@@ -25,7 +26,6 @@ public class GameCommander implements EventDispatcher {
 	}
 
 	// GameStatus에 각종 Manager 등록
-	gameStatus.setGameStatusManager(new GameStatusManager());
 	gameStatus.setWorkerManager(new WorkerManager());
 	gameStatus.setBuildManager(new BuildManager());
 	gameStatus.setScoutManager(new ScoutManager());
@@ -38,7 +38,6 @@ public class GameCommander implements EventDispatcher {
 	}
 
 	// Event Handler 등록
-	eventHandlers.add(gameStatus.getGameStatusManager());
 	eventHandlers.add(gameStatus.getWorkerManager());
 	eventHandlers.add(gameStatus.getBuildManager());
 	eventHandlers.add(gameStatus.getScoutManager());
@@ -124,6 +123,14 @@ public class GameCommander implements EventDispatcher {
     public void onUnitDestroy(Unit unit) {
 	Log.info("onUnitDestroy(%s)", UnitUtil.toString(unit));
 
+	if (true == UnitUtil.isAllianceUnit(unit)) {
+	    gameStatus.getAllianceUnitManager().remove(unit);
+	} else if (true == UnitUtil.isEnemyUnit(unit)) {
+	    gameStatus.getEnemyUnitManager().remove(unit);
+	} else {
+	    // else 상황 = 즉 중립 건물, 중립 동물에 대해서는 아무런 처리도 하지 않는다.
+	}
+
 	try {
 	    EventData eventData = new EventData(EventData.ON_UNIT_DESTROY, unit);
 	    executeEventHandler(eventData);
@@ -148,13 +155,15 @@ public class GameCommander implements EventDispatcher {
 	try {
 	    // 귀찮게도 가스 건물을 지을 때와 같은 상황에서는 onUnitDiscover가 호출되지 않고 onUnitRenegade가 호출된다.
 	    // 각 메니져는 onUnitDiscover와 onUnitRenegade를 중복해서 구현하지 않고 onUnitDiscover만 구현한다.
-	    // 즉 onUnitRenegade() 이벤트가 발생하면 onUnitDiscover()로 바꿔서 호출해준다.
-	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
-
-	    executeEventHandler(eventData);
-
-	    // 가스 건물을 지었는지 확인하기 위해서 buildManager를 호출한다.
-	    //buildManager.onUnitDiscover(unit);
+	    if (unit.getType().equals(UnitType.Terran_Refinery) || unit.getType().equals(UnitType.Zerg_Extractor) || unit.getType().equals(UnitType.Protoss_Assimilator)) {
+		if (true == UnitUtil.isAllianceUnit(unit)) {
+		    gameStatus.getAllianceUnitManager().add(unit);
+		} else if (true == UnitUtil.isEnemyUnit(unit)) {
+		    gameStatus.getEnemyUnitManager().add(unit);
+		}
+		EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
+		executeEventHandler(eventData);
+	    }
 	} catch (Exception e) {
 	    Log.error("onUnitRenegade() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -180,6 +189,16 @@ public class GameCommander implements EventDispatcher {
     /// 아군 유닛이 Create 되었을 때 라든가, 적군 유닛이 Discover 되었을 때 발생합니다
     public void onUnitDiscover(Unit unit) {
 	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
+
+	if (true == UnitUtil.isAllianceUnit(unit)) {
+	    gameStatus.getAllianceUnitManager().add(unit);
+	} else if (true == UnitUtil.isEnemyUnit(unit)) {
+	    gameStatus.getEnemyUnitManager().add(unit);
+	} else {
+	    if (unit.getType().isMineralField()) {
+		gameStatus.getAllianceUnitManager().add(unit);
+	    }
+	}
 
 	try {
 	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
@@ -250,6 +269,7 @@ public class GameCommander implements EventDispatcher {
 		if (null == unit) {
 		    unit = gameStatus.getEnemyUnitManager().getUnit(number);
 		}
+		Log.info("status %d", number);
 		UnitUtil.loggingDetailUnitInfo(unit);
 	    }
 	} catch (NumberFormatException e) {

@@ -2,6 +2,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import bwapi.Position;
+import bwapi.TechType;
 import bwapi.Unit;
 import bwapi.UnitType;
 
@@ -21,6 +22,24 @@ public class MicroControlMarine extends Manager {
 	if (0 != gameStatus.getFrameCount() && 0 == gameStatus.getFrameCount() % (42 * 2)) {
 	    // 선두 유닛이 너무 앞서가면, 뒤따로 오는 유닛을 기다린다.
 	    waitBionicUnit();
+	    checkIfUsingStimPack();
+	}
+    }
+
+    // 스팀팩을 사용할지 여부를 판단하고, 필요할 경우 스팀팩을 사용한다.
+    private void checkIfUsingStimPack() {
+	Set<Integer> unitIdSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitType.Terran_Marine);
+	for (Integer unitId : unitIdSet) {
+	    Unit marine = allianceUnitManager.getUnit(unitId);
+	    // 마린 주변에 매딕이 1마리 이상 존재하고, 적군이 3마리 이상 존재하면 스팀팩을 사용한다.
+	    int madicCount = allianceUnitManager.getUnitsInRange(marine.getPosition(), UnitKind.Terran_Medic, 300).size();
+	    int enemyCount = enemyUnitManager.getUnitsInRange(marine.getPosition(), UnitKind.Combat_Unit, 300).size();
+	    Log.debug("아군(%d) 주변 매딕 수(%d), 적군 수(%d)", marine.getID(), madicCount, enemyCount);
+	    if (madicCount >= 1 && enemyCount >= 1) {
+		if (marine.canUseTech(TechType.Stim_Packs)) {
+		    marine.useTech(TechType.Stim_Packs);
+		}
+	    }
 	}
     }
 

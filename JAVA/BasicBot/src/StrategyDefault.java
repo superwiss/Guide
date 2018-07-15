@@ -1,6 +1,7 @@
 import java.util.HashSet;
 import java.util.Set;
 
+import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
 import bwapi.UnitType;
@@ -64,9 +65,9 @@ public class StrategyDefault extends StrategyBase {
 			Set<Integer> marineIds = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Terran_Marine);
 			int medicCount = medicIds.size() + allianceUnitManager.getTrainingQueueUnitCount(UnitType.Terran_Barracks, UnitType.Terran_Medic);
 			int marineCount = marineIds.size() + allianceUnitManager.getTrainingQueueUnitCount(UnitType.Terran_Barracks, UnitType.Terran_Marine);
-			// 마린4마리당 매딕 1마리
+			// 마린6마리당 매딕 1마리
 			Log.info("마린/매딕 생산. 마린 수: %d, 메딕 수: %d", marineCount, medicCount);
-			if (medicCount * 4 < marineCount) {
+			if (medicCount * 6 < marineCount) {
 			    barracks.train(UnitType.Terran_Medic);
 			} else {
 			    barracks.train(UnitType.Terran_Marine);
@@ -86,6 +87,11 @@ public class StrategyDefault extends StrategyBase {
 
 	    // Comsat Station Add on
 	    allianceUnitManager.buildAddon(UnitType.Terran_Comsat_Station);
+
+	    // 스팀팩 업그레이드를 한다.
+	    if (academy.canResearch(TechType.Stim_Packs)) {
+		academy.research(TechType.Stim_Packs);
+	    }
 	}
 
 	checkIfuseScan();
