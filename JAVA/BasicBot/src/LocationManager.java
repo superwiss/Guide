@@ -26,8 +26,6 @@ public abstract class LocationManager extends Manager implements MapInfo {
     @Override
     protected void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
-
-	Log.debug("3. LocationManager.onStart()");
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.util.Set;
 import bwapi.Order;
 import bwapi.TilePosition;
 import bwapi.Unit;
+import bwapi.UnitType;
 
 /// 일꾼 유닛들의 상태를 관리하고 컨트롤하는 class
 public class WorkerManager extends Manager {
@@ -15,6 +16,8 @@ public class WorkerManager extends Manager {
 	if (1 < gameStatus.getFrameCount()) {
 	    idleWorkerCheck();
 	}
+
+	loggingDetailSCVInfo();
     }
 
     @Override
@@ -150,4 +153,12 @@ public class WorkerManager extends Manager {
 	}
     }
 
+    private void loggingDetailSCVInfo() {
+	Set<Integer> scvIdSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitType.Terran_SCV);
+	Log.trace("SCV size: %d", scvIdSet.size());
+	for (Integer scvId : scvIdSet) {
+	    Unit scv = allianceUnitManager.getUnit(scvId);
+	    UnitUtil.loggingDetailUnitInfo(scv);
+	}
+    }
 }

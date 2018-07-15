@@ -19,16 +19,16 @@ public class MicroControlManager extends Manager implements EventDispatcher {
     protected void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
 
-	Event event = new Event(Event.ON_START, gameStatus);
-	executeEventHandler(event);
+	EventData eventData = new EventData(EventData.ON_START, gameStatus);
+	executeEventHandler(eventData);
     }
 
     @Override
     public void onFrame() {
 	super.onFrame();
 
-	Event event = new Event(Event.ON_FRAME);
-	executeEventHandler(event);
+	EventData eventData = new EventData(EventData.ON_FRAME);
+	executeEventHandler(eventData);
 
 	if (true) {
 	    return;
@@ -127,32 +127,32 @@ public class MicroControlManager extends Manager implements EventDispatcher {
     protected void onUnitComplete(Unit unit) {
 	super.onUnitComplete(unit);
 
-	Event event = new Event(Event.ON_UNIT_COMPLETE, unit);
-	executeEventHandler(event);
+	EventData eventData = new EventData(EventData.ON_UNIT_COMPLETE, unit);
+	executeEventHandler(eventData);
     }
 
     @Override
     protected void onUnitDestroy(Unit unit) {
 	super.onUnitDestroy(unit);
 
-	Event event = new Event(Event.ON_UNIT_DESTROY, unit);
-	executeEventHandler(event);
+	EventData eventData = new EventData(EventData.ON_UNIT_DESTROY, unit);
+	executeEventHandler(eventData);
     }
 
     @Override
     protected void onUnitDiscover(Unit unit) {
 	super.onUnitDiscover(unit);
 
-	Event event = new Event(Event.ON_UNIT_DISCOVER, unit);
-	executeEventHandler(event);
+	EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
+	executeEventHandler(eventData);
     }
 
     @Override
     protected void onUnitEvade(Unit unit) {
 	super.onUnitEvade(unit);
 
-	Event event = new Event(Event.ON_UNIT_EVADE, unit);
-	executeEventHandler(event);
+	EventData eventData = new EventData(EventData.ON_UNIT_EVADE, unit);
+	executeEventHandler(eventData);
     }
 
     // 필요한 프레임으로 빨리 이동하기 위해서 게임 속도를 제어한다. false를 리턴하면 frmae을 종료한다.
@@ -196,7 +196,7 @@ public class MicroControlManager extends Manager implements EventDispatcher {
     }
 
     @Override
-    public void executeEventHandler(Event event) {
+    public void executeEventHandler(EventData event) {
 	for (EventHandler eventHandler : eventHandlers) {
 	    eventHandler.onEvent(event);
 	}

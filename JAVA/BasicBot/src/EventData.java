@@ -1,6 +1,6 @@
 import bwapi.Unit;
 
-public class Event {
+public class EventData {
     public static final int ON_START = 0;
     public static final int ON_FRAME = 1;
     public static final int ON_UNIT_COMPLETE = 2;
@@ -12,16 +12,16 @@ public class Event {
     private GameStatus gameStatus;
     private Unit unit;
 
-    public Event(int eventType) {
+    public EventData(int eventType) {
 	this.eventType = eventType;
     }
 
-    public Event(int eventType, GameStatus gameStatus) {
+    public EventData(int eventType, GameStatus gameStatus) {
 	this.eventType = eventType;
 	this.gameStatus = gameStatus;
     }
 
-    public Event(int eventType, Unit unit) {
+    public EventData(int eventType, Unit unit) {
 	this.eventType = eventType;
 	this.unit = unit;
     }

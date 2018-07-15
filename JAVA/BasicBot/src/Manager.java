@@ -32,24 +32,24 @@ public abstract class Manager implements EventHandler {
     }
 
     @Override
-    public void onEvent(Event event) {
+    public void onEvent(EventData event) {
 	switch (event.getEventType()) {
-	case Event.ON_START:
+	case EventData.ON_START:
 	    onStart(event.getGameStatus());
 	    break;
-	case Event.ON_FRAME:
+	case EventData.ON_FRAME:
 	    onFrame();
 	    break;
-	case Event.ON_UNIT_COMPLETE:
+	case EventData.ON_UNIT_COMPLETE:
 	    onUnitComplete(event.getUnit());
 	    break;
-	case Event.ON_UNIT_DESTROY:
+	case EventData.ON_UNIT_DESTROY:
 	    onUnitDestroy(event.getUnit());
 	    break;
-	case Event.ON_UNIT_DISCOVER:
+	case EventData.ON_UNIT_DISCOVER:
 	    onUnitDiscover(event.getUnit());
 	    break;
-	case Event.ON_UNIT_EVADE:
+	case EventData.ON_UNIT_EVADE:
 	    onUnitEvade(event.getUnit());
 	    break;
 	default:

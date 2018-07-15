@@ -52,11 +52,11 @@ public class GameCommander implements EventDispatcher {
 	ActionUtil.setGame(gameStatus.getGame());
 
 	try {
-	    Event event = new Event(Event.ON_START, gameStatus);
-	    executeEventHandler(event);
+	    EventData eventData = new EventData(EventData.ON_START, gameStatus);
+	    executeEventHandler(eventData);
 	} catch (Exception e) {
-	    Log.error("onStart() Exception: %s", e.toString());
 	    e.printStackTrace();
+	    Log.error("onStart() Exception: %s", e.toString());
 	    throw e;
 	}
     }
@@ -97,8 +97,8 @@ public class GameCommander implements EventDispatcher {
 	}
 
 	try {
-	    Event event = new Event(Event.ON_FRAME);
-	    executeEventHandler(event);
+	    EventData eventData = new EventData(EventData.ON_FRAME);
+	    executeEventHandler(eventData);
 	} catch (Exception e) {
 	    Log.error("onFrame() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -115,8 +115,8 @@ public class GameCommander implements EventDispatcher {
 	Log.info("onUnitDestroy(%s)", UnitUtil.toString(unit));
 
 	try {
-	    Event event = new Event(Event.ON_UNIT_DESTROY, unit);
-	    executeEventHandler(event);
+	    EventData eventData = new EventData(EventData.ON_UNIT_DESTROY, unit);
+	    executeEventHandler(eventData);
 	} catch (Exception e) {
 	    Log.error("onUnitDestroy() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -139,9 +139,9 @@ public class GameCommander implements EventDispatcher {
 	    // 귀찮게도 가스 건물을 지을 때와 같은 상황에서는 onUnitDiscover가 호출되지 않고 onUnitRenegade가 호출된다.
 	    // 각 메니져는 onUnitDiscover와 onUnitRenegade를 중복해서 구현하지 않고 onUnitDiscover만 구현한다.
 	    // 즉 onUnitRenegade() 이벤트가 발생하면 onUnitDiscover()로 바꿔서 호출해준다.
-	    Event event = new Event(Event.ON_UNIT_DISCOVER, unit);
+	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
 
-	    executeEventHandler(event);
+	    executeEventHandler(eventData);
 
 	    // 가스 건물을 지었는지 확인하기 위해서 buildManager를 호출한다.
 	    //buildManager.onUnitDiscover(unit);
@@ -157,8 +157,8 @@ public class GameCommander implements EventDispatcher {
 	Log.info("onUnitComplete(%s)", UnitUtil.toString(unit));
 
 	try {
-	    Event event = new Event(Event.ON_UNIT_COMPLETE, unit);
-	    executeEventHandler(event);
+	    EventData eventData = new EventData(EventData.ON_UNIT_COMPLETE, unit);
+	    executeEventHandler(eventData);
 	} catch (Exception e) {
 	    Log.error("onUnitComplete() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -172,8 +172,8 @@ public class GameCommander implements EventDispatcher {
 	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
 
 	try {
-	    Event event = new Event(Event.ON_UNIT_DISCOVER, unit);
-	    executeEventHandler(event);
+	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
+	    executeEventHandler(eventData);
 	} catch (Exception e) {
 	    Log.error("onUnitDiscover() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -187,8 +187,8 @@ public class GameCommander implements EventDispatcher {
 	Log.info("onUnitEvade(%s)", UnitUtil.toString(unit));
 
 	try {
-	    Event event = new Event(Event.ON_UNIT_EVADE, unit);
-	    executeEventHandler(event);
+	    EventData eventData = new EventData(EventData.ON_UNIT_EVADE, unit);
+	    executeEventHandler(eventData);
 	} catch (Exception e) {
 	    Log.error("onUnitEvade() Exception: %s", e.toString());
 	    e.printStackTrace();
@@ -292,7 +292,7 @@ public class GameCommander implements EventDispatcher {
     }
 
     @Override
-    public void executeEventHandler(Event event) {
+    public void executeEventHandler(EventData event) {
 	for (EventHandler eventHandler : eventHandlers) {
 	    eventHandler.onEvent(event);
 	}

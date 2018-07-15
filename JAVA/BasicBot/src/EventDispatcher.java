@@ -3,5 +3,5 @@ public interface EventDispatcher {
 
     public void removeEventHandler(EventHandler eventHandler);
 
-    public void executeEventHandler(Event event);
+    public void executeEventHandler(EventData event);
 }

@@ -1,4 +1,4 @@
 
 public interface EventHandler {
-    public void onEvent(Event event);
+    public void onEvent(EventData event);
 }
