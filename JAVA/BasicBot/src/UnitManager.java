@@ -331,7 +331,7 @@ public class UnitManager {
 		    if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
 			continue;
 		    }
-		    int distance = unit.getDistance(position);
+		    int distance = unit.getPoint().getApproxDistance(position);
 		    if (distance < minDistance) {
 			minDistance = distance;
 			result = unit;

@@ -161,6 +161,8 @@ public class GameCommander implements EventDispatcher {
 		} else if (true == UnitUtil.isEnemyUnit(unit)) {
 		    gameStatus.getEnemyUnitManager().add(unit);
 		}
+		EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
+		executeEventHandler(eventData);
 	    }
 	} catch (Exception e) {
 	    Log.error("onUnitRenegade() Exception: %s", e.toString());
