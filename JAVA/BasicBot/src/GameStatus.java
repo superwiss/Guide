@@ -19,7 +19,6 @@ public class GameStatus {
 
     // Manager
     private LocationManager locationManager = null;
-    private GameStatusManager gameStatusManager = null;
     private WorkerManager workerManager = null;
     private BuildManager buildManager = null;
     private ScoutManager scoutManager = null;
@@ -77,14 +76,6 @@ public class GameStatus {
 
     public void setLocationManager(LocationManager locationManager) {
 	this.locationManager = locationManager;
-    }
-
-    public GameStatusManager getGameStatusManager() {
-	return gameStatusManager;
-    }
-
-    public void setGameStatusManager(GameStatusManager gameStatusManager) {
-	this.gameStatusManager = gameStatusManager;
     }
 
     public WorkerManager getWorkerManager() {

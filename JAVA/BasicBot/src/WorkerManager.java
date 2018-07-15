@@ -1,4 +1,8 @@
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import bwapi.Order;
@@ -78,79 +82,68 @@ public class WorkerManager extends Manager {
 
     // idle 상태의 일꾼을 찾아서 미네랄을 캐도록 일을 시킨다.
     private void idleWorkerCheck() {
-	Set<Integer> workerList = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Worker);
-	for (Integer unitId : workerList) {
-	    // 일꾼 하나를 가져온다.
-	    Unit worker = allianceUnitManager.getUnit(unitId);
+	Set<Integer> workerIdSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitType.Terran_SCV); // 전체 일꾼 목록
+	Set<Integer> commandCenterIdSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitType.Terran_Command_Center); // 전체 SCV 목록
+
+	// Key: Command Center ID, Value: Command Center로 자원을 캐러 갈 일꾼 ID 목록
+	Map<Integer, List<Integer>> commandCenterWorksListMap = new HashMap<>();
+
+	for (Integer workerId : workerIdSet) {
+	    Unit worker = allianceUnitManager.getUnit(workerId);
+	    // 놀고 있는 일꾼을 대상으로 미네랄을 캔다.
 	    if (null != worker && worker.isCompleted() && worker.isIdle()) {
 		Log.info("Found idle worker: %d", worker.getID());
 		// 일꾼에서 가장 가까운 커맨드 센터를 가져온다.
-		Unit commandCenter = allianceUnitManager.getCloseCommandCenter(worker);
+		Unit commandCenter = allianceUnitManager.getClosestUnit(commandCenterIdSet, worker.getPosition());
 		if (null != commandCenter) {
-		    // 적절한 미네랄을 채취한다.
-		    mining(worker, commandCenter);
+		    if (!commandCenterWorksListMap.containsKey(commandCenter.getID())) {
+			commandCenterWorksListMap.put(commandCenter.getID(), new LinkedList<>());
+		    }
+		    List<Integer> workerIdList = commandCenterWorksListMap.get(commandCenter.getID());
+		    workerIdList.add(workerId);
+		    commandCenterWorksListMap.put(commandCenter.getID(), workerIdList);
+		} else {
+		    Log.warn("커맨드 센터가 없습니다. 일꾼 ID: %d", workerId);
 		}
+	    }
+	}
+	for (Integer commandCenterId : commandCenterWorksListMap.keySet()) {
+	    Unit commandCenter = allianceUnitManager.getUnit(commandCenterId);
+	    mining(commandCenter, commandCenterWorksListMap.get(commandCenterId));
+	}
+    }
+
+    // 가장 양이 많은 미네랄, 혹은 가장 가까운 미네랄을 캔다. 
+    private void mining(Unit commandCenter, List<Integer> workerIdList) {
+	//Set<Integer> mineralIdSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Resource_Mineral_Field);
+	Set<Integer> mineralIdSet = new HashSet<>(allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Resource_Mineral_Field));
+	for (Integer workerId : workerIdList) {
+	    Unit worker = allianceUnitManager.getUnit(workerId);
+	    Unit largestAmountMineral = getLargestAmountMineral(mineralIdSet, commandCenter, 300); // 커맨드 센터와 100 거리 이내의 미네랄 중, 가장 양이 많은 미네랄
+	    //Unit closestMineral = allianceUnitManager.getClosestUnit(mineralIdSet, worker.getPosition());
+	    if (null != largestAmountMineral) {
+		worker.gather(largestAmountMineral);
+		mineralIdSet.remove(Integer.valueOf(largestAmountMineral.getID()));
 	    }
 	}
     }
 
-    // worker에게 commandCeter 주변의 미네랄을 채굴하도록 명령한다.
-    public void mining(Unit worker, Unit commandCenter) {
-	// 파라메터 체크
-	if (null == worker || null == commandCenter) {
-	    Log.warn("mining(): Invalid parameters. worker=%s, commandCenter=%s", UnitUtil.toString(worker), UnitUtil.toString(commandCenter));
-	    return;
-	}
+    // 가장 양이 많은 미네랄을 선택한다. 단, unit으로부터 maxDistance 이내에 있는 미네랄을 대상으로 선택한다.
+    private Unit getLargestAmountMineral(Set<Integer> mineralIdSet, Unit unit, int maxDistance) {
+	Unit result = null;
 
-	// 일꾼이 캘 미네랄 후보들을 mineralIdSet에 저장해 놓는다.
-	Set<Integer> mineralIdSet = allianceUnitManager.getMineralIdSetAssignedByCommandCenter(commandCenter);
-
-	// 다른 일꾼이 할당되지 않은 미네랄 중에서 일꾼과 가장 가까운 미네랄. (가급적 notAssignedMineral부터 캔다)
-	Unit notAssignedMineral = null;
-	int notAssignedMinDistance = Integer.MAX_VALUE;
-
-	// 다른 일꾼이 할당된 미네랄 중에서 일꾼과 가장 가까운 미네랄. (notAssignedMineral이 없으면 assignedMineral이라도 캔다)
-	Unit assignedMineral = null;
-	int assignedDistance = Integer.MAX_VALUE;
-
-	// 일꾼과 미네랄 사이의 거리를 계산해서 가장 가까운 assignedMineral과 가장 가까운 notAssignedMineral을 구한다.
+	int largest = Integer.MIN_VALUE;
 	for (Integer mineralId : mineralIdSet) {
 	    Unit mineral = allianceUnitManager.getUnit(mineralId);
-
-	    int distance = allianceUnitManager.getUnit(mineralId).getDistance(worker);
-	    if (distance < assignedDistance) {
-		assignedDistance = distance;
-		assignedMineral = mineral;
-	    }
-
-	    if (true == allianceUnitManager.isAssignedWorkerToMiniral(mineralId)) {
-		continue;
-	    }
-	    if (distance < notAssignedMinDistance) {
-		notAssignedMinDistance = distance;
-		notAssignedMineral = mineral;
+	    if (maxDistance > unit.getDistance(mineral) && mineral.isVisible()) {
+		if (largest < mineral.getResources()) {
+		    largest = mineral.getResources();
+		    result = mineral;
+		}
 	    }
 	}
 
-	if (null == notAssignedMineral && null != assignedMineral) {
-	    // 모든 미네랄에 일꾼이 최소 1기씩 할당되어 있는 경우... 가장 가까운 미네랄을 캔다.
-	    if (true == assignedMineral.isVisible()) {
-		Log.debug("일꾼(%d)이 (남들이 캐고 있는) 미네랄(%d)을 채굴한다.", worker.getID(), assignedMineral.getID());
-		allianceUnitManager.assignWorkerToMiniral(assignedMineral.getID());
-		worker.gather(assignedMineral);
-	    } else {
-		Log.error("일꾼(%d)이 미네랄(%d)을 채굴할려고 했으나, 미네랄이 보이지 않는 이상한 상황... 확인 필요함.", worker.getID(), assignedMineral.getID());
-	    }
-	} else if (null != notAssignedMineral) {
-	    // 남들이 아직 캐지 않고 있는 새로운 미네랄이 존재할 경우, 거리가 살짝 멀더라도 이것 부터 캔다.
-	    if (true == notAssignedMineral.isVisible()) {
-		Log.debug("일꾼(%d)이 (남들이 캐지 않은 새로운) 미네랄(%d)을 채굴한다.", worker.getID(), notAssignedMineral.getID());
-		allianceUnitManager.assignWorkerToMiniral(notAssignedMineral.getID());
-		worker.gather(notAssignedMineral);
-	    } else {
-		Log.error("일꾼(%d)이 새로운 미네랄(%d)을 채굴할려고 했으나, 미네랄이 보이지 않는 이상한 상황... 확인 필요함.", worker.getID(), assignedMineral.getID());
-	    }
-	}
+	return result;
     }
 
     private void loggingDetailSCVInfo() {

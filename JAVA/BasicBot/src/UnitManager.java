@@ -32,12 +32,6 @@ public class UnitManager {
     // 유닛의 마지막 상태
     private Map<Integer, UnitStatus> lastStatusMap = new HashMap<>();
 
-    // Key: Command Center의 ID, Value: Key 주변의 미네랄 목록
-    private Map<Integer, Set<Integer>> mineralMap = new HashMap<>();
-
-    // Key: 미네랄, Value: 미네랄에 일꾼이 할당되었는지 여부
-    private Map<Integer, Boolean> assignedMineralMap = new HashMap<>();
-
     // 유닛의 마지막 위치
     private Map<Integer, TilePosition> lastTilePositoin = new HashMap<>();
 
@@ -308,36 +302,6 @@ public class UnitManager {
 	}
 
 	return result;
-    }
-
-    // 미네랄 정보를 assignedMineralMap에 추가한다. isAssignedSCV <- 미네랄에 SCV가 할당되어 있는지 여부 (일꾼을 미네랄에 골고루 분배하기 위한 목적)
-    public void addAssignedMineralMap(int mineralId, boolean isAssignedSCV) {
-	assignedMineralMap.put(mineralId, false);
-    }
-
-    public boolean isAssignedWorkerToMiniral(Integer mineralId) {
-	return assignedMineralMap.get(mineralId);
-    }
-
-    // 커맨드 센터에 대해서, 주변에 존재하는 미네랄 set을 할당한다.
-    public void assignMineralToCommandCenter(Unit commandCenter, Set<Integer> mineralIdSet) {
-	Log.trace("assign miniralSet near command center: %d", commandCenter.getID());
-	mineralMap.put(commandCenter.getID(), mineralIdSet);
-    }
-
-    // 커맨드 센터가 할당 받은 미네랄 set을 릴리즈 한다.
-    public void releaseMineralToCommandCenter(Unit commandCenter) {
-	Log.trace("release miniralSet near command center: %d", commandCenter.getID());
-	mineralMap.remove(commandCenter.getID());
-    }
-
-    public Set<Integer> getMineralIdSetAssignedByCommandCenter(Unit commandCenter) {
-	return mineralMap.get(commandCenter.getID());
-    }
-
-    // mineralId에 일꾼을 할당한다. (모든 미네랄에 일꾼이 할당되기 전까지, 이 미네랄을 새로운 일꾼에게 할당되지 않기 위한 목적)
-    public void assignWorkerToMiniral(int mineralId) {
-	assignedMineralMap.put(mineralId, true);
     }
 
     // 건설 중인 건물이 몇 개나 있는지 확인한다.

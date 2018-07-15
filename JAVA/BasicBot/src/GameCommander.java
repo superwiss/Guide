@@ -25,7 +25,6 @@ public class GameCommander implements EventDispatcher {
 	}
 
 	// GameStatus에 각종 Manager 등록
-	gameStatus.setGameStatusManager(new GameStatusManager());
 	gameStatus.setWorkerManager(new WorkerManager());
 	gameStatus.setBuildManager(new BuildManager());
 	gameStatus.setScoutManager(new ScoutManager());
@@ -38,7 +37,6 @@ public class GameCommander implements EventDispatcher {
 	}
 
 	// Event Handler 등록
-	eventHandlers.add(gameStatus.getGameStatusManager());
 	eventHandlers.add(gameStatus.getWorkerManager());
 	eventHandlers.add(gameStatus.getBuildManager());
 	eventHandlers.add(gameStatus.getScoutManager());
@@ -124,6 +122,14 @@ public class GameCommander implements EventDispatcher {
     public void onUnitDestroy(Unit unit) {
 	Log.info("onUnitDestroy(%s)", UnitUtil.toString(unit));
 
+	if (true == UnitUtil.isAllianceUnit(unit)) {
+	    gameStatus.getAllianceUnitManager().remove(unit);
+	} else if (true == UnitUtil.isEnemyUnit(unit)) {
+	    gameStatus.getEnemyUnitManager().remove(unit);
+	} else {
+	    // else 상황 = 즉 중립 건물, 중립 동물에 대해서는 아무런 처리도 하지 않는다.
+	}
+
 	try {
 	    EventData eventData = new EventData(EventData.ON_UNIT_DESTROY, unit);
 	    executeEventHandler(eventData);
@@ -180,6 +186,16 @@ public class GameCommander implements EventDispatcher {
     /// 아군 유닛이 Create 되었을 때 라든가, 적군 유닛이 Discover 되었을 때 발생합니다
     public void onUnitDiscover(Unit unit) {
 	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
+
+	if (true == UnitUtil.isAllianceUnit(unit)) {
+	    gameStatus.getAllianceUnitManager().add(unit);
+	} else if (true == UnitUtil.isEnemyUnit(unit)) {
+	    gameStatus.getEnemyUnitManager().add(unit);
+	} else {
+	    if (unit.getType().isMineralField()) {
+		gameStatus.getAllianceUnitManager().add(unit);
+	    }
+	}
 
 	try {
 	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
@@ -250,6 +266,7 @@ public class GameCommander implements EventDispatcher {
 		if (null == unit) {
 		    unit = gameStatus.getEnemyUnitManager().getUnit(number);
 		}
+		Log.info("status %d", number);
 		UnitUtil.loggingDetailUnitInfo(unit);
 	    }
 	} catch (NumberFormatException e) {
