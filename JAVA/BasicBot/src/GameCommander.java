@@ -15,6 +15,15 @@ public class GameCommander implements EventDispatcher {
     public GameCommander() {
 	gameStatus = new GameStatus();
 
+	MagiConfig config = new MagiConfig();
+
+	if (true == config.isReleaseMode()) {
+	    // 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생할 수 있으니 주의
+	    Log.setLogLevel(Log.Level.WARN);
+	} else {
+	    Log.setLogLevel(Log.Level.TRACE);
+	}
+
 	// GameStatus에 각종 Manager 등록
 	gameStatus.setGameStatusManager(new GameStatusManager());
 	gameStatus.setWorkerManager(new WorkerManager());
@@ -23,8 +32,10 @@ public class GameCommander implements EventDispatcher {
 	gameStatus.setStrategyManager(new StrategyManager());
 	gameStatus.setMicroControlManager(new MicroControlManager());
 	gameStatus.setEliminateManager(new EliminateManager());
-	gameStatus.setTrainingManager(new TrainingManager());
-	gameStatus.setUxManager(new MagiUXManager());
+	if (true != config.isReleaseMode()) {
+	    gameStatus.setTrainingManager(new TrainingManager());
+	    gameStatus.setUxManager(new MagiUXManager());
+	}
 
 	// Event Handler 등록
 	eventHandlers.add(gameStatus.getGameStatusManager());
@@ -34,16 +45,15 @@ public class GameCommander implements EventDispatcher {
 	eventHandlers.add(gameStatus.getStrategyManager());
 	eventHandlers.add(gameStatus.getMicroControlManager());
 	eventHandlers.add(gameStatus.getEliminateManager());
-	eventHandlers.add(gameStatus.getTrainingManager());
-	eventHandlers.add(gameStatus.getUxManager());
+	if (true != config.isReleaseMode()) {
+	    eventHandlers.add(gameStatus.getTrainingManager());
+	    eventHandlers.add(gameStatus.getUxManager());
+	}
     }
 
     /// 경기가 시작될 때 일회적으로 발생하는 이벤트를 처리합니다
     public void onStart() {
 	Log.info("Game has started");
-
-	// 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생한다.
-	Log.setLogLevel(Log.Level.WARN);
 
 	gameStatus.setGame(MyBotModule.Broodwar);
 
