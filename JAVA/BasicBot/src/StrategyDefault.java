@@ -9,6 +9,8 @@ public class StrategyDefault extends StrategyBase {
     private LocationManager locationManager = null;
     private EliminateManager eliminateManager = null;
 
+    private int totalAttackFrame = 0;
+
     @Override
     public void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
@@ -32,9 +34,7 @@ public class StrategyDefault extends StrategyBase {
 	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
 	if (true == strategyManager.hasAttackTilePosition() || (attackableUnitSet.size() > 60 && null != locationManager.getEnemyBaseLocation())) {
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnitSet.size());
-	    TilePosition attackTilePosition = null;
-
-	    attackTilePosition = calcAttackPosition();
+	    TilePosition attackTilePosition = calcAttackPosition();
 
 	    if (null != attackTilePosition) {
 		strategyManager.setAttackTilePosition(attackTilePosition);
@@ -52,36 +52,61 @@ public class StrategyDefault extends StrategyBase {
 
     // 공격갈 위치를 계산한다.
     private TilePosition calcAttackPosition() {
-	TilePosition attackTilePosition = null;
+	TilePosition result = null;
 
-	// 내 본진의 위치
-	TilePosition allianceStartTilePosition = locationManager.getAllianceBaseLocation();
+	// 15분이 넘는 시점부터는 적 건물이 없으면 eliminate 모드로 동작한다.
 
-	// 적 본진의 위치
-	Set<Unit2> enemyMainBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.MAIN_BUILDING);
-
-	// 가급적 본진에서 가장 가까운 적 본진부터 공격한다.
-	Unit2 closestMainBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyMainBuildingSet, allianceStartTilePosition.toPosition());
-
-	if (null != closestMainBuilding) {
-	    // 적 메인 건물이 존재할 경우..
-	    attackTilePosition = enemyUnitInfo.getLastTilePosition(closestMainBuilding);
+	if (gameStatus.getFrameCount() > 42 * 60 * 10 && 0 == enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
+	    Log.info("15분이 넘었고, 적 건물을 발견할 수 없으므로 Eliminate 모드로 동작한다.");
+	    result = null;
+	} else if (0 == totalAttackFrame) {
+	    result = locationManager.getFirstExtensionChokePoint();
+	    // 10초 동안 앞마당으로 집결한 뒤 총 공격을 간다.
+	    totalAttackFrame = gameStatus.getFrameCount() + 10 * 42;
+	    Log.info("앞으로 10초 뒤에 총 공격을 시작한다. 일단 앞마당에 집결하자.");
 	} else {
-	    // 적 메인 건물은 찾지 못했지만, 다른 건물들이 존재할 경우.
-	    Set<Unit2> enemyBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.Building);
-	    if (!enemyBuildingSet.isEmpty()) {
-		// 적 건물이 다수 존재할 경우, 내 본진에서 가장 가까운 상대 건물부터 공격한다.
-		Unit2 closestBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyBuildingSet, allianceStartTilePosition.toPosition());
-		if (null != closestBuilding) {
-		    attackTilePosition = enemyUnitInfo.getLastTilePosition(closestBuilding);
+	    if (totalAttackFrame < gameStatus.getFrameCount()) {
+		// 내 본진의 위치
+		TilePosition allianceStartTilePosition = locationManager.getAllianceBaseLocation();
+
+		// 적 본진의 위치
+		Set<Unit2> enemyMainBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.MAIN_BUILDING);
+
+		// 가급적 본진에서 가장 가까운 적 본진부터 공격한다.
+		Unit2 closestMainBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyMainBuildingSet, allianceStartTilePosition.toPosition());
+
+		if (null != closestMainBuilding) {
+		    // 적 메인 건물이 존재할 경우..
+		    result = enemyUnitInfo.getLastTilePosition(closestMainBuilding);
+		} else {
+		    // 적 메인 건물은 찾지 못했지만, 다른 건물들이 존재할 경우.
+		    Set<Unit2> enemyBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.Building);
+		    if (!enemyBuildingSet.isEmpty()) {
+			// 적 건물이 다수 존재할 경우, 내 본진에서 가장 가까운 상대 건물부터 공격한다.
+			Unit2 closestBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyBuildingSet, allianceStartTilePosition.toPosition());
+			if (null != closestBuilding) {
+			    result = enemyUnitInfo.getLastTilePosition(closestBuilding);
+			}
+		    } else {
+			TilePosition enemyBaseLocation = locationManager.getEnemyBaseLocation();
+			if (gameStatus.isExplored(enemyBaseLocation)) {
+			    Log.info("적 건물을 찾을 수 없다. 탐색하자");
+			    result = null;
+			} else {
+			    // 어떠한 적 건물도 찾지 못했지만, 적 본진 위치는 알고 있을 경우 (예를 들어 3곳을 정찰 성공했다면 남은 한 곳은 방문하지 않아도 적 본진이다.)
+			    Log.info("적 건물은 없지만, 적 위치는 알고 있다. 적 위치로 공격을 가자: %s", enemyBaseLocation);
+			    result = enemyBaseLocation;
+			}
+		    }
 		}
+		Log.info("총 공격한다: %s", result);
 	    } else {
-		// 어떠한 적 건물도 찾지 못했지만, 적 본진 위치는 알고 있을 경우 (예를 들어 3곳을 정찰 성공했다면 남은 한 곳은 방문하지 않아도 적 본진이다.)
-		attackTilePosition = locationManager.getAllianceBaseLocation();
+		result = locationManager.getFirstExtensionChokePoint();
+		Log.info("내 본진 앞마당으로 집결한다");
 	    }
 	}
 
-	return attackTilePosition;
+	return result;
     }
 
     @Override
@@ -135,6 +160,7 @@ public class StrategyDefault extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_UPGRADE_U_238_Shells);
 	strategyItems.add(StrategyItem.AUTO_UPGRADE_STIMPACK);
 	strategyItems.add(StrategyItem.AUTO_ADDON_COMSAT_STATION);
+	strategyItems.add(StrategyItem.AUTO_USING_SCAN);
     }
 
 }

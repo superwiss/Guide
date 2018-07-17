@@ -535,6 +535,9 @@ public class UnitUtil {
     private static void checkIfBionicUnit(final Set<UnitKind> unitKindSet, final UnitType unitType) {
 	if (unitType.isOrganic()) {
 	    unitKindSet.add(UnitKind.Bionic_Unit);
+	    if (!UnitType.Terran_Medic.equals(unitType) && !UnitType.Terran_SCV.equals(unitType)) {
+		unitKindSet.add(UnitKind.Bionic_Attackable);
+	    }
 	}
     }
 

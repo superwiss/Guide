@@ -53,7 +53,7 @@ public class MicroControlMarine extends Manager {
     private void waitBionicUnit() {
 	if (true == strategyManager.hasAttackTilePosition()) {
 	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
-	    Unit2 headBionicUnit = allianceUnitInfo.getHeadAllianceUnit(attackPosition);
+	    Unit2 headBionicUnit = allianceUnitInfo.getHeadAllianceUnit(UnitKind.Bionic_Attackable, attackPosition);
 	    // 선두 바이오닉 유닛 300 주변의 마린 개수
 	    int headGroupSize = allianceUnitInfo.getUnitsInRange(headBionicUnit.getPosition(), UnitKind.Terran_Marine, 300).size();
 	    if (20 > headGroupSize) {

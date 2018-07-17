@@ -167,7 +167,7 @@ public class MagiUXManager extends Manager {
     private void drawHeadAllianceUnit(UnitInfo unitInformation) {
 	if (null != strategyManager.getAttackTilePositon()) {
 	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
-	    Unit2 headAllianceUnit = unitInformation.getHeadAllianceUnit(attackPosition);
+	    Unit2 headAllianceUnit = unitInformation.getHeadAllianceUnit(UnitKind.Bionic_Attackable, attackPosition);
 	    MyBotModule.Broodwar.drawCircleMap(headAllianceUnit.getPosition().getX(), headAllianceUnit.getPosition().getY(), 300, Color.Blue);
 
 	}

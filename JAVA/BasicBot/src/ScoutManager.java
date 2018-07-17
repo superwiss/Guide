@@ -42,7 +42,7 @@ public class ScoutManager extends Manager {
 		Log.info("위치(%s) 정찰 완료.", target);
 		searchQueue.poll();
 		checkEnemyStartingLocation(gameStatus.getEnemyUnitInfo());
-		if (null != locationManager.getEnemyBaseLocation()) {
+		if (null != locationManager.getEnemyBaseLocation() && 0 < enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
 		    Log.info("적 본진을 발견했으므로, 정찰 일꾼(%d)을 릴리즈 한다.", scoutUnit.getID());
 		    allianceUnitInfo.releaseScoutUnit(scoutUnit);
 		    return;

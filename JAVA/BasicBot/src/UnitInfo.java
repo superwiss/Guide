@@ -285,6 +285,7 @@ public class UnitInfo {
 		    continue;
 		}
 		int distance = unit.getPoint().getApproxDistance(position);
+		//int distance = BWTA.getGroundDistance2(unit.getTilePosition(), position.toTilePosition());
 		if (distance < minDistance) {
 		    minDistance = distance;
 		    result = unit;
@@ -459,17 +460,15 @@ public class UnitInfo {
 	return result;
     }
 
-    // 선두 유닛의 위치를 구한다.
-    public Unit2 getHeadAllianceUnit(Position attackPosition) {
+    // position에서 가장 가까운 선두 유닛의 위치를 구한다.
+    public Unit2 getHeadAllianceUnit(UnitKind targetUnitKind, Position position) {
 	Unit2 result = null;
 
 	Set<Unit2> bionicSet = null;
-	Set<UnitType> excludeUnitTypeSet = new HashSet<>();
-	excludeUnitTypeSet.add(UnitType.Terran_Medic);
-	if (null != attackPosition) {
-	    bionicSet = getUnitSet(UnitKind.Bionic_Unit);
+	if (null != position) {
+	    bionicSet = getUnitSet(targetUnitKind);
 	    // 메딕을 제외한 - 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
-	    result = getClosestUnit(bionicSet, attackPosition, excludeUnitTypeSet);
+	    result = getClosestUnit(bionicSet, position);
 	}
 
 	return result;
