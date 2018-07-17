@@ -44,7 +44,7 @@ public class BuildManager extends Manager {
 		    default:
 			// 건물을 짓지 못하는 상황이다.
 			buildItem.setInProgress(false);
-			allianceUnitManager.addUnitKind(UnitKind.Worker, worker);
+			allianceUnitInfo.addUnitKind(UnitKind.Worker, worker);
 			UnitUtil.loggingDetailUnitInfo(worker);
 			Log.info("일꾼이 건설을 하지 않아서, 다시 건설을 시작합니다. BuildOrderItem: %s", buildItem);
 			break;
@@ -70,8 +70,8 @@ public class BuildManager extends Manager {
 		buildingWorkerMap.put(unit.getID(), buildItem.getWorker().getID());
 		Log.debug("BuildOrder Finish: %s", buildItem.toString());
 		if (buildItem.getTargetUnitType().equals(UnitType.Terran_Refinery)) {
-		    allianceUnitManager.removeUnitKind(UnitKind.Worker, buildItem.getWorker());
-		    allianceUnitManager.addUnitKind(UnitKind.Worker_Gather_Gas, buildItem.getWorker());
+		    allianceUnitInfo.removeUnitKind(UnitKind.Worker, buildItem.getWorker());
+		    allianceUnitInfo.addUnitKind(UnitKind.Worker_Gather_Gas, buildItem.getWorker());
 		}
 		queue.poll();
 	    }
@@ -86,7 +86,7 @@ public class BuildManager extends Manager {
 	if (buildingWorkerMap.containsKey(unitId)) {
 	    Integer workerId = buildingWorkerMap.get(unitId);
 	    buildingWorkerMap.remove(unitId);
-	    allianceUnitManager.addUnitKind(UnitKind.Worker, allianceUnitManager.getUnit(workerId));
+	    allianceUnitInfo.addUnitKind(UnitKind.Worker, allianceUnitInfo.getUnit(workerId));
 
 	}
     }
@@ -100,7 +100,7 @@ public class BuildManager extends Manager {
     }
 
     private void process(BuildOrderItem buildOrderItem) {
-	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
+	UnitInfo allianceUnitInfo = gameStatus.getAllianceUnitInfo();
 	LocationManager locationManager = gameStatus.getLocationManager();
 	ScoutManager scoutManager = gameStatus.getScoutManager();
 	WorkerManager workerManager = gameStatus.getWorkerManager();
@@ -121,24 +121,24 @@ public class BuildManager extends Manager {
 	case TRAINING:
 	    UnitType targetUnitType = buildOrderItem.getTargetUnitType();
 
-	    if (true == allianceUnitManager.trainingUnit(targetUnitType)) {
+	    if (true == allianceUnitInfo.trainingUnit(targetUnitType)) {
 		queue.poll();
 		Log.debug("BuildOrder Finish: %s", buildOrderItem.toString());
 	    }
 	    break;
 	case ADD_ON:
-	    allianceUnitManager.buildAddon(UnitType.Terran_Comsat_Station);
+	    allianceUnitInfo.buildAddon(UnitType.Terran_Comsat_Station);
 	    break;
 	case GATHER_GAS:
-	    Unit2 refinery = allianceUnitManager.getAnyUnit(UnitKind.Terran_Refinery);
+	    Unit2 refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
 	    if (null != refinery && refinery.isCompleted()) {
 		Unit2 workerForGatherGas = workerManager.getInterruptableWorker(refinery.getTilePosition());
 		if (null != workerForGatherGas) {
 		    if (workerForGatherGas.canGather(refinery)) {
 			workerForGatherGas.gather(refinery);
 			Log.info("일꾼 가스 투입: %d -> %d", workerForGatherGas.getID(), refinery.getID());
-			allianceUnitManager.removeUnitKind(UnitKind.Worker, workerForGatherGas);
-			allianceUnitManager.addUnitKind(UnitKind.Worker_Gather_Gas, workerForGatherGas);
+			allianceUnitInfo.removeUnitKind(UnitKind.Worker, workerForGatherGas);
+			allianceUnitInfo.addUnitKind(UnitKind.Worker_Gather_Gas, workerForGatherGas);
 			queue.poll();
 		    } else {
 			Log.warn("일꾼 가스 투입 실패: %d -> %d", workerForGatherGas.getID(), refinery.getID());
@@ -150,7 +150,7 @@ public class BuildManager extends Manager {
 	    break;
 	case MOVE_SCV:
 	    Unit2 moveWorker = workerManager.getInterruptableWorker(buildOrderItem.getTilePosition());
-	    ActionUtil.moveToPosition(allianceUnitManager, moveWorker, buildOrderItem.getTilePosition().toPosition());
+	    ActionUtil.moveToPosition(allianceUnitInfo, moveWorker, buildOrderItem.getTilePosition().toPosition());
 	    queue.poll();
 	    isMoving = true;
 	    break;
@@ -190,7 +190,7 @@ public class BuildManager extends Manager {
 				worker.build(buildingType, tilePosition);
 				buildOrderItem.setInProgress(true);
 				buildOrderItem.setWorker(worker);
-				allianceUnitManager.removeUnitKind(UnitKind.Worker, worker);
+				allianceUnitInfo.removeUnitKind(UnitKind.Worker, worker);
 				Log.info("빌드 오더를 실행합니다: %s", buildOrderItem);
 				isMoving = false;
 				break;

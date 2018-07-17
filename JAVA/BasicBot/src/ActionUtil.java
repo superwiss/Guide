@@ -14,11 +14,11 @@ public class ActionUtil {
 	ActionUtil.game = game;
     }
 
-    public static boolean patrolToEnemyUnit(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 enemyUnit) {
+    public static boolean patrolToEnemyUnit(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("PATROL_TO_UNIT", allianceUnit, enemyUnit);
-	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitInfo)) {
 	    allianceUnit.patrol(enemyUnit.getPosition());
 	    result = true;
 	}
@@ -26,11 +26,11 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean repair(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 target) {
+    public static boolean repair(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Unit2 target) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("REPAIR", allianceUnit, target);
-	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitInfo)) {
 	    allianceUnit.repair(target);
 	    result = true;
 	}
@@ -38,15 +38,15 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean moveToPosition(UnitManager allianceUnitManager, Unit2 allianceUnit, Position position) {
-	return moveToPosition(allianceUnitManager, allianceUnit, position, 0);
+    public static boolean moveToPosition(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Position position) {
+	return moveToPosition(allianceUnitInfo, allianceUnit, position, 0);
     }
 
-    public static boolean moveToPosition(UnitManager allianceUnitManager, Unit2 allianceUnit, Position position, int margin) {
+    public static boolean moveToPosition(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Position position, int margin) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("MOVE_TO_POSITION", allianceUnit, position, margin);
-	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitInfo)) {
 	    // 이동할 position이 이전에 명령받은 position과 너무 가까우면 무시한다.
 	    allianceUnit.move(position);
 	    result = true;
@@ -56,11 +56,11 @@ public class ActionUtil {
     }
 
     // TODO 상대가 움직이면 position이 바뀌면서 매 프레임마다 move 명령이 내려지는 상황이 발생하는데, 큰 이슈 없는지 확인하기
-    public static boolean moveToUnit(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 enemyUnit) {
+    public static boolean moveToUnit(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("MOVE_TO_UNIT", allianceUnit, enemyUnit.getPoint());
-	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitInfo)) {
 	    allianceUnit.move(enemyUnit.getPoint());
 	    result = true;
 	}
@@ -68,22 +68,22 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean attackEnemyUnit(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 enemyUnit) {
+    public static boolean attackEnemyUnit(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT", allianceUnit, enemyUnit);
-	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitInfo)) {
 	    allianceUnit.attack(enemyUnit);
 	    result = true;
 	}
 	return result;
     }
 
-    public static boolean attackPosition(UnitManager allianceUnitManager, Unit2 allianceUnit, Position position) {
+    public static boolean attackPosition(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Position position) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_POSITION", allianceUnit, position);
-	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitInfo)) {
 	    allianceUnit.attack(position);
 	    result = true;
 	}
@@ -91,11 +91,11 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean attackEnemyUnitForcibly(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 enemyUnit) {
+    public static boolean attackEnemyUnitForcibly(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT_FORCIBLY", allianceUnit, enemyUnit);
-	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitInfo)) {
 	    allianceUnit.attack(enemyUnit);
 	    forceAttackUnitIdSet.add(allianceUnit.getID());
 	    result = true;
@@ -104,11 +104,11 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean stop(UnitManager allianceUnitManager, Unit2 allianceUnit) {
+    public static boolean stop(UnitInfo allianceUnitInfo, Unit2 allianceUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("STOP", allianceUnit);
-	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitInfo)) {
 	    allianceUnit.stop();
 	    result = true;
 	}
@@ -131,11 +131,11 @@ public class ActionUtil {
     }
 
     // 상대방 유닛을 향해 회전한다.
-    public static boolean turn(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 enemyUnit) {
+    public static boolean turn(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("TURN", allianceUnit, enemyUnit);
-	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitManager)) {
+	if (isAcceptedAction(currnetCommand, allianceUnit, allianceUnitInfo)) {
 	    int deltaScale = 1;
 	    int deltaX = 0;
 	    int deltaY = 0;
@@ -174,10 +174,10 @@ public class ActionUtil {
 	return result;
     }
 
-    public static void updateStatus(UnitManager allianceUnitManager, Unit2 allianceUnit, UnitStatus unitStatus) {
-	UnitStatus lastUnitStatus = allianceUnitManager.getLastStatus(allianceUnit);
+    public static void updateStatus(UnitInfo allianceUnitInfo, Unit2 allianceUnit, UnitStatus unitStatus) {
+	UnitStatus lastUnitStatus = allianceUnitInfo.getLastStatus(allianceUnit);
 	if (!unitStatus.equals(lastUnitStatus)) {
-	    allianceUnitManager.updateLastStatus(allianceUnit, unitStatus);
+	    allianceUnitInfo.updateLastStatus(allianceUnit, unitStatus);
 	}
     }
 
@@ -206,19 +206,19 @@ public class ActionUtil {
     }
 
     // 유닛의 액션을 수행할지 말지 결정한다. 이전과 동일한 액션이 들어오면 skip할 수 있도록 false를 리턴한다.
-    private static boolean isAcceptedAction(ActionDetail currentActionDetail, Unit2 allianceUnit, UnitManager allianceUnitManager) {
+    private static boolean isAcceptedAction(ActionDetail currentActionDetail, Unit2 allianceUnit, UnitInfo allianceUnitInfo) {
 	boolean result = false;
 
-	ActionDetail lastActionDetail = allianceUnitManager.getLastAction(allianceUnit);
+	ActionDetail lastActionDetail = allianceUnitInfo.getLastAction(allianceUnit);
 
 	if (false == isAttackingForcibly(allianceUnit) && currentActionDetail.getCommand().equals("ATTACK_TO_UNIT_FORCIBLY")) {
 	    // 10프레임동안 10회 강제 공격 명령을 내렸을 경우, 5프레임에서 공격이 성공하더라도 5프레임에서 다시 내린 강제 공격 명령은 무시된다.
 	    // 이 현상을 막기 위해서 강제 공격 상태가 아닌 상태에서 강제 공격 명령이 들어오면 이전과 동일한 명령이더라도 Accept한다.
-	    allianceUnitManager.updateLastAction(allianceUnit, currentActionDetail);
+	    allianceUnitInfo.updateLastAction(allianceUnit, currentActionDetail);
 	    result = true;
 	    Log.trace("Action Accepted: " + currentActionDetail);
 	} else if (null != lastActionDetail && lastActionDetail.getActionFrame() + 10 <= currentActionDetail.getActionFrame()) {
-	    allianceUnitManager.updateLastAction(allianceUnit, currentActionDetail);
+	    allianceUnitInfo.updateLastAction(allianceUnit, currentActionDetail);
 	    result = true;
 	    Log.trace("Action Accepted (Last action frame: %d): %s", lastActionDetail.getActionFrame(), currentActionDetail);
 	} else if (forceAttackUnitIdSet.contains(Integer.valueOf(allianceUnit.getID()))) {
@@ -239,7 +239,7 @@ public class ActionUtil {
 		}
 	    }
 	    if (false != result) {
-		allianceUnitManager.updateLastAction(allianceUnit, currentActionDetail);
+		allianceUnitInfo.updateLastAction(allianceUnit, currentActionDetail);
 		result = true;
 		Log.trace("Action Accepted: " + currentActionDetail);
 	    }

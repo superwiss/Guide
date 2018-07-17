@@ -9,7 +9,7 @@ import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 
-public class UnitManager {
+public class UnitInfo {
 
     public static enum Assignment {
 	SCOUT, GATHER_GAS
@@ -31,7 +31,7 @@ public class UnitManager {
     private Map<Unit2, TilePosition> lastTilePositoin = new HashMap<>();
 
     // 생성자
-    public UnitManager() {
+    public UnitInfo() {
 	// unitFilter를 초기화 한다.
 	for (UnitKind unitKind : UnitKind.values()) {
 	    Set<Unit2> set = new HashSet<>();
@@ -422,6 +422,7 @@ public class UnitManager {
 	return result;
     }
 
+    // 컴셋을 뿌린다.
     public boolean doScan(Position position) {
 	boolean result = false;
 
@@ -444,6 +445,7 @@ public class UnitManager {
 	return result;
     }
 
+    // position 주변 distance 범위의 unitKind를 구한다.
     public Set<Unit2> getUnitsInRange(Position position, UnitKind unitKind, int distance) {
 	Set<Unit2> result = new HashSet<>();
 
@@ -452,6 +454,22 @@ public class UnitManager {
 	    if (distance >= unit.getDistance(position)) {
 		result.add(unit);
 	    }
+	}
+
+	return result;
+    }
+
+    // 선두 유닛의 위치를 구한다.
+    public Unit2 getHeadAllianceUnit(Position attackPosition) {
+	Unit2 result = null;
+
+	Set<Unit2> bionicSet = null;
+	Set<UnitType> excludeUnitTypeSet = new HashSet<>();
+	excludeUnitTypeSet.add(UnitType.Terran_Medic);
+	if (null != attackPosition) {
+	    bionicSet = getUnitSet(UnitKind.Bionic_Unit);
+	    // 메딕을 제외한 - 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
+	    result = getClosestUnit(bionicSet, attackPosition, excludeUnitTypeSet);
 	}
 
 	return result;

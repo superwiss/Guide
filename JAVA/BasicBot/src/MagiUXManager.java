@@ -2,12 +2,23 @@ import java.util.List;
 
 import bwapi.Color;
 import bwapi.Game;
+import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 
 /// 봇 프로그램 개발의 편의성 향상을 위해 게임 화면에 추가 정보들을 표시하는 class<br>
 /// 여러 Manager 들로부터 정보를 조회하여 Screen 혹은 Map 에 정보를 표시합니다
 public class MagiUXManager extends Manager {
+    private StrategyManager strategyManager = null;
+    private UnitInfo allianceUnitInfo = null;
+
+    @Override
+    protected void onStart(GameStatus gameStatus) {
+	super.onStart(gameStatus);
+
+	strategyManager = gameStatus.getStrategyManager();
+	allianceUnitInfo = gameStatus.getAllianceUnitInfo();
+    }
 
     @Override
     protected void onFrame() {
@@ -19,6 +30,7 @@ public class MagiUXManager extends Manager {
 	}
 
 	drawUnitId();
+	drawHeadAllianceUnit(allianceUnitInfo);
 
 	LocationManager locationManager = gameStatus.getLocationManager();
 
@@ -151,4 +163,13 @@ public class MagiUXManager extends Manager {
 	}
     }
 
+    // 아군의 선두 유닛과 그 반경 300을 원으로 표시한다.
+    private void drawHeadAllianceUnit(UnitInfo unitInformation) {
+	if (null != strategyManager.getAttackTilePositon()) {
+	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
+	    Unit2 headAllianceUnit = unitInformation.getHeadAllianceUnit(attackPosition);
+	    MyBotModule.Broodwar.drawCircleMap(headAllianceUnit.getPosition().getX(), headAllianceUnit.getPosition().getY(), 300, Color.Blue);
+
+	}
+    }
 }

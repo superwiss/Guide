@@ -7,9 +7,17 @@ import bwapi.UnitType;
 // 매딕을 컨트롤 한다.
 public class MicroControlMadic extends Manager {
     private final Set<UnitType> medicUnitTypeSet = new HashSet<>();
+    private StrategyManager strategyManager = null;
 
     public MicroControlMadic() {
 	medicUnitTypeSet.add(UnitType.Terran_Medic);
+    }
+
+    @Override
+    protected void onStart(GameStatus gameStatus) {
+	super.onStart(gameStatus);
+
+	strategyManager = gameStatus.getStrategyManager();
     }
 
     @Override
@@ -31,11 +39,11 @@ public class MicroControlMadic extends Manager {
     private void followBionicUnit() {
 	Position newPosition = null;
 	Set<Unit2> bionicSet = null;
-	if (true == gameStatus.hasAttackTilePosition()) {
-	    Position attackPosition = gameStatus.getAttackTilePositon().toPosition();
-	    bionicSet = allianceUnitManager.getUnitSet(UnitKind.Bionic_Unit);
+	if (true == strategyManager.hasAttackTilePosition()) {
+	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
+	    bionicSet = allianceUnitInfo.getUnitSet(UnitKind.Bionic_Unit);
 	    // 메딕을 제외한 - 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
-	    Unit2 headBionicUnit = allianceUnitManager.getClosestUnit(bionicSet, attackPosition, medicUnitTypeSet);
+	    Unit2 headBionicUnit = allianceUnitInfo.getClosestUnit(bionicSet, attackPosition, medicUnitTypeSet);
 	    if (null != headBionicUnit) {
 		// 선두 바이오닉 유닛으로부터 공격 목표 지점 방향으로 +100 position 거리의 위치를 구한다.
 		newPosition = UnitUtil.getPositionAsDistance(headBionicUnit.getPosition(), attackPosition, 100);
@@ -49,9 +57,9 @@ public class MicroControlMadic extends Manager {
 			null != headBionicUnit ? headBionicUnit.getTilePosition() : "null", attackPosition);
 		// TODO 메딕 계속 이동할까? 아니면 제자리에 있을까? 일단은 제자리에 대기...
 	    } else {
-		Set<Unit2> medicSet = allianceUnitManager.getUnitSet(UnitKind.Terran_Medic);
+		Set<Unit2> medicSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Medic);
 		for (Unit2 medic : medicSet) {
-		    boolean updated = ActionUtil.attackPosition(allianceUnitManager, medic, newPosition);
+		    boolean updated = ActionUtil.attackPosition(allianceUnitInfo, medic, newPosition);
 		    if (updated) {
 			Log.debug("메딕(%s)을 %s 위치로 이동한다.", medic, newPosition);
 		    }

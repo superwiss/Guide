@@ -40,8 +40,8 @@ public class MicroControlWorker extends Manager {
 	LocationManager locationManager = gameStatus.getLocationManager();
 	TilePosition allianceBaseTilePosition = locationManager.getAllianceBaseLocation();
 
-	Set<Unit2> enemyWorkerSet = enemyUnitManager.getUnitSet(UnitKind.Worker);
-	Unit2 closestEnemyWorker = enemyUnitManager.getClosestUnit(enemyWorkerSet, allianceBaseTilePosition.toPosition());
+	Set<Unit2> enemyWorkerSet = enemyUnitInfo.getUnitSet(UnitKind.Worker);
+	Unit2 closestEnemyWorker = enemyUnitInfo.getClosestUnit(enemyWorkerSet, allianceBaseTilePosition.toPosition());
 	if (null != closestEnemyWorker) {
 	    int distance = closestEnemyWorker.getDistance(allianceBaseTilePosition.toPosition());
 	    Log.debug("적군 일꾼이(%d) 아군 영역에 들어왔다. 거리: %d", closestEnemyWorker.getID(), distance);
@@ -71,15 +71,15 @@ public class MicroControlWorker extends Manager {
     // 본진에 침입한 적군 일꾼을 아군 일꾼이 공격한다.
     private void assignEnemyWorkerKiller(Unit2 closestEnemyWorker, Unit2 allianceWorker) {
 	enemyWorker = closestEnemyWorker;
-	ActionUtil.attackEnemyUnit(allianceUnitManager, allianceWorker, closestEnemyWorker);
+	ActionUtil.attackEnemyUnit(allianceUnitInfo, allianceWorker, closestEnemyWorker);
 	enemyWorkerKiller = allianceWorker;
-	allianceUnitManager.removeUnitKind(UnitKind.Worker, enemyWorkerKiller);
+	allianceUnitInfo.removeUnitKind(UnitKind.Worker, enemyWorkerKiller);
     }
 
     // 본진에 침입한 적군 일꾼을 아군 일꾼이 그만 공격한다.
     private void releaseEnemyWorkerKiller() {
-	allianceUnitManager.addUnitKind(UnitKind.Worker, enemyWorkerKiller);
-	ActionUtil.stop(allianceUnitManager, enemyWorkerKiller);
+	allianceUnitInfo.addUnitKind(UnitKind.Worker, enemyWorkerKiller);
+	ActionUtil.stop(allianceUnitInfo, enemyWorkerKiller);
 	enemyWorkerKiller = null;
 	enemyWorker = null;
     }

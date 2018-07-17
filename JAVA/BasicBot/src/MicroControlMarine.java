@@ -8,9 +8,17 @@ import bwapi.UnitType;
 // 매딕을 컨트롤 한다.
 public class MicroControlMarine extends Manager {
     private final Set<UnitType> medicUnitTypeSet = new HashSet<>();
+    private StrategyManager strategyManager = null;
 
     public MicroControlMarine() {
 	medicUnitTypeSet.add(UnitType.Terran_Medic);
+    }
+
+    @Override
+    protected void onStart(GameStatus gameStatus) {
+	super.onStart(gameStatus);
+
+	strategyManager = gameStatus.getStrategyManager();
     }
 
     @Override
@@ -27,11 +35,11 @@ public class MicroControlMarine extends Manager {
 
     // 스팀팩을 사용할지 여부를 판단하고, 필요할 경우 스팀팩을 사용한다.
     private void checkIfUsingStimPack() {
-	Set<Unit2> marineSet = allianceUnitManager.getUnitSet(UnitType.Terran_Marine);
+	Set<Unit2> marineSet = allianceUnitInfo.getUnitSet(UnitType.Terran_Marine);
 	for (Unit2 marine : marineSet) {
 	    // 마린 주변에 매딕이 1마리 이상 존재하고, 적군이 3마리 이상 존재하면 스팀팩을 사용한다.
-	    int madicCount = allianceUnitManager.getUnitsInRange(marine.getPosition(), UnitKind.Terran_Medic, 300).size();
-	    int enemyCount = enemyUnitManager.getUnitsInRange(marine.getPosition(), UnitKind.Combat_Unit, 300).size();
+	    int madicCount = allianceUnitInfo.getUnitsInRange(marine.getPosition(), UnitKind.Terran_Medic, 300).size();
+	    int enemyCount = enemyUnitInfo.getUnitsInRange(marine.getPosition(), UnitKind.Combat_Unit, 300).size();
 	    Log.debug("아군(%d) 주변 매딕 수(%d), 적군 수(%d)", marine.getID(), madicCount, enemyCount);
 	    if (madicCount >= 1 && enemyCount >= 1) {
 		if (marine.canUseTech(TechType.Stim_Packs)) {
@@ -43,14 +51,11 @@ public class MicroControlMarine extends Manager {
 
     // 선두 바이오닉 유닛 400 주변에 마린이 20마리 미만이라면, 모든 유닛이 적군으로의 진군을 일단 멈추고 선두 유닛쪽에 모인다.
     private void waitBionicUnit() {
-	Set<Unit2> bionicSet = null;
-	if (true == gameStatus.hasAttackTilePosition()) {
-	    Position attackPosition = gameStatus.getAttackTilePositon().toPosition();
-	    bionicSet = allianceUnitManager.getUnitSet(UnitKind.Bionic_Unit);
-	    // 메딕을 제외한 - 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
-	    Unit2 headBionicUnit = allianceUnitManager.getClosestUnit(bionicSet, attackPosition, medicUnitTypeSet);
+	if (true == strategyManager.hasAttackTilePosition()) {
+	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
+	    Unit2 headBionicUnit = allianceUnitInfo.getHeadAllianceUnit(attackPosition);
 	    // 선두 바이오닉 유닛 300 주변의 마린 개수
-	    int headGroupSize = allianceUnitManager.getUnitsInRange(headBionicUnit.getPosition(), UnitKind.Terran_Marine, 300).size();
+	    int headGroupSize = allianceUnitInfo.getUnitsInRange(headBionicUnit.getPosition(), UnitKind.Terran_Marine, 300).size();
 	    if (20 > headGroupSize) {
 		Position headPosition = headBionicUnit.getPosition();
 		Log.info("선두 마린(%d) 주변에 다른 마린이 %d명 밖에 없어서, 선두 위치로 모든 유닛이 이동한다. 선두 마린 위치: %s, 모일 위치: %s", headBionicUnit.getID(), headGroupSize, headBionicUnit.getPosition(),
@@ -64,9 +69,9 @@ public class MicroControlMarine extends Manager {
     }
 
     private void attackAll(Position headPosition) {
-	Set<Unit2> attackableUnitSet = allianceUnitManager.getUnitSet(UnitKind.Combat_Unit);
+	Set<Unit2> attackableUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit);
 	for (Unit2 attackableUnit : attackableUnitSet) {
-	    ActionUtil.attackPosition(allianceUnitManager, attackableUnit, headPosition);
+	    ActionUtil.attackPosition(allianceUnitInfo, attackableUnit, headPosition);
 	}
     }
 }

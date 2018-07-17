@@ -32,12 +32,12 @@ public class MicroControlManager extends Manager implements EventDispatcher {
 	if (true) {
 	    return;
 	}
-	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitSet(UnitKind.Combat_Unit).size());
-	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
-	UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
+	Log.trace("Enemy Count: %d", enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit).size());
+	UnitInfo allianceUnitInfo = gameStatus.getAllianceUnitInfo();
+	UnitInfo enemyUnitInfo = gameStatus.getEnemyUnitInfo();
 
 	// 적을 공격할 수 있는 아군 유닛을 대상으로 컨트롤을 한다.
-	for (Unit2 allianceUnit : allianceUnitManager.getUnitSet(UnitKind.Combat_Unit)) {
+	for (Unit2 allianceUnit : allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit)) {
 
 	    // 속도 테스트
 	    /*
@@ -47,7 +47,7 @@ public class MicroControlManager extends Manager implements EventDispatcher {
 	    */
 
 	    // 공격할 적 유닛을 선택한다.
-	    Unit2 enemyUnit = UnitUtil.selectEnemyTargetUnit(allianceUnit, enemyUnitManager);
+	    Unit2 enemyUnit = UnitUtil.selectEnemyTargetUnit(allianceUnit, enemyUnitInfo);
 	    if (null == enemyUnit) {
 		Log.trace("Alliance Unit(%s) -> Selected Enemy is null.", allianceUnit);
 		continue;
@@ -79,7 +79,7 @@ public class MicroControlManager extends Manager implements EventDispatcher {
 		    ActionUtil.attackFinished(allianceUnit);
 		} else {
 		    Log.debug(":::::::: 강제 공격 중이다.");
-		    ActionUtil.attackEnemyUnitForcibly(allianceUnitManager, allianceUnit, enemyUnit);
+		    ActionUtil.attackEnemyUnitForcibly(allianceUnitInfo, allianceUnit, enemyUnit);
 		    continue;
 		}
 	    }
@@ -92,26 +92,26 @@ public class MicroControlManager extends Manager implements EventDispatcher {
 		break;
 	    case SAME_DIR_CLOSE:
 		Log.debug(":::::::: 적이 나와 같은 방향으로 이동 중이다. 거리가 가깝다. 도망가자.");
-		ActionUtil.moveToPosition(allianceUnitManager, allianceUnit, backPosition, 100);
+		ActionUtil.moveToPosition(allianceUnitInfo, allianceUnit, backPosition, 100);
 		break;
 	    case SAME_DIR_MIDDLE:
 		Log.debug(":::::::: 적이 나와 같은 방향으로 이동 중이다. 거리가 애매하다. Stop 하자");
-		ActionUtil.stop(allianceUnitManager, allianceUnit);
+		ActionUtil.stop(allianceUnitInfo, allianceUnit);
 		break;
 	    case SAME_DIR_FAR:
 		Log.debug(":::::::: 적이 나와 같은 방향으로 이동 중이다. 거리가 멀다. 공격하자.");
-		ActionUtil.attackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
+		ActionUtil.attackEnemyUnit(allianceUnitInfo, allianceUnit, enemyUnit);
 		break;
 	    case DIFFERENCE_DIR_CLOSE:
 		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 가깝다. 이전 동작을 계속하자.");
 		break;
 	    case DIFFERENCE_DIR_MIDDLE:
 		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 애매하다. Stop 하자.");
-		ActionUtil.stop(allianceUnitManager, allianceUnit);
+		ActionUtil.stop(allianceUnitInfo, allianceUnit);
 		break;
 	    case DIFFERENCE_DIR_FAR:
 		Log.debug(":::::::: 적이 나와 반대 방향으로 이동 중이다. 거리가 멀다. 강제 공격하자.");
-		ActionUtil.attackEnemyUnitForcibly(allianceUnitManager, allianceUnit, enemyUnit);
+		ActionUtil.attackEnemyUnitForcibly(allianceUnitInfo, allianceUnit, enemyUnit);
 		break;
 	    default:
 		Log.error(":::::::: 추가 예외 처리가 필요한 상황.");
@@ -157,7 +157,7 @@ public class MicroControlManager extends Manager implements EventDispatcher {
 	boolean result = true;
 
 	Game game = gameStatus.getGame();
-	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
+	UnitInfo allianceUnitInfo = gameStatus.getAllianceUnitInfo();
 
 	// 24프레임에 한 번씩 아군 유닛을 중심으로 화면을 이동한다.
 	if (0 == gameStatus.getFrameCount() % 24) {
@@ -167,7 +167,7 @@ public class MicroControlManager extends Manager implements EventDispatcher {
 	switch (game.getFrameCount()) {
 	case 17:
 	    game.setLocalSpeed(42);
-	    ActionUtil.attackEnemyUnit(allianceUnitManager, allianceUnit, enemyUnit);
+	    ActionUtil.attackEnemyUnit(allianceUnitInfo, allianceUnit, enemyUnit);
 	    break;
 	case 50:
 	    //game.setLocalSpeed(20);

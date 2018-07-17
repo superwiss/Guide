@@ -124,9 +124,9 @@ public class GameCommander implements EventDispatcher {
 	Log.info("onUnitDestroy(%s)", UnitUtil.toString(unit));
 
 	if (true == UnitUtil.isAllianceUnit(unit)) {
-	    gameStatus.getAllianceUnitManager().remove(unit);
+	    gameStatus.getAllianceUnitInfo().remove(unit);
 	} else if (true == UnitUtil.isEnemyUnit(unit)) {
-	    gameStatus.getEnemyUnitManager().remove(unit);
+	    gameStatus.getEnemyUnitInfo().remove(unit);
 	} else {
 	    // else 상황 = 즉 중립 건물, 중립 동물에 대해서는 아무런 처리도 하지 않는다.
 	}
@@ -159,9 +159,9 @@ public class GameCommander implements EventDispatcher {
 	    // 각 메니져는 onUnitDiscover와 onUnitRenegade를 중복해서 구현하지 않고 onUnitDiscover만 구현한다.
 	    if (unit.getType().equals(UnitType.Terran_Refinery) || unit.getType().equals(UnitType.Zerg_Extractor) || unit.getType().equals(UnitType.Protoss_Assimilator)) {
 		if (true == UnitUtil.isAllianceUnit(unit)) {
-		    gameStatus.getAllianceUnitManager().add(unit);
+		    gameStatus.getAllianceUnitInfo().add(unit);
 		} else if (true == UnitUtil.isEnemyUnit(unit)) {
-		    gameStatus.getEnemyUnitManager().add(unit);
+		    gameStatus.getEnemyUnitInfo().add(unit);
 		}
 		EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
 		executeEventHandler(eventData);
@@ -195,12 +195,12 @@ public class GameCommander implements EventDispatcher {
 	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
 
 	if (true == UnitUtil.isAllianceUnit(unit)) {
-	    gameStatus.getAllianceUnitManager().add(unit);
+	    gameStatus.getAllianceUnitInfo().add(unit);
 	} else if (true == UnitUtil.isEnemyUnit(unit)) {
-	    gameStatus.getEnemyUnitManager().add(unit);
+	    gameStatus.getEnemyUnitInfo().add(unit);
 	} else {
 	    if (unit.getType().isMineralField()) {
-		gameStatus.getAllianceUnitManager().add(unit);
+		gameStatus.getAllianceUnitInfo().add(unit);
 	    }
 	}
 
@@ -272,9 +272,9 @@ public class GameCommander implements EventDispatcher {
 		Log.info("Set game speed to %d", number);
 		gameStatus.getGame().setLocalSpeed(number);
 	    } else {
-		Unit2 unit = gameStatus.getAllianceUnitManager().getUnit(number);
+		Unit2 unit = gameStatus.getAllianceUnitInfo().getUnit(number);
 		if (null == unit) {
-		    unit = gameStatus.getEnemyUnitManager().getUnit(number);
+		    unit = gameStatus.getEnemyUnitInfo().getUnit(number);
 		}
 		Log.info("status %d", number);
 		UnitUtil.loggingDetailUnitInfo(unit);
@@ -289,22 +289,22 @@ public class GameCommander implements EventDispatcher {
 		gameStatus.getGame().setLocalSpeed(3000);
 		break;
 	    case "enemy":
-		Log.info("[EnemyUnits] %s", gameStatus.getEnemyUnitManager().toString());
+		Log.info("[EnemyUnits] %s", gameStatus.getEnemyUnitInfo().toString());
 		break;
 	    case "enemyBuilding":
 		String msg = "";
-		UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
-		Set<Unit2> enemyBuildingIds = enemyUnitManager.getUnitSet(UnitKind.Building);
+		UnitInfo enemyUnitInfo = gameStatus.getEnemyUnitInfo();
+		Set<Unit2> enemyBuildingIds = enemyUnitInfo.getUnitSet(UnitKind.Building);
 		msg += String.format("enemy building size: %d\n", enemyBuildingIds.size());
-		Set<Unit2> mainBuildingSet = enemyUnitManager.getUnitSet(UnitKind.MAIN_BUILDING);
+		Set<Unit2> mainBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.MAIN_BUILDING);
 		for (Unit2 enemyBuilding : enemyBuildingIds) {
 		    msg += String.format("Building=%s, TilePosition=%s, isVisible=%b, UnitType=%s, isMainBuilding=%b\n", enemyBuilding,
-			    enemyUnitManager.getLastTilePosition(enemyBuilding), enemyBuilding.isVisible(), enemyBuilding.getType(), mainBuildingSet.contains(enemyBuilding));
+			    enemyUnitInfo.getLastTilePosition(enemyBuilding), enemyBuilding.isVisible(), enemyBuilding.getType(), mainBuildingSet.contains(enemyBuilding));
 		}
 		Log.warn(msg);
 		break;
 	    case "alliance":
-		Log.info("[AllianceUnits] :%s", gameStatus.getAllianceUnitManager().toString());
+		Log.info("[AllianceUnits] :%s", gameStatus.getAllianceUnitInfo().toString());
 		break;
 	    default:
 		// nothing

@@ -45,14 +45,14 @@ public class WorkerManager extends Manager {
 
 	if (null != tilePosition) {
 	    Set<Unit2> candidate = new HashSet<>();
-	    for (Unit2 worker : allianceUnitManager.getUnitSet(UnitKind.Worker)) {
+	    for (Unit2 worker : allianceUnitInfo.getUnitSet(UnitKind.Worker)) {
 		if (isinterruptableWorker(worker)) {
 		    candidate.add(worker);
 		}
 	    }
 
 	    // unitIdSet 중에서 tilePosition과 가장 가까운 유닛을 리턴한다.
-	    result = allianceUnitManager.getClosestUnit(candidate, tilePosition.toPosition());
+	    result = allianceUnitInfo.getClosestUnit(candidate, tilePosition.toPosition());
 	}
 
 	return result;
@@ -63,7 +63,7 @@ public class WorkerManager extends Manager {
 	boolean result = false;
 
 	if (null != worker) {
-	    if (true == allianceUnitManager.isKindOf(worker, UnitKind.Worker_Gather_Gas)) {
+	    if (true == allianceUnitInfo.isKindOf(worker, UnitKind.Worker_Gather_Gas)) {
 		// 가스 캐는 일꾼은 건드리지 말자.
 		result = false;
 	    } else {
@@ -78,8 +78,8 @@ public class WorkerManager extends Manager {
 
     // idle 상태의 일꾼을 찾아서 미네랄을 캐도록 일을 시킨다.
     private void idleWorkerCheck() {
-	Set<Unit2> workerSet = allianceUnitManager.getUnitSet(UnitType.Terran_SCV); // 전체 일꾼 목록
-	Set<Unit2> commandCenterSet = allianceUnitManager.getUnitSet(UnitType.Terran_Command_Center); // 전체 SCV 목록
+	Set<Unit2> workerSet = allianceUnitInfo.getUnitSet(UnitType.Terran_SCV); // 전체 일꾼 목록
+	Set<Unit2> commandCenterSet = allianceUnitInfo.getUnitSet(UnitType.Terran_Command_Center); // 전체 SCV 목록
 
 	// Key: Command Center ID, Value: Command Center로 자원을 캐러 갈 일꾼 ID 목록
 	Map<Unit2, List<Unit2>> commandCenterWorksListMap = new HashMap<>();
@@ -89,7 +89,7 @@ public class WorkerManager extends Manager {
 	    if (null != worker && worker.isCompleted() && worker.isIdle()) {
 		Log.info("Found idle worker: %d", worker.getID());
 		// 일꾼에서 가장 가까운 커맨드 센터를 가져온다.
-		Unit2 commandCenter = allianceUnitManager.getClosestUnit(commandCenterSet, worker.getPosition());
+		Unit2 commandCenter = allianceUnitInfo.getClosestUnit(commandCenterSet, worker.getPosition());
 		if (null != commandCenter) {
 		    if (!commandCenterWorksListMap.containsKey(commandCenter)) {
 			commandCenterWorksListMap.put(commandCenter, new LinkedList<>());
@@ -109,10 +109,9 @@ public class WorkerManager extends Manager {
 
     // 가장 양이 많은 미네랄, 혹은 가장 가까운 미네랄을 캔다. 
     private void mining(Unit2 commandCenter, List<Unit2> workerList) {
-	Set<Unit2> mineralSet = new HashSet<>(allianceUnitManager.getUnitSet(UnitKind.Resource_Mineral_Field));
+	Set<Unit2> mineralSet = new HashSet<>(allianceUnitInfo.getUnitSet(UnitKind.Resource_Mineral_Field));
 	for (Unit2 worker : workerList) {
 	    Unit2 largestAmountMineral = getLargestAmountMineral(mineralSet, commandCenter, 300); // 커맨드 센터와 100 거리 이내의 미네랄 중, 가장 양이 많은 미네랄
-	    //Unit closestMineral = allianceUnitManager.getClosestUnit(mineralIdSet, worker.getPosition());
 	    if (null != largestAmountMineral) {
 		worker.gather(largestAmountMineral);
 		mineralSet.remove(Integer.valueOf(largestAmountMineral.getID()));
@@ -138,7 +137,7 @@ public class WorkerManager extends Manager {
     }
 
     private void loggingDetailSCVInfo() {
-	Set<Unit2> scvSet = allianceUnitManager.getUnitSet(UnitType.Terran_SCV);
+	Set<Unit2> scvSet = allianceUnitInfo.getUnitSet(UnitType.Terran_SCV);
 	Log.trace("SCV size: %d", scvSet.size());
 	for (Unit2 scv : scvSet) {
 	    UnitUtil.loggingDetailUnitInfo(scv);

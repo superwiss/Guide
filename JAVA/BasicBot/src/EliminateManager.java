@@ -7,15 +7,15 @@ import bwapi.TilePosition;
 public class EliminateManager extends Manager {
     private Queue<TilePosition> eliminateQueue = new LinkedList<>();
 
-    public void search(UnitManager allianceUnitManager) {
+    public void search(UnitInfo allianceUnitInfo) {
 	if (eliminateQueue.isEmpty()) {
 	    initQueue();
 	}
-	Set<Unit2> combatUnitSet = allianceUnitManager.getUnitSet(UnitKind.Combat_Unit);
+	Set<Unit2> combatUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit);
 	for (Unit2 combatUnit : combatUnitSet) {
 	    if (null != combatUnit && combatUnit.isIdle() && !eliminateQueue.isEmpty()) {
 		TilePosition tilePosition = eliminateQueue.poll();
-		ActionUtil.moveToPosition(allianceUnitManager, combatUnit, tilePosition.toPosition());
+		ActionUtil.moveToPosition(allianceUnitInfo, combatUnit, tilePosition.toPosition());
 		Log.info(" MagiEliminateManager.search(). Unit(%s) -> tilePosition(%s)", combatUnit, tilePosition);
 	    }
 	}

@@ -32,7 +32,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	super.onFrame();
 	// 0 frame에서는 아군 Command Center의 위치를 아직 알 수 없어서 LocationManager를 초기화할 수 없으므로, 1프레임일 때 초기화를 한다.
 	if (1 == gameStatus.getFrameCount()) {
-	    init(gameStatus.getAllianceUnitManager().getAnyUnit(UnitKind.Terran_Command_Center));
+	    init(gameStatus.getAllianceUnitInfo().getAnyUnit(UnitKind.Terran_Command_Center));
 	}
     }
 

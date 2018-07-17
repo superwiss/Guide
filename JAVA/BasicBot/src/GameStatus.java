@@ -8,14 +8,10 @@ public class GameStatus {
     private Game game;
 
     // 아군의 유닛 정보
-    private UnitManager myUnitManager = new UnitManager();
+    private UnitInfo allianceUnitInfo = new UnitInfo();
 
     // 적군의 유닛 정보
-    private UnitManager enemyUnitManager = new UnitManager();
-
-    // 공격 지점. 공격 지점이 null이면 유닛들은 대기한다.
-    // 공격 지점이 설정되면, 유닛들은 해당 지점으로 Attack Position을 수행한다.
-    private TilePosition attackTilePosition = null;
+    private UnitInfo enemyUnitInfo = new UnitInfo();
 
     // Manager
     private LocationManager locationManager = null;
@@ -40,30 +36,12 @@ public class GameStatus {
 	this.game = game;
     }
 
-    public UnitManager getAllianceUnitManager() {
-	return myUnitManager;
+    public UnitInfo getAllianceUnitInfo() {
+	return allianceUnitInfo;
     }
 
-    public UnitManager getEnemyUnitManager() {
-	return enemyUnitManager;
-    }
-
-    public boolean hasAttackTilePosition() {
-	return null != attackTilePosition ? true : false;
-    }
-
-    public TilePosition getAttackTilePositon() {
-	return attackTilePosition;
-    }
-
-    public void setAttackTilePosition(TilePosition attackTilePosition) {
-	Log.debug("공격 지점이 %s -> %s로 변경됨.", this.attackTilePosition, attackTilePosition);
-	this.attackTilePosition = attackTilePosition;
-    }
-
-    public void clearAttackTilePosition() {
-	Log.debug("공격 지점이 %s -> null 로 변경됨.", this.attackTilePosition);
-	attackTilePosition = null;
+    public UnitInfo getEnemyUnitInfo() {
+	return enemyUnitInfo;
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -180,7 +158,7 @@ public class GameStatus {
     public String toString() {
 	String result = "";
 
-	result = String.format("MyUnit: %s, EnemyUnit: %s", getAllianceUnitManager().toString(), getEnemyUnitManager().toString());
+	result = String.format("MyUnit: %s, EnemyUnit: %s", getAllianceUnitInfo().toString(), getEnemyUnitInfo().toString());
 
 	return result;
     }

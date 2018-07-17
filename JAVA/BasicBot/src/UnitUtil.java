@@ -19,6 +19,9 @@ public class UnitUtil {
 
     private static Map<Integer, Integer> lastAttackFinishedFrame = new HashMap<>();
 
+    private UnitUtil() {
+    }
+
     // Unit의 정보를 출력한다.
     public static String toString(Unit2 unit) {
 	if (null != unit) {
@@ -91,14 +94,14 @@ public class UnitUtil {
     // 파라메터로 전달 받은 내 유닛이 공격해야 할 가장 적당한 적 유닛을 선택한다.
     // 적당한 유닛이 없으면 null을 리턴한다.
     // 마이크로 컨트롤을 할 때 사용한다.
-    public static Unit2 selectEnemyTargetUnit(Unit2 allianceUnit, UnitManager enemyUnitManager) {
+    public static Unit2 selectEnemyTargetUnit(Unit2 allianceUnit, UnitInfo enemyUnitInfo) {
 	UnitSpec unitSpec = UnitUtil.getUnitSpec(allianceUnit);
 
 	// 전투 반경 내의 유닛이 대상이다.
 	// TODO: Unit.getUnitsInRadius(arg0)을 활용해 보자.
 	Unit2 targetUnit = null;
 	int targetDistance = Integer.MAX_VALUE;
-	for (Unit2 enemyUnit : enemyUnitManager.getUnitSet(UnitKind.Combat_Unit)) {
+	for (Unit2 enemyUnit : enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit)) {
 	    int distance = allianceUnit.getDistance(enemyUnit);
 	    if (distance > unitSpec.getCombatDistance()) {
 		continue;

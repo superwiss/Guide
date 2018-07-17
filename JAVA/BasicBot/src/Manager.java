@@ -1,12 +1,12 @@
 public abstract class Manager implements EventHandler {
     protected GameStatus gameStatus = null;
-    protected UnitManager allianceUnitManager = null;
-    protected UnitManager enemyUnitManager = null;
+    protected UnitInfo allianceUnitInfo = null;
+    protected UnitInfo enemyUnitInfo = null;
 
     protected void onStart(GameStatus gameStatus) {
 	this.gameStatus = gameStatus;
-	this.allianceUnitManager = gameStatus.getAllianceUnitManager();
-	this.enemyUnitManager = gameStatus.getEnemyUnitManager();
+	this.allianceUnitInfo = gameStatus.getAllianceUnitInfo();
+	this.enemyUnitInfo = gameStatus.getEnemyUnitInfo();
     }
 
     protected void onFrame() {
