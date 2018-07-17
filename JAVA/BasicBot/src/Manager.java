@@ -1,5 +1,3 @@
-import bwapi.Unit;
-
 public abstract class Manager implements EventHandler {
     protected GameStatus gameStatus = null;
     protected UnitManager allianceUnitManager = null;
@@ -15,19 +13,19 @@ public abstract class Manager implements EventHandler {
 
     }
 
-    protected void onUnitComplete(Unit unit) {
+    protected void onUnitComplete(Unit2 unit) {
 
     }
 
-    protected void onUnitDestroy(Unit unit) {
+    protected void onUnitDestroy(Unit2 unit) {
 
     }
 
-    protected void onUnitDiscover(Unit unit) {
+    protected void onUnitDiscover(Unit2 unit) {
 
     }
 
-    protected void onUnitEvade(Unit unit) {
+    protected void onUnitEvade(Unit2 unit) {
 
     }
 

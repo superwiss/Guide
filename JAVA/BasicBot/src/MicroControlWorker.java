@@ -1,12 +1,11 @@
 import java.util.Set;
 
 import bwapi.TilePosition;
-import bwapi.Unit;
 
 // 매딕을 컨트롤 한다.
 public class MicroControlWorker extends Manager {
-    private Unit enemyWorker = null;
-    private Unit enemyWorkerKiller = null;
+    private Unit2 enemyWorker = null;
+    private Unit2 enemyWorkerKiller = null;
 
     @Override
     protected void onFrame() {
@@ -41,8 +40,8 @@ public class MicroControlWorker extends Manager {
 	LocationManager locationManager = gameStatus.getLocationManager();
 	TilePosition allianceBaseTilePosition = locationManager.getAllianceBaseLocation();
 
-	Set<Integer> enemyWorkerIdSet = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Worker);
-	Unit closestEnemyWorker = enemyUnitManager.getClosestUnit(enemyWorkerIdSet, allianceBaseTilePosition.toPosition());
+	Set<Unit2> enemyWorkerSet = enemyUnitManager.getUnitSet(UnitKind.Worker);
+	Unit2 closestEnemyWorker = enemyUnitManager.getClosestUnit(enemyWorkerSet, allianceBaseTilePosition.toPosition());
 	if (null != closestEnemyWorker) {
 	    int distance = closestEnemyWorker.getDistance(allianceBaseTilePosition.toPosition());
 	    Log.debug("적군 일꾼이(%d) 아군 영역에 들어왔다. 거리: %d", closestEnemyWorker.getID(), distance);
@@ -60,7 +59,7 @@ public class MicroControlWorker extends Manager {
 	    } else if (1000 > distance) {
 		// 적 일꾼이 아군 본진까지 다가왔다. 적에게 가장 가까운 아군 일꾼 하나를 선택한다.
 		WorkerManager workerManager = gameStatus.getWorkerManager();
-		Unit allianceWorker = workerManager.getInterruptableWorker(closestEnemyWorker.getTilePosition());
+		Unit2 allianceWorker = workerManager.getInterruptableWorker(closestEnemyWorker.getTilePosition());
 		if (null != allianceWorker) {
 		    Log.info("아군 일꾼(%d)이 본진에 들어온 적군 일꾼(%d)를 공격한다.", allianceWorker.getID(), closestEnemyWorker.getID());
 		    assignEnemyWorkerKiller(closestEnemyWorker, allianceWorker);
@@ -70,7 +69,7 @@ public class MicroControlWorker extends Manager {
     }
 
     // 본진에 침입한 적군 일꾼을 아군 일꾼이 공격한다.
-    private void assignEnemyWorkerKiller(Unit closestEnemyWorker, Unit allianceWorker) {
+    private void assignEnemyWorkerKiller(Unit2 closestEnemyWorker, Unit2 allianceWorker) {
 	enemyWorker = closestEnemyWorker;
 	ActionUtil.attackEnemyUnit(allianceUnitManager, allianceWorker, closestEnemyWorker);
 	enemyWorkerKiller = allianceWorker;

@@ -1,15 +1,14 @@
 import bwapi.Position;
-import bwapi.Unit;
 
 public class ActionDetail {
     private String command;
-    private Unit srcUnit;
-    private Unit destUnit;
+    private Unit2 srcUnit;
+    private Unit2 destUnit;
     private Position position;
     private int actionFrame;
     private int margin;
 
-    public ActionDetail(String command, Unit srcUnit, Unit destUnit, Position position, int actionFrame, int margin) {
+    public ActionDetail(String command, Unit2 srcUnit, Unit2 destUnit, Position position, int actionFrame, int margin) {
 	this.command = command;
 	this.srcUnit = srcUnit;
 	this.destUnit = destUnit;
@@ -22,11 +21,11 @@ public class ActionDetail {
 	return command;
     }
 
-    public Unit getSrcUnit() {
+    public Unit2 getSrcUnit() {
 	return srcUnit;
     }
 
-    public Unit getDestUnit() {
+    public Unit2 getDestUnit() {
 	return destUnit;
     }
 

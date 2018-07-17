@@ -1,5 +1,3 @@
-import bwapi.Unit;
-
 public class StrategyManager extends Manager {
 
     StrategyBase strategy = null;
@@ -22,28 +20,28 @@ public class StrategyManager extends Manager {
     }
 
     @Override
-    protected void onUnitComplete(Unit unit) {
+    protected void onUnitComplete(Unit2 unit) {
 	super.onUnitComplete(unit);
 
 	strategy.onUnitComplete(unit);
     }
 
     @Override
-    protected void onUnitDestroy(Unit unit) {
+    protected void onUnitDestroy(Unit2 unit) {
 	super.onUnitDestroy(unit);
 
 	strategy.onUnitDestroy(unit);
     }
 
     @Override
-    protected void onUnitDiscover(Unit unit) {
+    protected void onUnitDiscover(Unit2 unit) {
 	super.onUnitDiscover(unit);
 
 	strategy.onUnitDiscover(unit);
     }
 
     @Override
-    protected void onUnitEvade(Unit unit) {
+    protected void onUnitEvade(Unit2 unit) {
 	super.onUnitEvade(unit);
 
 	strategy.onUnitEvade(unit);

@@ -3,7 +3,6 @@ import java.util.List;
 
 import bwapi.Game;
 import bwapi.Position;
-import bwapi.Unit;
 
 // MagiBot을 빠르게 연습시키기 위해서, 유즈맵으로 미션을 만들어 MagiBot이 미션을 해결하는 방식으로 훈련한다.
 public class MicroControlManager extends Manager implements EventDispatcher {
@@ -33,14 +32,12 @@ public class MicroControlManager extends Manager implements EventDispatcher {
 	if (true) {
 	    return;
 	}
-	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit).size());
+	Log.trace("Enemy Count: %d", enemyUnitManager.getUnitSet(UnitKind.Combat_Unit).size());
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
 
 	// 적을 공격할 수 있는 아군 유닛을 대상으로 컨트롤을 한다.
-	for (Integer allianceUnitId : allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit)) {
-
-	    Unit allianceUnit = allianceUnitManager.getUnit(allianceUnitId);
+	for (Unit2 allianceUnit : allianceUnitManager.getUnitSet(UnitKind.Combat_Unit)) {
 
 	    // 속도 테스트
 	    /*
@@ -50,9 +47,9 @@ public class MicroControlManager extends Manager implements EventDispatcher {
 	    */
 
 	    // 공격할 적 유닛을 선택한다.
-	    Unit enemyUnit = UnitUtil.selectEnemyTargetUnit(allianceUnit, enemyUnitManager);
+	    Unit2 enemyUnit = UnitUtil.selectEnemyTargetUnit(allianceUnit, enemyUnitManager);
 	    if (null == enemyUnit) {
-		Log.trace("Alliance Unit(%d) -> Selected Enemy is null.", allianceUnitId);
+		Log.trace("Alliance Unit(%s) -> Selected Enemy is null.", allianceUnit);
 		continue;
 	    }
 
@@ -124,7 +121,7 @@ public class MicroControlManager extends Manager implements EventDispatcher {
     }
 
     @Override
-    protected void onUnitComplete(Unit unit) {
+    protected void onUnitComplete(Unit2 unit) {
 	super.onUnitComplete(unit);
 
 	EventData eventData = new EventData(EventData.ON_UNIT_COMPLETE, unit);
@@ -132,7 +129,7 @@ public class MicroControlManager extends Manager implements EventDispatcher {
     }
 
     @Override
-    protected void onUnitDestroy(Unit unit) {
+    protected void onUnitDestroy(Unit2 unit) {
 	super.onUnitDestroy(unit);
 
 	EventData eventData = new EventData(EventData.ON_UNIT_DESTROY, unit);
@@ -140,7 +137,7 @@ public class MicroControlManager extends Manager implements EventDispatcher {
     }
 
     @Override
-    protected void onUnitDiscover(Unit unit) {
+    protected void onUnitDiscover(Unit2 unit) {
 	super.onUnitDiscover(unit);
 
 	EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
@@ -148,15 +145,15 @@ public class MicroControlManager extends Manager implements EventDispatcher {
     }
 
     @Override
-    protected void onUnitEvade(Unit unit) {
+    protected void onUnitEvade(Unit2 unit) {
 	super.onUnitEvade(unit);
 
 	EventData eventData = new EventData(EventData.ON_UNIT_EVADE, unit);
 	executeEventHandler(eventData);
     }
 
-    // 필요한 프레임으로 빨리 이동하기 위해서 게임 속도를 제어한다. false를 리턴하면 frmae을 종료한다.
-    private boolean speedControl(GameStatus gameStatus, Unit allianceUnit, Unit enemyUnit) {
+    // 필요한 프레임으로 빨리 이동하기 위해서 게임 속도를 제어한다. false를 리턴하면 frame을 종료한다.
+    private boolean speedControl(GameStatus gameStatus, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = true;
 
 	Game game = gameStatus.getGame();

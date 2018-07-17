@@ -7,7 +7,6 @@ import bwapi.Color;
 import bwapi.Game;
 import bwapi.Order;
 import bwapi.Position;
-import bwapi.Unit;
 import bwapi.UnitType;
 
 public class UnitUtil {
@@ -21,7 +20,7 @@ public class UnitUtil {
     private static Map<Integer, Integer> lastAttackFinishedFrame = new HashMap<>();
 
     // Unit의 정보를 출력한다.
-    public static String toString(Unit unit) {
+    public static String toString(Unit2 unit) {
 	if (null != unit) {
 	    return String.format("Unit[id=%d, type=%s, hp=%d, angle=%f, position=%s, tilePosition=%s]", unit.getID(), unit.getType().toString(), unit.getHitPoints(),
 		    unit.getAngle(), unit.getPosition().toString(), unit.getTilePosition().toString());
@@ -31,17 +30,17 @@ public class UnitUtil {
     }
 
     // Unit이 alliance인지 판단한다. alliance면 true를 리턴한다.
-    public static boolean isAllianceUnit(Unit unit) {
+    public static boolean isAllianceUnit(Unit2 unit) {
 	return unit.getPlayer().isAlly(game.self());
     }
 
     // Unit이 enemy 인지 판단한다. enemy면 true를 리턴한다.
-    public static boolean isEnemyUnit(Unit unit) {
+    public static boolean isEnemyUnit(Unit2 unit) {
 	return unit.getPlayer().isEnemy(game.self());
     }
 
     // BWMirror에는 BWAPI에는 존재하는 UnitSet, Filter가 없다. 이를 위해서 UnitSet과 비슷한 목적의 Set<UnitKind>를 사용한다.
-    public static Set<UnitKind> getUnitKinds(Unit unit) {
+    public static Set<UnitKind> getUnitKinds(Unit2 unit) {
 	Set<UnitKind> result = new HashSet<>();
 
 	if (null != unit) {
@@ -77,7 +76,7 @@ public class UnitUtil {
 
     // 유닛의 타입을 판별해서 스펙을 리턴한다.
     // 마이크로 컨트롤을 할 때 사용한다.
-    public static UnitSpec getUnitSpec(Unit unit) {
+    public static UnitSpec getUnitSpec(Unit2 unit) {
 	UnitType unitType = unit.getType();
 
 	if (UnitType.Terran_Marine == unitType) {
@@ -92,24 +91,23 @@ public class UnitUtil {
     // 파라메터로 전달 받은 내 유닛이 공격해야 할 가장 적당한 적 유닛을 선택한다.
     // 적당한 유닛이 없으면 null을 리턴한다.
     // 마이크로 컨트롤을 할 때 사용한다.
-    public static Unit selectEnemyTargetUnit(Unit allianceUnit, UnitManager enemyUnitManager) {
+    public static Unit2 selectEnemyTargetUnit(Unit2 allianceUnit, UnitManager enemyUnitManager) {
 	UnitSpec unitSpec = UnitUtil.getUnitSpec(allianceUnit);
 
 	// 전투 반경 내의 유닛이 대상이다.
 	// TODO: Unit.getUnitsInRadius(arg0)을 활용해 보자.
-	Unit targetUnit = null;
+	Unit2 targetUnit = null;
 	int targetDistance = Integer.MAX_VALUE;
-	for (Integer enemyUnitId : enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit)) {
-	    Unit enemyUnit = enemyUnitManager.getUnit(enemyUnitId);
+	for (Unit2 enemyUnit : enemyUnitManager.getUnitSet(UnitKind.Combat_Unit)) {
 	    int distance = allianceUnit.getDistance(enemyUnit);
 	    if (distance > unitSpec.getCombatDistance()) {
 		continue;
 	    }
 	    if (distance < targetDistance) {
-		targetUnit = enemyUnitManager.getUnit(enemyUnitId);
+		targetUnit = enemyUnit;
 		targetDistance = distance;
 	    }
-	    loggingDetailUnitInfo(enemyUnitManager.getUnit(enemyUnitId));
+	    loggingDetailUnitInfo(enemyUnit);
 	}
 
 	// TODO 예를 들어 내가 벌쳐라면 드라군보다 질럿을 먼저 때리도록 로직을 상세화 한다.
@@ -120,7 +118,7 @@ public class UnitUtil {
     }
 
     // 내 유닛과 적 유닛의 각도를 구한다.
-    public static double getAnagleFromBaseUnitToAnotherUnit(Unit baseUnit, Unit targetUnit) {
+    public static double getAnagleFromBaseUnitToAnotherUnit(Unit2 baseUnit, Unit2 targetUnit) {
 	double ret = -1.0;
 
 	if (null != baseUnit && null != targetUnit) {
@@ -173,7 +171,7 @@ public class UnitUtil {
     }
 
     // baseUnit이 anotherUnit을 바라보고 있는지 여부를 리턴
-    public static boolean isBaseUnitLookingAnotherUnit(Unit baseUnit, Unit anotherUnit) {
+    public static boolean isBaseUnitLookingAnotherUnit(Unit2 baseUnit, Unit2 anotherUnit) {
 	boolean result = false;
 
 	double baseUnitAngle = baseUnit.getAngle();
@@ -184,7 +182,7 @@ public class UnitUtil {
     }
 
     // 상대방 유닛을 향해 회전한다.
-    public static Position getBackCounterClockWisePosition(Unit allianceUnit, Unit enemyUnit) {
+    public static Position getBackCounterClockWisePosition(Unit2 allianceUnit, Unit2 enemyUnit) {
 	// 직선 이동 거리
 	int deltaScale = 200;
 	// 대각선 이동 거리
@@ -224,7 +222,7 @@ public class UnitUtil {
     }
 
     // 적과 적의 이동 목적지 각도와 적과 아군의 각도가 일치하면 true
-    public static boolean isSameAngleBetweenEnemyMoveAndAllianceUnit(Unit allianceUnit, Unit enemyUnit) {
+    public static boolean isSameAngleBetweenEnemyMoveAndAllianceUnit(Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	Position alliancePosition = allianceUnit.getPosition();
@@ -248,7 +246,7 @@ public class UnitUtil {
     }
 
     // 적이 바라보고 있는 target position을 화면에 표시한다.
-    public static void drawTargetPosition(Unit unit) {
+    public static void drawTargetPosition(Unit2 unit) {
 	Position targetPosition = unit.getTargetPosition();
 	if (null != targetPosition) {
 	    game.drawCircleMap(targetPosition, 2, Color.Purple, true);
@@ -258,7 +256,7 @@ public class UnitUtil {
 
     // 유닛의 정보를 엄청 자세히 로그로 남긴다.
     // 주의: 속도가 느려지므로, 디버깅할 때만 사용할 것.
-    public static void loggingDetailUnitInfo(Unit unit) {
+    public static void loggingDetailUnitInfo(Unit2 unit) {
 	if (null != unit) {
 	    String unitId = "UnitDetailInfo[" + unit.getID() + "] [" + unit.getType() + "] ";
 
@@ -379,7 +377,7 @@ public class UnitUtil {
 
     // 공격 모션이 완료되었는지 리턴한다.
     // 예를 들어 마리의 경우, 공격이 끝나기도 전에 이동하면 총을 꺼내고 쏘기도 전에 총을 집어 넣고 이동한다.
-    public static boolean isAttackFinished(Unit allianceUnit) {
+    public static boolean isAttackFinished(Unit2 allianceUnit) {
 	boolean result = false;
 
 	if (allianceUnit.isAttackFrame() && 0 != allianceUnit.getGroundWeaponCooldown()) {
@@ -395,7 +393,7 @@ public class UnitUtil {
     }
 
     // 적군 유닛의 현재 상태(아군을 향하고 있고 가깝다, 아군을 등지고 있고 멀리 있다, 아군 근처로 MoveAttack명을 내렸다 등)를 리턴한다.
-    public static EnemyUnitStatus getUnitCombatStatus(Unit allianceUnit, Unit enemyUnit) {
+    public static EnemyUnitStatus getUnitCombatStatus(Unit2 allianceUnit, Unit2 enemyUnit) {
 	EnemyUnitStatus result = EnemyUnitStatus.UNKNOWN;
 
 	UnitSpec unitSpec = getUnitSpec(allianceUnit);

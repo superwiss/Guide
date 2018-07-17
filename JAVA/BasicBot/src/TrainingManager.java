@@ -1,7 +1,6 @@
 import java.util.List;
 
 import bwapi.Game;
-import bwapi.Unit;
 import bwapi.UnitType;
 
 // MagiBot을 빠르게 연습시키기 위해서, 유즈맵으로 미션을 만들어 MagiBot이 미션을 해결하는 방식으로 훈련한다.
@@ -117,7 +116,7 @@ public class TrainingManager extends Manager {
     }
 
     @Override
-    public void onUnitEvade(Unit unit) {
+    public void onUnitEvade(Unit2 unit) {
 	super.onUnitEvade(unit);
 
 	// 트레이닝 모드일 경우에만 이벤트를 처리한다.
@@ -189,8 +188,8 @@ public class TrainingManager extends Manager {
 	allianceUnitHp = 0;
 	enemyUnitHp = 0;
 
-	List<Unit> allUnits = game.getAllUnits();
-	for (Unit unit : allUnits) {
+	List<Unit2> allUnits = Unit2.get(game.getAllUnits());
+	for (Unit2 unit : allUnits) {
 	    if (game.self().isEnemy(unit.getPlayer())) {
 		// Enemy Unit일 경우
 		if (true == isTargetUnitType(trainingData.getEnemyUnitList(), unit)) {
@@ -206,7 +205,7 @@ public class TrainingManager extends Manager {
     }
 
     // unit의 타입이 targetUnitTypeList 중의 하나와 일치하면 true를 리턴.
-    private boolean isTargetUnitType(List<UnitType> targetUnitTypeList, Unit unit) {
+    private boolean isTargetUnitType(List<UnitType> targetUnitTypeList, Unit2 unit) {
 	boolean result = false;
 
 	for (UnitType unitType : targetUnitTypeList) {

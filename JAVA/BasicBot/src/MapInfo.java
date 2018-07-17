@@ -1,7 +1,6 @@
 import java.util.List;
 
 import bwapi.TilePosition;
-import bwapi.Unit;
 
 public interface MapInfo {
 
@@ -18,7 +17,7 @@ public interface MapInfo {
     abstract TilePosition getBaseLocations(int index);
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
-    abstract void init(Unit commandCenter);
+    abstract void init(Unit2 commandCenter);
 
     // 아군 본진 위치를 리턴
     abstract TilePosition getAllianceBaseLocation();

@@ -4,7 +4,6 @@ import java.util.Set;
 
 import bwapi.Player;
 import bwapi.Position;
-import bwapi.Unit;
 import bwapi.UnitType;
 
 /// 실제 봇프로그램의 본체가 되는 class<br>
@@ -116,11 +115,12 @@ public class GameCommander implements EventDispatcher {
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Create 될 때 발생하는 이벤트를 처리합니다
-    public void onUnitCreate(Unit unit) {
+    public void onUnitCreate(bwapi.Unit rawUnit) {
     }
 
     ///  유닛(건물/지상유닛/공중유닛)이 Destroy 될 때 발생하는 이벤트를 처리합니다
-    public void onUnitDestroy(Unit unit) {
+    public void onUnitDestroy(bwapi.Unit rawUnit) {
+	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitDestroy(%s)", UnitUtil.toString(unit));
 
 	if (true == UnitUtil.isAllianceUnit(unit)) {
@@ -143,13 +143,15 @@ public class GameCommander implements EventDispatcher {
 
     /// 유닛(건물/지상유닛/공중유닛)이 Morph 될 때 발생하는 이벤트를 처리합니다<br>
     /// Zerg 종족의 유닛은 건물 건설이나 지상유닛/공중유닛 생산에서 거의 대부분 Morph 형태로 진행됩니다
-    public void onUnitMorph(Unit unit) {
+    public void onUnitMorph(bwapi.Unit rawUnit) {
+	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitMorph: %s", UnitUtil.toString(unit));
     }
 
     /// 유닛(건물/지상유닛/공중유닛)의 소속 플레이어가 바뀔 때 발생하는 이벤트를 처리합니다<br>
     /// Gas Geyser에 어떤 플레이어가 Refinery 건물을 건설했을 때, Refinery 건물이 파괴되었을 때, Protoss 종족 Dark Archon 의 Mind Control 에 의해 소속 플레이어가 바뀔 때 발생합니다
-    public void onUnitRenegade(Unit unit) {
+    public void onUnitRenegade(bwapi.Unit rawUnit) {
+	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitRenegade(%s)", UnitUtil.toString(unit));
 
 	try {
@@ -172,7 +174,8 @@ public class GameCommander implements EventDispatcher {
     }
 
     /// 유닛(건물/지상유닛/공중유닛)의 하던 일 (건물 건설, 업그레이드, 지상유닛 훈련 등)이 끝났을 때 발생하는 이벤트를 처리합니다
-    public void onUnitComplete(Unit unit) {
+    public void onUnitComplete(bwapi.Unit rawUnit) {
+	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitComplete(%s)", UnitUtil.toString(unit));
 
 	try {
@@ -187,7 +190,8 @@ public class GameCommander implements EventDispatcher {
 
     /// 유닛(건물/지상유닛/공중유닛)이 Discover 될 때 발생하는 이벤트를 처리합니다<br>
     /// 아군 유닛이 Create 되었을 때 라든가, 적군 유닛이 Discover 되었을 때 발생합니다
-    public void onUnitDiscover(Unit unit) {
+    public void onUnitDiscover(bwapi.Unit rawUnit) {
+	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
 
 	if (true == UnitUtil.isAllianceUnit(unit)) {
@@ -212,7 +216,8 @@ public class GameCommander implements EventDispatcher {
 
     /// 유닛(건물/지상유닛/공중유닛)이 Evade 될 때 발생하는 이벤트를 처리합니다<br>
     /// 유닛이 Destroy 될 때 발생합니다
-    public void onUnitEvade(Unit unit) {
+    public void onUnitEvade(bwapi.Unit rawUnit) {
+	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitEvade(%s)", UnitUtil.toString(unit));
 
 	try {
@@ -227,13 +232,15 @@ public class GameCommander implements EventDispatcher {
 
     /// 유닛(건물/지상유닛/공중유닛)이 Show 될 때 발생하는 이벤트를 처리합니다<br>
     /// 아군 유닛이 Create 되었을 때 라든가, 적군 유닛이 Discover 되었을 때 발생합니다
-    public void onUnitShow(Unit unit) {
+    public void onUnitShow(bwapi.Unit rawUnit) {
+	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitShow(%s)", UnitUtil.toString(unit));
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Hide 될 때 발생하는 이벤트를 처리합니다<br>
     /// 보이던 유닛이 Hide 될 때 발생합니다
-    public void onUnitHide(Unit unit) {
+    public void onUnitHide(bwapi.Unit rawUnit) {
+	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitHide(%s)", UnitUtil.toString(unit));
     }
 
@@ -265,7 +272,7 @@ public class GameCommander implements EventDispatcher {
 		Log.info("Set game speed to %d", number);
 		gameStatus.getGame().setLocalSpeed(number);
 	    } else {
-		Unit unit = gameStatus.getAllianceUnitManager().getUnit(number);
+		Unit2 unit = gameStatus.getAllianceUnitManager().getUnit(number);
 		if (null == unit) {
 		    unit = gameStatus.getEnemyUnitManager().getUnit(number);
 		}
@@ -287,13 +294,12 @@ public class GameCommander implements EventDispatcher {
 	    case "enemyBuilding":
 		String msg = "";
 		UnitManager enemyUnitManager = gameStatus.getEnemyUnitManager();
-		Set<Integer> enemyBuildingIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Building);
+		Set<Unit2> enemyBuildingIds = enemyUnitManager.getUnitSet(UnitKind.Building);
 		msg += String.format("enemy building size: %d\n", enemyBuildingIds.size());
-		Set<Integer> mainBuildingIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.MAIN_BUILDING);
-		for (Integer enemyBuildingId : enemyBuildingIds) {
-		    Unit enemyBuilding = enemyUnitManager.getUnit(enemyBuildingId);
-		    msg += String.format("Building id=%d, TilePosition: %s, isVisible: %b, UnitType: %s, isMainBuilding: %b\n", enemyBuildingId,
-			    enemyUnitManager.getLastTilePosition(enemyBuildingId), enemyBuilding.isVisible(), enemyBuilding.getType(), mainBuildingIds.contains(enemyBuildingId));
+		Set<Unit2> mainBuildingSet = enemyUnitManager.getUnitSet(UnitKind.MAIN_BUILDING);
+		for (Unit2 enemyBuilding : enemyBuildingIds) {
+		    msg += String.format("Building=%s, TilePosition=%s, isVisible=%b, UnitType=%s, isMainBuilding=%b\n", enemyBuilding,
+			    enemyUnitManager.getLastTilePosition(enemyBuilding), enemyBuilding.isVisible(), enemyBuilding.getType(), mainBuildingSet.contains(enemyBuilding));
 		}
 		Log.warn(msg);
 		break;

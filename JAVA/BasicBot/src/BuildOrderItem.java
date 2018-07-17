@@ -1,5 +1,4 @@
 import bwapi.TilePosition;
-import bwapi.Unit;
 import bwapi.UnitType;
 
 public class BuildOrderItem {
@@ -9,7 +8,7 @@ public class BuildOrderItem {
 
     private Order order;
     private UnitType targetUnitType;
-    private Unit worker;
+    private Unit2 worker;
     private TilePosition tilePosition;
     private boolean inProgress = false;
 
@@ -36,11 +35,11 @@ public class BuildOrderItem {
 	return targetUnitType;
     }
 
-    public Unit getWorker() {
+    public Unit2 getWorker() {
 	return worker;
     }
 
-    public void setWorker(Unit worker) {
+    public void setWorker(Unit2 worker) {
 	this.worker = worker;
     }
 

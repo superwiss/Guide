@@ -1,5 +1,3 @@
-import bwapi.Unit;
-
 public class EventData {
     public static final int ON_START = 0;
     public static final int ON_FRAME = 1;
@@ -10,7 +8,7 @@ public class EventData {
 
     private int eventType;
     private GameStatus gameStatus;
-    private Unit unit;
+    private Unit2 unit;
 
     public EventData(int eventType) {
 	this.eventType = eventType;
@@ -21,7 +19,7 @@ public class EventData {
 	this.gameStatus = gameStatus;
     }
 
-    public EventData(int eventType, Unit unit) {
+    public EventData(int eventType, Unit2 unit) {
 	this.eventType = eventType;
 	this.unit = unit;
     }
@@ -34,7 +32,7 @@ public class EventData {
 	return gameStatus;
     }
 
-    public Unit getUnit() {
+    public Unit2 getUnit() {
 	return unit;
     }
 }

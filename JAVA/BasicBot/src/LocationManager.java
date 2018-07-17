@@ -1,7 +1,6 @@
 import java.util.List;
 
 import bwapi.TilePosition;
-import bwapi.Unit;
 
 public abstract class LocationManager extends Manager implements MapInfo {
 
@@ -33,13 +32,13 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	super.onFrame();
 	// 0 frame에서는 아군 Command Center의 위치를 아직 알 수 없어서 LocationManager를 초기화할 수 없으므로, 1프레임일 때 초기화를 한다.
 	if (1 == gameStatus.getFrameCount()) {
-	    init(gameStatus.getAllianceUnitManager().getFirstCommandCenter());
+	    init(gameStatus.getAllianceUnitManager().getAnyUnit(UnitKind.Terran_Command_Center));
 	}
     }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
     @Override
-    public void init(Unit commandCenter) {
+    public void init(Unit2 commandCenter) {
 	allianceBaseLocation = commandCenter.getTilePosition();
 	baseLocations = initBaseLocations();
 	searchSequence = initSearchSequence();

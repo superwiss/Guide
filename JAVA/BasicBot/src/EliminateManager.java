@@ -3,7 +3,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import bwapi.TilePosition;
-import bwapi.Unit;
 
 public class EliminateManager extends Manager {
     private Queue<TilePosition> eliminateQueue = new LinkedList<>();
@@ -12,13 +11,12 @@ public class EliminateManager extends Manager {
 	if (eliminateQueue.isEmpty()) {
 	    initQueue();
 	}
-	Set<Integer> combatUnitIds = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit);
-	for (Integer combatUnitId : combatUnitIds) {
-	    Unit unit = allianceUnitManager.getUnit(combatUnitId);
-	    if (null != unit && unit.isIdle() && !eliminateQueue.isEmpty()) {
+	Set<Unit2> combatUnitSet = allianceUnitManager.getUnitSet(UnitKind.Combat_Unit);
+	for (Unit2 combatUnit : combatUnitSet) {
+	    if (null != combatUnit && combatUnit.isIdle() && !eliminateQueue.isEmpty()) {
 		TilePosition tilePosition = eliminateQueue.poll();
-		ActionUtil.moveToPosition(allianceUnitManager, unit, tilePosition.toPosition());
-		Log.info(" MagiEliminateManager.search(). Unit(%d) -> tilePosition(%s)", unit.getID(), tilePosition);
+		ActionUtil.moveToPosition(allianceUnitManager, combatUnit, tilePosition.toPosition());
+		Log.info(" MagiEliminateManager.search(). Unit(%s) -> tilePosition(%s)", combatUnit, tilePosition);
 	    }
 	}
     }

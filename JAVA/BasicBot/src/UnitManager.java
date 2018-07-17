@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +7,6 @@ import java.util.Set;
 import bwapi.Position;
 import bwapi.TechType;
 import bwapi.TilePosition;
-import bwapi.Unit;
 import bwapi.UnitType;
 
 public class UnitManager {
@@ -17,81 +15,89 @@ public class UnitManager {
 	SCOUT, GATHER_GAS
     }
 
-    // 모든 유닛 목록
-    private List<Unit> unitList = new ArrayList<>();
-
-    // Unit ID - Unit 매핑
-    private Map<Integer, Unit> idUnitMap = new HashMap<>();
+    // 모든 아군 유닛 셋
+    private Set<Unit2> unitSet = new HashSet<>();
 
     // 유닛의 종류
-    private Map<UnitKind, Set<Integer>> unitKindMap = new HashMap<>();
+    private Map<UnitKind, Set<Unit2>> unitKindMap = new HashMap<>();
 
     // 유닛의 마지막 명령
-    private Map<Integer, ActionDetail> lastActionMap = new HashMap<>();
+    private Map<Unit2, ActionDetail> lastActionMap = new HashMap<>();
 
     // 유닛의 마지막 상태
-    private Map<Integer, UnitStatus> lastStatusMap = new HashMap<>();
+    private Map<Unit2, UnitStatus> lastStatusMap = new HashMap<>();
 
     // 유닛의 마지막 위치
-    private Map<Integer, TilePosition> lastTilePositoin = new HashMap<>();
+    private Map<Unit2, TilePosition> lastTilePositoin = new HashMap<>();
 
     // 생성자
     public UnitManager() {
 	// unitFilter를 초기화 한다.
 	for (UnitKind unitKind : UnitKind.values()) {
-	    Set<Integer> set = new HashSet<>();
+	    Set<Unit2> set = new HashSet<>();
 	    unitKindMap.put(unitKind, set);
 	}
     }
 
     // 유닛을 추가한다.
-    public void add(Unit unit) {
+    public void add(Unit2 unit) {
 	addOrRemove(unit, true);
     }
 
     // 유닛을 삭제한다.
-    public void remove(Unit unit) {
+    public void remove(Unit2 unit) {
 	addOrRemove(unit, false);
     }
 
     // UnitKind에 unit을 추가한다.
-    public void addUnitKind(UnitKind unitKind, Unit unit) {
+    public void addUnitKind(UnitKind unitKind, Unit2 unit) {
 	if (null != unitKind && null != unit) {
-	    unitKindMap.get(unitKind).add(unit.getID());
+	    unitKindMap.get(unitKind).add(unit);
 	} else {
 	    Log.warn("putUnitKind(): invalid paramter. unitKind: %s, unit: %s", unitKind, unit);
 	}
     }
 
-    // UnitKind에 unit을 추가한다.
-    public void removeUnitKind(UnitKind unitKind, Unit unit) {
+    // UnitKind에서 unit을 삭제한다.
+    public void removeUnitKind(UnitKind unitKind, Unit2 unit) {
 	if (null != unitKind && null != unit) {
-	    unitKindMap.get(unitKind).remove(Integer.valueOf(unit.getID()));
+	    unitKindMap.get(unitKind).remove(unit);
 	} else {
 	    Log.warn("removeUnitKind(): invalid paramter. unitKind: %s, unit: %s", unitKind, unit);
 	}
     }
 
-    // Unit ID에 해당하는 유닛 객체를 리턴한다.
-    public Unit getUnit(int id) {
-	return idUnitMap.get(id);
+    public Set<Unit2> getAllUnits() {
+	return unitSet;
     }
 
-    public Set<Integer> getAllUnits() {
-	return idUnitMap.keySet();
+    // 주의: 속도가 느리므로, 디버깅 용도로만 사용할 것...
+    public Unit2 getUnit(int id) {
+	Unit2 result = null;
+	for (Unit2 unit : unitSet) {
+	    if (id == unit.getID()) {
+		result = unit;
+		break;
+	    }
+	}
+	return result;
     }
 
-    public Set<Integer> getUnitIdSetByUnitKind(UnitKind unitKind) {
+    public Set<Unit2> getUnitSet(UnitKind unitKind) {
 	return unitKindMap.get(unitKind);
     }
 
-    public Set<Integer> getUnitIdSetByUnitKind(UnitType unitType) {
+    public Set<Unit2> getUnitSet(UnitType unitType) {
 	return unitKindMap.get(UnitUtil.getUnitKindByUnitType(unitType));
     }
 
+    public boolean isKindOf(Unit2 unit, UnitKind unitKind) {
+	return getUnitSet(UnitKind.Worker_Gather_Gas).contains(unit);
+    }
+
     // unitKind 유닛 중에서 아무거나 하나 가져온 뒤, 그 유닛의 ID를 리턴한다.
-    public Integer getFirstUnitIdByUnitKind(UnitKind unitKind) {
-	Integer result = null;
+    public Unit2 getAnyUnit(UnitKind unitKind) {
+	Unit2 result = null;
 
 	if (0 != unitKindMap.get(unitKind).size()) {
 	    result = unitKindMap.get(unitKind).iterator().next();
@@ -100,98 +106,56 @@ public class UnitManager {
 	return result;
     }
 
-    // unitKind 유닛 중에서 아무거나 하나 가져온 뒤, 그 유닛을 리턴한다.
-    public Unit getFirstUnitByUnitKind(UnitKind unitKind) {
-	Unit result = null;
-
-	Integer unitId = getFirstUnitIdByUnitKind(unitKind);
-	if (null != unitId) {
-	    result = getUnit(unitId);
-	}
-
-	return result;
-    }
-
-    // unitKind 유닛 중에서 아무거나 하나 가져온 뒤, 그 유닛의 tilePosition을 리턴한다.
-    public TilePosition getFirstUnitTilePositionByUnitKind(UnitKind unitKind) {
-	TilePosition result = null;
-
-	Unit unit = getFirstUnitByUnitKind(unitKind);
-	if (null != unit) {
-	    result = unit.getTilePosition();
-	}
-
-	return result;
-    }
-
-    // 현재 존재하는 커맨드센터 중 하나를 리턴한다.
-    public Unit getFirstCommandCenter() {
-	Unit result = null;
-
-	Set<Integer> commandCenters = unitKindMap.get(UnitKind.Terran_Command_Center);
-	if (commandCenters.size() > 0) {
-	    result = getUnit(commandCenters.iterator().next());
-	}
-
-	return result;
-    }
-
     // 유닛의 마지막 Action 정보를 리틴한다.
-    public ActionDetail getLastAction(Unit unit) {
-	return lastActionMap.get(unit.getID());
+    public ActionDetail getLastAction(Unit2 unit) {
+	return lastActionMap.get(unit);
     }
 
     // 유닛의 Action 정보를 Update 한다.
-    public void updateLastAction(Unit unit, ActionDetail lastAction) {
-	lastActionMap.put(unit.getID(), lastAction);
+    public void updateLastAction(Unit2 unit, ActionDetail lastAction) {
+	lastActionMap.put(unit, lastAction);
     }
 
     // 유닛의 마지막 Status 정보를 리틴한다.
-    public UnitStatus getLastStatus(Unit unit) {
-	return lastStatusMap.get(unit.getID());
+    public UnitStatus getLastStatus(Unit2 unit) {
+	return lastStatusMap.get(unit);
     }
 
     // 유닛의 Status 정보를 Update 한다.
-    public void updateLastStatus(Unit unit, UnitStatus status) {
-	lastStatusMap.put(unit.getID(), status);
+    public void updateLastStatus(Unit2 unit, UnitStatus status) {
+	lastStatusMap.put(unit, status);
     }
 
-    private void addOrRemove(Unit unit, boolean isAddMode) {
-	Integer id = unit.getID();
+    private void addOrRemove(Unit2 unit, boolean isAddMode) {
 	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
 
 	if (true == isAddMode) {
-	    idUnitMap.put(id, unit);
+	    unitSet.add(unit);
 
 	    for (UnitKind unitKind : unitKinds) {
-		unitKindMap.get(unitKind).add(id);
+		unitKindMap.get(unitKind).add(unit);
 	    }
 
 	    // 유닛의 초기 상태는 Idle이다.
-	    lastStatusMap.put(id, UnitStatus.IDLE);
+	    lastStatusMap.put(unit, UnitStatus.IDLE);
 
 	    // 건물일 경우, 유닛의 마지막 위치를 기록한다.
 	    if (unit.getType().isBuilding()) {
-		lastTilePositoin.put(id, unit.getTilePosition());
+		lastTilePositoin.put(unit, unit.getTilePosition());
 	    }
-
-	    unitList.add(unit);
-
 	} else {
-	    idUnitMap.remove(id);
+	    unitSet.remove(unit);
 
 	    for (UnitKind unitKind : unitKinds) {
-		unitKindMap.get(unitKind).remove(id);
+		unitKindMap.get(unitKind).remove(unit);
 	    }
 
-	    lastActionMap.remove(id);
-	    lastStatusMap.remove(id);
+	    lastActionMap.remove(unit);
+	    lastStatusMap.remove(unit);
 
-	    if (lastTilePositoin.containsKey(id)) {
-		lastTilePositoin.remove(id);
+	    if (lastTilePositoin.containsKey(unit)) {
+		lastTilePositoin.remove(unit);
 	    }
-
-	    unitList.remove(unit);
 	}
     }
 
@@ -199,81 +163,74 @@ public class UnitManager {
     public String toString() {
 	String result = "";
 
-	result += "\nUnits Size: " + unitList.size();
+	result += "\nUnits Size: " + unitSet.size();
 
-	for (Unit unit : unitList) {
+	for (Unit2 unit : unitSet) {
 	    result += "\n\t(" + UnitUtil.toString(unit) + ") ";
 	}
 
 	return result;
     }
 
-    public Unit getCloseCommandCenter(Unit worker) {
-	Unit result = null;
+    public Unit2 getCloseCommandCenter(Unit2 worker) {
+	Unit2 result = null;
 
 	int minDistance = Integer.MAX_VALUE;
-	for (Integer commandCenter : unitKindMap.get(UnitKind.Terran_Command_Center)) {
-	    int distance = worker.getDistance(getUnit(commandCenter));
+	for (Unit2 commandCenter : getUnitSet(UnitKind.Terran_Command_Center)) {
+	    int distance = worker.getDistance(commandCenter);
 	    if (distance < minDistance) {
 		minDistance = distance;
-		result = getUnit(commandCenter);
+		result = commandCenter;
 	    }
 	}
 
 	return result;
     }
 
-    public void setScoutUnit(Unit unit) {
+    public void setScoutUnit(Unit2 unit) {
 	// 유닛을 관리 대상에서 삭제하고 SCOUT 타입으로 변경한다.
 	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
-	Integer id = unit.getID();
 	for (UnitKind unitKind : unitKinds) {
-	    unitKindMap.get(unitKind).remove(id);
+	    unitKindMap.get(unitKind).remove(unit);
 	}
-	unitKindMap.get(UnitKind.Scouting_Unit).add(id);
+	unitKindMap.get(UnitKind.Scouting_Unit).add(unit);
     }
 
-    public void releaseScoutUnit(Unit unit) {
+    public void releaseScoutUnit(Unit2 unit) {
 	if (null != unit) {
 	    // 유닛을 SCOUT 타입에서 원래 타입으로 원복한다.
 	    Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
-	    Integer id = unit.getID();
 	    for (UnitKind unitKind : unitKinds) {
-		unitKindMap.get(unitKind).add(id);
+		unitKindMap.get(unitKind).add(unit);
 	    }
-	    unitKindMap.get(UnitKind.Scouting_Unit).remove(id);
+	    unitKindMap.get(UnitKind.Scouting_Unit).remove(unit);
 	} else {
 	    Log.trace("정찰 유닛이 죽어버렸음..");
 	}
     }
 
     // 메모리에 저장된 unitSet 중에서 position에 제일 가까운 unit을 리턴한다.
-    public Unit getClosestUnitWithLastTilePosition(Set<Integer> unitSet, Position position) {
+    public Unit2 getClosestUnitWithLastTilePosition(Set<Unit2> unitSet, Position position) {
 	return getClosestUnitWithLastTilePosition(unitSet, position, null);
     }
 
     // 메모리에 저장된 unitSet 중에서 position에 제일 가까운 unit을 리턴한다. excludeUnitType은 계산에서 제외한다.
-    public Unit getClosestUnitWithLastTilePosition(Set<Integer> unitSet, Position position, Set<UnitType> excludeUnitType) {
-	Unit result = null;
+    public Unit2 getClosestUnitWithLastTilePosition(Set<Unit2> unitSet, Position position, Set<UnitType> excludeUnitType) {
+	Unit2 result = null;
 
 	if (null != unitSet && null != position) {
 	    int minDistance = Integer.MAX_VALUE;
-	    for (Integer unitId : unitSet) {
-		Unit unit = getUnit(unitId);
-		if (null != unit) {
-		    if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
-			continue;
+	    for (Unit2 unit : unitSet) {
+		if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
+		    continue;
+		}
+		TilePosition lastTilePosition = lastTilePositoin.get(unit);
+		if (null != lastTilePosition) {
+		    int distance = UnitUtil.getDistance(lastTilePosition.toPosition(), position);
+		    if (distance < minDistance) {
+			minDistance = distance;
+			result = unit;
 		    }
-		    TilePosition lastTilePosition = lastTilePositoin.get(unitId);
-		    if (null != lastTilePosition) {
-			int distance = UnitUtil.getDistance(lastTilePosition.toPosition(), position);
-			if (distance < minDistance) {
-			    minDistance = distance;
-			    result = unit;
-			}
-		    }
-		} else {
-		    Log.warn("getClosestUnit(): Failed to getting unit by unitId(%d)", unitId);
 		}
 	    }
 	} else {
@@ -283,19 +240,18 @@ public class UnitManager {
 	return result;
     }
 
-    public TilePosition getLastTilePosition(Integer unitId) {
-	return lastTilePositoin.get(unitId);
+    public TilePosition getLastTilePosition(Unit2 unit) {
+	return lastTilePositoin.get(unit);
     }
 
     public String toBuildingString() {
 	String result = "";
 
-	Set<Integer> buildings = getUnitIdSetByUnitKind(UnitKind.Building);
+	Set<Unit2> buildings = getUnitSet(UnitKind.Building);
 
 	result += "\nBuilding size: " + buildings.size();
 
-	for (Integer buildingId : buildings) {
-	    Unit building = getUnit(buildingId);
+	for (Unit2 building : buildings) {
 	    if (null != building) {
 		result += "\n\t(" + UnitUtil.toString(building) + ") ";
 	    }
@@ -308,9 +264,8 @@ public class UnitManager {
     public int getConstructionCount(UnitType underConstructBuildingType) {
 	int result = 0;
 
-	Set<Integer> unitIdSet = getUnitIdSetByUnitKind(underConstructBuildingType);
-	for (Integer unitId : unitIdSet) {
-	    Unit unit = getUnit(unitId);
+	Set<Unit2> unitSet = getUnitSet(underConstructBuildingType);
+	for (Unit2 unit : unitSet) {
 	    if (false == unit.isCompleted()) {
 		result += 1;
 	    }
@@ -319,46 +274,40 @@ public class UnitManager {
 	return result;
     }
 
-    // unitIdSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. 유닛 타입이 excludeUnitType일 경우는 제외한다.
-    public Unit getClosestUnit(Set<Integer> unitIdSet, Position position, Set<UnitType> excludeUnitType) {
-	Unit result = null;
+    // unitSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. 유닛 타입이 excludeUnitType일 경우는 제외한다.
+    public Unit2 getClosestUnit(Set<Unit2> unitSet, Position position, Set<UnitType> excludeUnitType) {
+	Unit2 result = null;
 
-	if (null != unitIdSet && null != position) {
+	if (null != unitSet && null != position) {
 	    int minDistance = Integer.MAX_VALUE;
-	    for (Integer unitId : unitIdSet) {
-		Unit unit = getUnit(unitId);
-		if (null != unit) {
-		    if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
-			continue;
-		    }
-		    int distance = unit.getPoint().getApproxDistance(position);
-		    if (distance < minDistance) {
-			minDistance = distance;
-			result = unit;
-		    }
-		} else {
-		    Log.warn("getClosestUnit(): Failed to getting unit by unitId(%d)", unitId);
+	    for (Unit2 unit : unitSet) {
+		if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
+		    continue;
+		}
+		int distance = unit.getPoint().getApproxDistance(position);
+		if (distance < minDistance) {
+		    minDistance = distance;
+		    result = unit;
 		}
 	    }
 	} else {
-	    Log.warn("Invalid Parameter: unitset= %s, position=%s, excludeUnitType=%s", unitIdSet, position, excludeUnitType);
+	    Log.warn("Invalid Parameter: unitset= %s, position=%s, excludeUnitType=%s", unitSet, position, excludeUnitType);
 	}
 
 	return result;
     }
 
-    // unitManager 소속의 unitIdSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. (exclude 없는 버전)
-    public Unit getClosestUnit(Set<Integer> unitIdSet, Position position) {
-	return getClosestUnit(unitIdSet, position, null);
+    // unitManager 소속의 unitSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. (exclude 없는 버전)
+    public Unit2 getClosestUnit(Set<Unit2> unitSet, Position position) {
+	return getClosestUnit(unitSet, position, null);
     }
 
     // buildingType 건물에서 훈련 중인 unitType의 개수를 리턴한다.
     public int getTrainingQueueUnitCount(UnitType buildingType, UnitType unitType) {
 	int result = 0;
 
-	Set<Integer> buildingSet = getUnitIdSetByUnitKind(buildingType);
-	for (Integer buildingId : buildingSet) {
-	    Unit building = getUnit(buildingId);
+	Set<Unit2> buildingSet = getUnitSet(buildingType);
+	for (Unit2 building : buildingSet) {
 	    List<UnitType> trainingQueue = building.getTrainingQueue();
 	    for (UnitType trainingUnitType : trainingQueue) {
 		if (unitType.equals(trainingUnitType)) {
@@ -371,15 +320,14 @@ public class UnitManager {
     }
 
     // unitType을 훈련할 수 있는 buildingType 건물 중, 적절한 건물을 리턴한다. 예를 들면, 마린을 뽑을 때 트레이닝 큐가 제일 짧은 배럭이 우선 순위가 높다라던가 등등...
-    public Unit getTrainableBuilding(UnitType buildingType, UnitType unitType) {
-	Unit targetBuilding = null;
+    public Unit2 getTrainableBuilding(UnitType buildingType, UnitType unitType) {
+	Unit2 targetBuilding = null;
 
 	int minQueueSize = Integer.MAX_VALUE;
-	Set<Integer> candidateSet = getUnitIdSetByUnitKind(buildingType);
+	Set<Unit2> candidateSet = getUnitSet(buildingType);
 	// 훈련이 가능한 건물 중에서 TrainingQueue가 가장 적은 건물을 선택
 	// TrainingQueue는 최대 2개까지만 허용
-	for (Integer buildingId : candidateSet) {
-	    Unit building = getUnit(buildingId);
+	for (Unit2 building : candidateSet) {
 	    if (building.canTrain(unitType)) {
 		if (building.getTrainingQueue().size() < 2) {
 		    if (minQueueSize > building.getTrainingQueue().size()) {
@@ -424,7 +372,7 @@ public class UnitManager {
 
 	}
 
-	Unit trainableBuilding = getTrainableBuilding(trainableBuildingType, targetUnitType);
+	Unit2 trainableBuilding = getTrainableBuilding(trainableBuildingType, targetUnitType);
 	// 훈련하기
 	if (null != trainableBuilding) {
 	    int beforeQueueSize = trainableBuilding.getTrainingQueue().size();
@@ -463,9 +411,8 @@ public class UnitManager {
 
 	}
 
-	Set<Integer> addonableBuildingIdSet = getUnitIdSetByUnitKind(addonableBuildingtType);
-	for (Integer addonableBuildingId : addonableBuildingIdSet) {
-	    Unit addonableBuilding = getUnit(addonableBuildingId);
+	Set<Unit2> addonableBuildingSet = getUnitSet(addonableBuildingtType);
+	for (Unit2 addonableBuilding : addonableBuildingSet) {
 	    if (null != addonableBuilding && addonableBuilding.canBuildAddon(addOnUnitType)) {
 		addonableBuilding.buildAddon(addOnUnitType);
 		result = true;
@@ -479,11 +426,10 @@ public class UnitManager {
 	boolean result = false;
 
 	int maxEnergy = Integer.MIN_VALUE;
-	Unit targetComsat = null;
+	Unit2 targetComsat = null;
 
-	Set<Integer> comsatIdSet = getUnitIdSetByUnitKind(UnitType.Terran_Comsat_Station);
-	for (Integer comsatId : comsatIdSet) {
-	    Unit comsat = getUnit(comsatId);
+	Set<Unit2> comsatSet = getUnitSet(UnitType.Terran_Comsat_Station);
+	for (Unit2 comsat : comsatSet) {
 	    if (maxEnergy < comsat.getEnergy()) {
 		maxEnergy = comsat.getEnergy();
 		targetComsat = comsat;
@@ -498,12 +444,11 @@ public class UnitManager {
 	return result;
     }
 
-    public Set<Unit> getUnitsInRange(Position position, UnitKind unitKind, int distance) {
-	Set<Unit> result = new HashSet<>();
+    public Set<Unit2> getUnitsInRange(Position position, UnitKind unitKind, int distance) {
+	Set<Unit2> result = new HashSet<>();
 
-	Set<Integer> unitIdSet = getUnitIdSetByUnitKind(unitKind);
-	for (Integer unitId : unitIdSet) {
-	    Unit unit = getUnit(unitId);
+	Set<Unit2> unitSet = getUnitSet(unitKind);
+	for (Unit2 unit : unitSet) {
 	    if (distance >= unit.getDistance(position)) {
 		result.add(unit);
 	    }

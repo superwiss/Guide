@@ -3,7 +3,6 @@ import java.util.Set;
 
 import bwapi.Game;
 import bwapi.Position;
-import bwapi.Unit;
 
 // 유닛의 Command(Action)에 대한 유틸리티
 public class ActionUtil {
@@ -15,7 +14,7 @@ public class ActionUtil {
 	ActionUtil.game = game;
     }
 
-    public static boolean patrolToEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+    public static boolean patrolToEnemyUnit(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("PATROL_TO_UNIT", allianceUnit, enemyUnit);
@@ -27,7 +26,7 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean repair(UnitManager allianceUnitManager, Unit allianceUnit, Unit target) {
+    public static boolean repair(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 target) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("REPAIR", allianceUnit, target);
@@ -39,11 +38,11 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean moveToPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position) {
+    public static boolean moveToPosition(UnitManager allianceUnitManager, Unit2 allianceUnit, Position position) {
 	return moveToPosition(allianceUnitManager, allianceUnit, position, 0);
     }
 
-    public static boolean moveToPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position, int margin) {
+    public static boolean moveToPosition(UnitManager allianceUnitManager, Unit2 allianceUnit, Position position, int margin) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("MOVE_TO_POSITION", allianceUnit, position, margin);
@@ -57,7 +56,7 @@ public class ActionUtil {
     }
 
     // TODO 상대가 움직이면 position이 바뀌면서 매 프레임마다 move 명령이 내려지는 상황이 발생하는데, 큰 이슈 없는지 확인하기
-    public static boolean moveToUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+    public static boolean moveToUnit(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("MOVE_TO_UNIT", allianceUnit, enemyUnit.getPoint());
@@ -69,7 +68,7 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean attackEnemyUnit(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+    public static boolean attackEnemyUnit(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT", allianceUnit, enemyUnit);
@@ -80,7 +79,7 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean attackPosition(UnitManager allianceUnitManager, Unit allianceUnit, Position position) {
+    public static boolean attackPosition(UnitManager allianceUnitManager, Unit2 allianceUnit, Position position) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_POSITION", allianceUnit, position);
@@ -92,7 +91,7 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean attackEnemyUnitForcibly(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+    public static boolean attackEnemyUnitForcibly(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("ATTACK_TO_UNIT_FORCIBLY", allianceUnit, enemyUnit);
@@ -105,7 +104,7 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean stop(UnitManager allianceUnitManager, Unit allianceUnit) {
+    public static boolean stop(UnitManager allianceUnitManager, Unit2 allianceUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("STOP", allianceUnit);
@@ -117,7 +116,7 @@ public class ActionUtil {
 	return result;
     }
 
-    public static boolean isAttackingForcibly(Unit allianceUnit) {
+    public static boolean isAttackingForcibly(Unit2 allianceUnit) {
 	boolean result = false;
 
 	if (forceAttackUnitIdSet.contains(Integer.valueOf(allianceUnit.getID()))) {
@@ -127,12 +126,12 @@ public class ActionUtil {
 	return result;
     }
 
-    public static void attackFinished(Unit allianceUnit) {
+    public static void attackFinished(Unit2 allianceUnit) {
 	forceAttackUnitIdSet.remove(Integer.valueOf(allianceUnit.getID()));
     }
 
     // 상대방 유닛을 향해 회전한다.
-    public static boolean turn(UnitManager allianceUnitManager, Unit allianceUnit, Unit enemyUnit) {
+    public static boolean turn(UnitManager allianceUnitManager, Unit2 allianceUnit, Unit2 enemyUnit) {
 	boolean result = false;
 
 	ActionDetail currnetCommand = getActionDetail("TURN", allianceUnit, enemyUnit);
@@ -175,7 +174,7 @@ public class ActionUtil {
 	return result;
     }
 
-    public static void updateStatus(UnitManager allianceUnitManager, Unit allianceUnit, UnitStatus unitStatus) {
+    public static void updateStatus(UnitManager allianceUnitManager, Unit2 allianceUnit, UnitStatus unitStatus) {
 	UnitStatus lastUnitStatus = allianceUnitManager.getLastStatus(allianceUnit);
 	if (!unitStatus.equals(lastUnitStatus)) {
 	    allianceUnitManager.updateLastStatus(allianceUnit, unitStatus);
@@ -183,31 +182,31 @@ public class ActionUtil {
     }
 
     // 유닛의 명령을 String으로 표현한다. (Position이 없는 타입의 명령어)
-    private static ActionDetail getActionDetail(String command, Unit allianceUnit, Unit enemyUnit) {
+    private static ActionDetail getActionDetail(String command, Unit2 allianceUnit, Unit2 enemyUnit) {
 	return getActionDetail(command, allianceUnit, enemyUnit, null, 0);
     }
 
     // 유닛의 명령을 String으로 표현한다. (Destination Unit이 없는 타입의 명령어)
-    private static ActionDetail getActionDetail(String command, Unit allianceUnit, Position position) {
+    private static ActionDetail getActionDetail(String command, Unit2 allianceUnit, Position position) {
 	return getActionDetail(command, allianceUnit, null, position, 0);
     }
 
     // 유닛의 명령을 String으로 표현한다. (Destination Unit, Position이 없는 타입의 명령어)
-    private static ActionDetail getActionDetail(String command, Unit allianceUnit) {
+    private static ActionDetail getActionDetail(String command, Unit2 allianceUnit) {
 	return getActionDetail(command, allianceUnit, null, null, 0);
     }
 
-    private static ActionDetail getActionDetail(String command, Unit allianceUnit, Position position, int margin) {
+    private static ActionDetail getActionDetail(String command, Unit2 allianceUnit, Position position, int margin) {
 	return getActionDetail(command, allianceUnit, null, position, margin);
     }
 
     // 유닛의 명령을 ActionDetail 개체로 변환한다.
-    private static ActionDetail getActionDetail(String command, Unit srcUnit, Unit destUnit, Position position, int margin) {
+    private static ActionDetail getActionDetail(String command, Unit2 srcUnit, Unit2 destUnit, Position position, int margin) {
 	return new ActionDetail(command, srcUnit, destUnit, position, game.getFrameCount(), margin);
     }
 
     // 유닛의 액션을 수행할지 말지 결정한다. 이전과 동일한 액션이 들어오면 skip할 수 있도록 false를 리턴한다.
-    private static boolean isAcceptedAction(ActionDetail currentActionDetail, Unit allianceUnit, UnitManager allianceUnitManager) {
+    private static boolean isAcceptedAction(ActionDetail currentActionDetail, Unit2 allianceUnit, UnitManager allianceUnitManager) {
 	boolean result = false;
 
 	ActionDetail lastActionDetail = allianceUnitManager.getLastAction(allianceUnit);

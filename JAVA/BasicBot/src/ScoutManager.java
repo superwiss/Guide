@@ -3,7 +3,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import bwapi.TilePosition;
-import bwapi.Unit;
 
 /// 게임 초반에 일꾼 유닛 중에서 정찰 유닛을 하나 지정하고, 정찰 유닛을 이동시켜 정찰을 수행하는 class<br>
 /// 적군의 BaseLocation 위치를 알아내는 것까지만 개발되어있습니다
@@ -22,7 +21,7 @@ public class ScoutManager extends Manager {
 
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
 	LocationManager locationManager = gameStatus.getLocationManager();
-	Unit scoutUnit = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Scouting_Unit);
+	Unit2 scoutUnit = allianceUnitManager.getAnyUnit(UnitKind.Scouting_Unit);
 
 	if (null == scoutUnit) {
 	    return;
@@ -64,7 +63,7 @@ public class ScoutManager extends Manager {
     }
 
     @Override
-    public void onUnitDestroy(Unit unit) {
+    public void onUnitDestroy(Unit2 unit) {
 	super.onUnitDestroy(unit);
 
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
@@ -72,7 +71,7 @@ public class ScoutManager extends Manager {
 	LocationManager locationManager = gameStatus.getLocationManager();
 
 	// 정찰중인 유닛이 죽었을 경우를 처리...
-	if (allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Scouting_Unit).contains(Integer.valueOf(unit.getID()))) {
+	if (allianceUnitManager.isKindOf(unit, UnitKind.Scouting_Unit)) {
 	    // 적 Main건물(커맨드센터, 넥서스, 해처리 류)을 찾기 전이지만, 적 건물이 존재할 경우, 적 건물의 위치를 기반으로 적 본진을 유추한다. 
 	    if (null == locationManager.getEnemyBaseLocation()) {
 		checkEnemyStartingLocation(enemyUnitManager);
@@ -103,15 +102,14 @@ public class ScoutManager extends Manager {
 	    return;
 	}
 
-	Set<Integer> enemyBuildingUnitIds = enemyUnitManager.getUnitIdSetByUnitKind(UnitKind.Building);
-	for (Integer enemyBuildingUnitId : enemyBuildingUnitIds) {
+	Set<Unit2> enemyBuildingUnitSet = enemyUnitManager.getUnitSet(UnitKind.Building);
+	for (Unit2 enemyBuildingUnit : enemyBuildingUnitSet) {
 	    // 적 본진을 찾았으면 계산을 중단한다.
 	    if (null != locationManager.getEnemyBaseLocation()) {
 		break;
 	    }
 
 	    // 발견한 적 건물의 위치와 Starting Location이 가까우면, 적의 본진을 발견한 것으로 유추할 수 있다.
-	    Unit enemyBuildingUnit = enemyUnitManager.getUnit(enemyBuildingUnitId);
 	    for (TilePosition tilePosition : locationManager.getSearchSequence()) {
 		double distance = tilePosition.getDistance(enemyBuildingUnit.getTilePosition());
 		if (32 >= distance) {
@@ -130,7 +128,7 @@ public class ScoutManager extends Manager {
 	WorkerManager workerManager = gameStatus.getWorkerManager();
 
 	UnitManager allianceUnitManager = gameStatus.getAllianceUnitManager();
-	Unit unitForScout = workerManager.getInterruptableWorker(locationManager.getFirstExtensionChokePoint());
+	Unit2 unitForScout = workerManager.getInterruptableWorker(locationManager.getFirstExtensionChokePoint());
 	if (null != unitForScout) {
 	    allianceUnitManager.setScoutUnit(unitForScout);
 	    searchQueue.addAll(locationManager.getSearchSequence());

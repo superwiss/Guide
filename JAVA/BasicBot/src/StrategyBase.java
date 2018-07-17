@@ -1,5 +1,3 @@
-import bwapi.Unit;
-
 public abstract class StrategyBase {
     protected GameStatus gameStatus = null;
     protected UnitManager allianceUnitManager = null;
@@ -19,19 +17,19 @@ public abstract class StrategyBase {
 
     }
 
-    public void onUnitComplete(Unit unit) {
+    public void onUnitComplete(Unit2 unit) {
 
     }
 
-    public void onUnitDestroy(Unit unit) {
+    public void onUnitDestroy(Unit2 unit) {
 
     }
 
-    public void onUnitDiscover(Unit unit) {
+    public void onUnitDiscover(Unit2 unit) {
 
     }
 
-    public void onUnitEvade(Unit unit) {
+    public void onUnitEvade(Unit2 unit) {
 
     }
 }

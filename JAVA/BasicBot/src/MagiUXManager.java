@@ -3,7 +3,6 @@ import java.util.List;
 import bwapi.Color;
 import bwapi.Game;
 import bwapi.TilePosition;
-import bwapi.Unit;
 import bwapi.UnitType;
 
 /// 봇 프로그램 개발의 편의성 향상을 위해 게임 화면에 추가 정보들을 표시하는 class<br>
@@ -144,10 +143,10 @@ public class MagiUXManager extends Manager {
     // Unit의 ID를 표시한다.
     public void drawUnitId() {
 	Game game = gameStatus.getGame();
-	for (Unit unit : game.self().getUnits()) {
+	for (Unit2 unit : Unit2.get(game.self().getUnits())) {
 	    game.drawTextMap(unit.getPosition(), "" + unit.getID());
 	}
-	for (Unit unit : game.enemy().getUnits()) {
+	for (Unit2 unit : Unit2.get(game.enemy().getUnits())) {
 	    game.drawTextMap(unit.getPosition(), "" + unit.getID());
 	}
     }

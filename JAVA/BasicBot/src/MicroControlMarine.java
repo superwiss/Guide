@@ -3,7 +3,6 @@ import java.util.Set;
 
 import bwapi.Position;
 import bwapi.TechType;
-import bwapi.Unit;
 import bwapi.UnitType;
 
 // 매딕을 컨트롤 한다.
@@ -28,9 +27,8 @@ public class MicroControlMarine extends Manager {
 
     // 스팀팩을 사용할지 여부를 판단하고, 필요할 경우 스팀팩을 사용한다.
     private void checkIfUsingStimPack() {
-	Set<Integer> unitIdSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitType.Terran_Marine);
-	for (Integer unitId : unitIdSet) {
-	    Unit marine = allianceUnitManager.getUnit(unitId);
+	Set<Unit2> marineSet = allianceUnitManager.getUnitSet(UnitType.Terran_Marine);
+	for (Unit2 marine : marineSet) {
 	    // 마린 주변에 매딕이 1마리 이상 존재하고, 적군이 3마리 이상 존재하면 스팀팩을 사용한다.
 	    int madicCount = allianceUnitManager.getUnitsInRange(marine.getPosition(), UnitKind.Terran_Medic, 300).size();
 	    int enemyCount = enemyUnitManager.getUnitsInRange(marine.getPosition(), UnitKind.Combat_Unit, 300).size();
@@ -45,12 +43,12 @@ public class MicroControlMarine extends Manager {
 
     // 선두 바이오닉 유닛 400 주변에 마린이 20마리 미만이라면, 모든 유닛이 적군으로의 진군을 일단 멈추고 선두 유닛쪽에 모인다.
     private void waitBionicUnit() {
-	Set<Integer> bionicSet = null;
+	Set<Unit2> bionicSet = null;
 	if (true == gameStatus.hasAttackTilePosition()) {
 	    Position attackPosition = gameStatus.getAttackTilePositon().toPosition();
-	    bionicSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Bionic_Unit);
+	    bionicSet = allianceUnitManager.getUnitSet(UnitKind.Bionic_Unit);
 	    // 메딕을 제외한 - 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
-	    Unit headBionicUnit = allianceUnitManager.getClosestUnit(bionicSet, attackPosition, medicUnitTypeSet);
+	    Unit2 headBionicUnit = allianceUnitManager.getClosestUnit(bionicSet, attackPosition, medicUnitTypeSet);
 	    // 선두 바이오닉 유닛 300 주변의 마린 개수
 	    int headGroupSize = allianceUnitManager.getUnitsInRange(headBionicUnit.getPosition(), UnitKind.Terran_Marine, 300).size();
 	    if (20 > headGroupSize) {
@@ -66,9 +64,8 @@ public class MicroControlMarine extends Manager {
     }
 
     private void attackAll(Position headPosition) {
-	Set<Integer> attackableUnitIdSet = allianceUnitManager.getUnitIdSetByUnitKind(UnitKind.Combat_Unit);
-	for (Integer attackableUnitId : attackableUnitIdSet) {
-	    Unit attackableUnit = allianceUnitManager.getUnit(attackableUnitId);
+	Set<Unit2> attackableUnitSet = allianceUnitManager.getUnitSet(UnitKind.Combat_Unit);
+	for (Unit2 attackableUnit : attackableUnitSet) {
 	    ActionUtil.attackPosition(allianceUnitManager, attackableUnit, headPosition);
 	}
     }

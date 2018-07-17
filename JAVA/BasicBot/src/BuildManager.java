@@ -6,7 +6,6 @@ import java.util.Map;
 
 import bwapi.Order;
 import bwapi.TilePosition;
-import bwapi.Unit;
 import bwapi.UnitType;
 
 /// 빌드(건물 건설 / 유닛 훈련 / 테크 리서치 / 업그레이드) 명령을 순차적으로 실행하기 위해 빌드 큐를 관리하고, 빌드 큐에 있는 명령을 하나씩 실행하는 class<br>
@@ -34,7 +33,7 @@ public class BuildManager extends Manager {
 	    } else {
 		// 건설 시작했는데, (돈이 없는 등의 이유로 취소되어서) 할당된 일꾼이 없으면, 건설을 다시 시작한다.
 		if (buildItem.getOrder().equals(BuildOrderItem.Order.BUILD)) {
-		    Unit worker = buildItem.getWorker();
+		    Unit2 worker = buildItem.getWorker();
 		    switch (worker.getOrder().toString()) {
 		    case "ConstructingBuilding":
 		    case "PlaceBuilding":
@@ -62,7 +61,7 @@ public class BuildManager extends Manager {
     }
 
     @Override
-    public void onUnitDiscover(Unit unit) {
+    public void onUnitDiscover(Unit2 unit) {
 	super.onUnitDiscover(unit);
 
 	if (!queue.isEmpty() && 0 != gameStatus.getFrameCount()) {
@@ -80,7 +79,7 @@ public class BuildManager extends Manager {
     }
 
     @Override
-    protected void onUnitComplete(Unit unit) {
+    protected void onUnitComplete(Unit2 unit) {
 	super.onUnitComplete(unit);
 
 	Integer unitId = unit.getID();
@@ -131,9 +130,9 @@ public class BuildManager extends Manager {
 	    allianceUnitManager.buildAddon(UnitType.Terran_Comsat_Station);
 	    break;
 	case GATHER_GAS:
-	    Unit refinery = allianceUnitManager.getFirstUnitByUnitKind(UnitKind.Terran_Refinery);
+	    Unit2 refinery = allianceUnitManager.getAnyUnit(UnitKind.Terran_Refinery);
 	    if (null != refinery && refinery.isCompleted()) {
-		Unit workerForGatherGas = workerManager.getInterruptableWorker(refinery.getTilePosition());
+		Unit2 workerForGatherGas = workerManager.getInterruptableWorker(refinery.getTilePosition());
 		if (null != workerForGatherGas) {
 		    if (workerForGatherGas.canGather(refinery)) {
 			workerForGatherGas.gather(refinery);
@@ -150,7 +149,7 @@ public class BuildManager extends Manager {
 	    }
 	    break;
 	case MOVE_SCV:
-	    Unit moveWorker = workerManager.getInterruptableWorker(buildOrderItem.getTilePosition());
+	    Unit2 moveWorker = workerManager.getInterruptableWorker(buildOrderItem.getTilePosition());
 	    ActionUtil.moveToPosition(allianceUnitManager, moveWorker, buildOrderItem.getTilePosition().toPosition());
 	    queue.poll();
 	    isMoving = true;
@@ -183,7 +182,7 @@ public class BuildManager extends Manager {
 			    break;
 			}
 			// 건설 가능한 일꾼을 가져온다.
-			Unit worker = workerManager.getInterruptableWorker(tilePosition);
+			Unit2 worker = workerManager.getInterruptableWorker(tilePosition);
 			if (null != worker) {
 			    // 일꾼이 건물을 지을 수 있으면
 			    boolean canBuild = worker.canBuild(buildingType, tilePosition);
