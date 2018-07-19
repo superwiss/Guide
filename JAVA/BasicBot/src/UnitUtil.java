@@ -7,6 +7,7 @@ import bwapi.Color;
 import bwapi.Game;
 import bwapi.Order;
 import bwapi.Position;
+import bwapi.TilePosition;
 import bwapi.UnitType;
 
 public class UnitUtil {
@@ -370,12 +371,17 @@ public class UnitUtil {
 
     // 두 Position 간의 거리를 리턴한다.
     public static int getDistance(Position p1, Position p2) {
-	int diffX = p1.getX() - p2.getX();
-	int diffY = p1.getY() - p2.getY();
-	diffX *= diffX;
-	diffY *= diffY;
+	return p1.getApproxDistance(p2);
+    }
 
-	return diffX + diffY;
+    // 두 Position 간의 거리를 리턴한다.
+    public static int getDistance(TilePosition p1, Position p2) {
+	return getDistance(p1.toPosition(), p2);
+    }
+
+    // 두 Position 간의 거리를 리턴한다.
+    public static int getDistance(TilePosition p1, Unit2 p2) {
+	return getDistance(p1.toPosition(), p2.getPosition());
     }
 
     // 공격 모션이 완료되었는지 리턴한다.
@@ -458,6 +464,8 @@ public class UnitUtil {
 	checkIfCombatUnit(unitKindSet, strUnitType);
 	checkIfBionicUnit(unitKindSet, unitType);
 	checkIfBuilding(unitKindSet, unitType);
+
+	unitKindSet.add(UnitKind.ALL);
     }
 
     // 일꾼 여부를 판단해서, 일꾼일 경우, UnitKind set에 추가한다.
@@ -555,7 +563,7 @@ public class UnitUtil {
 	if (null == from || null == to || distance < 1) {
 	    Log.warn("getPositionAsDistance(): Invalid parameters. from=%s,to=%s,distance=%d", from, to, distance);
 	} else {
-	    double fullDistance = from.getDistance(to);
+	    int fullDistance = UnitUtil.getDistance(from, to);
 	    if (0 != fullDistance) {
 		double percentage = distance / fullDistance;
 

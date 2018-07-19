@@ -11,14 +11,10 @@ public class MicroControlWorker extends Manager {
     protected void onFrame() {
 	super.onFrame();
 
-	// SCV는 42프레임(1초)에 1번만 컨트롤 한다.
-	if (0 == gameStatus.getFrameCount() || gameStatus.getFrameCount() % 42 != 0) {
-	    return;
+	if (gameStatus.isMatchedInterval(1)) {
+	    // 본진에 들어온 적군 일꾼을 죽인다.
+	    killEnemyWorker();
 	}
-
-	// 본진에 들어온 적군 일꾼을 죽인다.
-	killEnemyWorker();
-
     }
 
     // 본진에 있는 적군 일꾼 하나를 찾아서 마린으로 공격한다.
@@ -44,7 +40,7 @@ public class MicroControlWorker extends Manager {
 	Unit2 closestEnemyWorker = enemyUnitInfo.getClosestUnit(enemyWorkerSet, allianceBaseTilePosition.toPosition());
 	if (null != closestEnemyWorker) {
 	    int distance = closestEnemyWorker.getDistance(allianceBaseTilePosition.toPosition());
-	    Log.debug("적군 일꾼이(%d) 아군 영역에 들어왔다. 거리: %d", closestEnemyWorker.getID(), distance);
+	    Log.debug("적군 일꾼이(%d) 발견되었다. 거리: %d", closestEnemyWorker.getID(), distance);
 
 	    if (null != enemyWorkerKiller) {
 		// 적 일꾼을 추적하는 아군 일꾼이 있는 상태

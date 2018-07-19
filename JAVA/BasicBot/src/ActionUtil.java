@@ -218,22 +218,28 @@ public class ActionUtil {
 	    result = true;
 	    Log.trace("Action Accepted: " + currentActionDetail);
 	} else if (null != lastActionDetail && lastActionDetail.getActionFrame() + 10 <= currentActionDetail.getActionFrame()) {
+	    // 10프레임이 지났으면 동일한 명령이 들어오더라도 다시 수행한다.
 	    allianceUnitInfo.updateLastAction(allianceUnit, currentActionDetail);
 	    result = true;
 	    Log.trace("Action Accepted (Last action frame: %d): %s", lastActionDetail.getActionFrame(), currentActionDetail);
 	} else if (forceAttackUnitIdSet.contains(Integer.valueOf(allianceUnit.getID()))) {
+	    // 강제 공격 상태라면, 계속 강제 공격을 할 수 있도록 어떠한 액션도 무시한다.
 	    Log.trace("Action Rejected: " + currentActionDetail);
 	} else if (currentActionDetail.equals(lastActionDetail)) {
+	    // 이전과 동일한 액션이라면 무시한다.
 	    Log.trace("Action Rejected: " + currentActionDetail);
 	} else {
+	    // 이전과 다른 액션이다. Accept 할 준비를 한다.
 	    result = true;
+
+	    // 이전과 다른 명령이라고 하더라도, 거의 비슷한 위치로의 액션이라면 무시한다. 
 	    if (null != currentActionDetail.getCommand() && null != lastActionDetail && currentActionDetail.getCommand().equals(lastActionDetail.getCommand())
 		    && null != currentActionDetail.getPosition() && null != lastActionDetail.getPosition() && 0 != currentActionDetail.getMargin()) {
 
 		int diff = UnitUtil.getDistance(currentActionDetail.getPosition(), lastActionDetail.getPosition());
 
 		// 동일한 명령어에 대해서 Position이 10Pixel 이하로 차이가 나면 무시한다.
-		if (diff <= currentActionDetail.getMargin() * currentActionDetail.getMargin()) {
+		if (diff <= currentActionDetail.getMargin()) {
 		    result = false;
 		    Log.trace("Action Rejected: " + currentActionDetail + "; Too close to last position: " + lastActionDetail.getPosition());
 		}

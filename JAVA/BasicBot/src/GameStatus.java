@@ -1,3 +1,4 @@
+import bwapi.Color;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
@@ -42,6 +43,18 @@ public class GameStatus {
 
     public UnitInfo getEnemyUnitInfo() {
 	return enemyUnitInfo;
+    }
+
+    // 현재 프레임이 sec의 배수에 해당하는지 여부를 리턴한다.
+    // sec초에 한 번씩 주기적으로 수행하는 기능을 구현할 때, 본 메서드를 이용한다.
+    public boolean isMatchedInterval(int sec) {
+	boolean result = false;
+
+	if (0 != getFrameCount() && 0 == getFrameCount() % (42 * sec)) {
+	    result = true;
+	}
+
+	return result;
     }
 
     // ////////////////////////////////////////////////////////////////////////
@@ -152,6 +165,18 @@ public class GameStatus {
 	// 화면 하단의 게임 인터페이스 공간을 고려해서, y 좌표는 64 pixel만큼 더해서 계산한다.
 	game.setScreenPosition(position.getX() - 320, position.getY() - 240 + 64);
 
+    }
+
+    public void drawTextMap(Position position, String string) {
+	game.drawTextMap(position, string);
+    }
+
+    public void drawCircleMap(int x, int y, int radius, Color color) {
+	game.drawCircleMap(x, y, radius, color);
+    }
+
+    public void drawCircleMap(Unit2 unit, int radius, Color color) {
+	game.drawCircleMap(unit.getPosition().getX(), unit.getPosition().getY(), radius, color);
     }
 
     @Override

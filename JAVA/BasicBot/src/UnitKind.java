@@ -1,12 +1,13 @@
 // Naming Rule이 이상하지만, BWAPI의 규칙을 따라서 Camel표기법 + _(언더바)를 조합해서 사용한다.
 // Ex) 테란 마린의 경우, terranMarine(Camel 표기법)도 아니고 terran_marine도 아니고 Terran_Marine로 사용한다.
 public enum UnitKind {
+    ALL, // 모든 유닛
+
     Worker, // SCV, Probe, Drone
 
     Worker_Gather_Gas, // 가스를 캐는 일꾼
 
     Combat_Unit, // 공격 유닛 (일꾼, 옵저버, 오버로드, 라바, 에그 등을 제외한 공격,마법 유닛)
-
     Bionic_Unit, // 바이오닉 유닛
     Bionic_Attackable, // 일꾼과 매딕을 제외한 공격용 바이오닉 유닛
 

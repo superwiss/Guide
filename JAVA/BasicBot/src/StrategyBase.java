@@ -20,6 +20,10 @@ public abstract class StrategyBase {
 	initialStrategyItem(strategyItems);
     }
 
+    public boolean hasStrategyItem(StrategyItem strategyItem) {
+	return gameStatus.getStrategyManager().getStrategyItems().contains(strategyItem);
+    }
+
     public void onFrame() {
 
     }

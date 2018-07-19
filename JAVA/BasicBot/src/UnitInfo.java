@@ -226,7 +226,7 @@ public class UnitInfo {
 		}
 		TilePosition lastTilePosition = lastTilePositoin.get(unit);
 		if (null != lastTilePosition) {
-		    int distance = UnitUtil.getDistance(lastTilePosition.toPosition(), position);
+		    int distance = UnitUtil.getDistance(lastTilePosition, position);
 		    if (distance < minDistance) {
 			minDistance = distance;
 			result = unit;
@@ -447,13 +447,36 @@ public class UnitInfo {
     }
 
     // position 주변 distance 범위의 unitKind를 구한다.
-    public Set<Unit2> getUnitsInRange(Position position, UnitKind unitKind, int distance) {
+    public Set<Unit2> getUnitsInRange(Position position, UnitKind unitKind, int range) {
 	Set<Unit2> result = new HashSet<>();
+
+	if (null == position || null == unitKind) {
+	    Log.warn("UnitInfo.getUnitsInRange: Invalid parameters; position: %s, unitKind; %s", position, unitKind);
+	}
 
 	Set<Unit2> unitSet = getUnitSet(unitKind);
 	for (Unit2 unit : unitSet) {
-	    if (distance >= unit.getDistance(position)) {
+	    if (range >= unit.getDistance(position)) {
 		result.add(unit);
+	    }
+	}
+
+	return result;
+    }
+
+    // position 주변 distance 범위의 unitKind 중 아무거나 하나를 리턴한다.
+    public Unit2 getAnyUnitInRange(Position position, UnitKind unitKind, int range) {
+	Unit2 result = null;
+
+	if (null == position || null == unitKind) {
+	    Log.warn("UnitInfo.getAnyUnitInRange: Invalid parameters; position: %s, unitKind; %s", position, unitKind);
+	}
+
+	Set<Unit2> unitSet = getUnitSet(unitKind);
+	for (Unit2 unit : unitSet) {
+	    if (range >= unit.getDistance(position)) {
+		result = unit;
+		break;
 	    }
 	}
 
@@ -464,11 +487,11 @@ public class UnitInfo {
     public Unit2 getHeadAllianceUnit(UnitKind targetUnitKind, Position position) {
 	Unit2 result = null;
 
-	Set<Unit2> bionicSet = null;
+	Set<Unit2> unitSet = null;
 	if (null != position) {
-	    bionicSet = getUnitSet(targetUnitKind);
-	    // 메딕을 제외한 - 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
-	    result = getClosestUnit(bionicSet, position);
+	    unitSet = getUnitSet(targetUnitKind);
+	    // 공격 목표 지점에서 가장 가까운 선두 유닛을 구한다.
+	    result = getClosestUnit(unitSet, position);
 	}
 
 	return result;

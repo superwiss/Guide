@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Set;
 
 import bwapi.Color;
 import bwapi.Game;
@@ -30,7 +31,8 @@ public class MagiUXManager extends Manager {
 	}
 
 	drawUnitId();
-	drawHeadAllianceUnit(allianceUnitInfo);
+	drawHeadAllianceUnit();
+	drawBaseDefenceArea();
 
 	LocationManager locationManager = gameStatus.getLocationManager();
 
@@ -156,20 +158,29 @@ public class MagiUXManager extends Manager {
     public void drawUnitId() {
 	Game game = gameStatus.getGame();
 	for (Unit2 unit : Unit2.get(game.self().getUnits())) {
-	    game.drawTextMap(unit.getPosition(), "" + unit.getID());
+	    gameStatus.drawTextMap(unit.getPosition(), "" + unit.getID());
 	}
 	for (Unit2 unit : Unit2.get(game.enemy().getUnits())) {
-	    game.drawTextMap(unit.getPosition(), "" + unit.getID());
+	    gameStatus.drawTextMap(unit.getPosition(), "" + unit.getID());
 	}
     }
 
     // 아군의 선두 유닛과 그 반경 300을 원으로 표시한다.
-    private void drawHeadAllianceUnit(UnitInfo unitInformation) {
+    private void drawHeadAllianceUnit() {
 	if (null != strategyManager.getAttackTilePositon()) {
 	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
-	    Unit2 headAllianceUnit = unitInformation.getHeadAllianceUnit(UnitKind.Bionic_Attackable, attackPosition);
-	    MyBotModule.Broodwar.drawCircleMap(headAllianceUnit.getPosition().getX(), headAllianceUnit.getPosition().getY(), 300, Color.Blue);
+	    Unit2 headAllianceUnit = allianceUnitInfo.getHeadAllianceUnit(UnitKind.Bionic_Attackable, attackPosition);
+	    gameStatus.drawCircleMap(headAllianceUnit.getPosition().getX(), headAllianceUnit.getPosition().getY(), 300, Color.Blue);
 
 	}
     }
+
+    // 아군 본진의 방어 영역을 표시한다.
+    private void drawBaseDefenceArea() {
+	Set<Unit2> commandCenterSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center);
+	for (Unit2 commandCenter : commandCenterSet) {
+	    gameStatus.drawCircleMap(commandCenter, 800, Color.Green);
+	}
+    }
+
 }

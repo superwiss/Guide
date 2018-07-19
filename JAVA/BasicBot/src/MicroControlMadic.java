@@ -25,15 +25,12 @@ public class MicroControlMadic extends Manager {
 	super.onFrame();
 
 	// 메딕은 42프레임(1초)에 1번만 컨트롤 한다.
-	if (gameStatus.getFrameCount() % 42 != 0) {
-	    return;
+	if (gameStatus.isMatchedInterval(1)) {
+	    // Attack을 하면 매딕이 선두 바이오닉 유닛보다 훨씬 더 앞으로 가는 현상이 종종 발생한다.
+	    // 선두 바이오닛 유닛이 건물을 때리는 동안 매딕은 공격 목표 지점으로 attack move 하는 것이다.
+	    // 이 현상을 보정하기 위해서, 매딕이 선두 유닛과 100 pixel 이상 떨어지지 않도록 한다.
+	    followBionicUnit();
 	}
-
-	// Attack을 하면 매딕이 선두 바이오닉 유닛보다 훨씬 더 앞으로 가는 현상이 종종 발생한다.
-	// 선두 바이오닛 유닛이 건물을 때리는 동안 매딕은 공격 목표 지점으로 attack move 하는 것이다.
-	// 이 현상을 보정하기 위해서, 매딕이 선두 유닛과 100 pixel 이상 떨어지지 않도록 한다.
-	followBionicUnit();
-
     }
 
     private void followBionicUnit() {

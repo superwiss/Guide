@@ -24,11 +24,14 @@ public class StrategyDefault extends StrategyBase {
     public void onFrame() {
 	super.onFrame();
 
-	// 5초에 한 번만 수행한다.
-	if (0 != gameStatus.getFrameCount() % (42 * 5)) {
-	    return;
+	// 5초에 한 번씩 수행한다.
+	if (gameStatus.isMatchedInterval(5)) {
+	    doWholeAttack();
 	}
+    }
 
+    // 전체 공격을 처리한다.
+    void doWholeAttack() {
 	// 모든 공격 가능한 유닛셋을 가져온다.
 	Set<Unit2> attackableUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
@@ -161,6 +164,7 @@ public class StrategyDefault extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_UPGRADE_STIMPACK);
 	strategyItems.add(StrategyItem.AUTO_ADDON_COMSAT_STATION);
 	strategyItems.add(StrategyItem.AUTO_USING_SCAN);
+	strategyItems.add(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE);
     }
 
 }

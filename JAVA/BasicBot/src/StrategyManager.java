@@ -11,6 +11,7 @@ public class StrategyManager extends Manager {
     private StrategyBase strategy = null; // 현재 전략
     private Set<StrategyItem> strategyItems = new HashSet<>(); // 전략 전술 플래그
     private TilePosition attackTilePosition = null; // 공격 지점. 공격 지점이 null이면 유닛들은 대기한다. 공격 지점이 설정되면, 유닛들은 해당 지점으로 Attack Position을 수행한다.
+    private TilePosition defenceTilePosition = null; // 방어 지점. 아군 유닛이나 건물이 공격 받으면, 그 위치가 방어 지점이 된다.
     private Unit2 headAllianceUnit = null; // 아군의 공격 선두 유닛
     private static int repairCount = 3; // 벙커를 수리할 SCV 개수
     private int lastScanFrameCount = 0; // 마지막으로 스캔을 뿌린 시각
@@ -33,6 +34,7 @@ public class StrategyManager extends Manager {
 	doBunkerJob();
 	doAcademyJob();
 	doAttackUnitAutoTrain();
+	doDefenceBase();
 
 	strategy.onFrame();
     }
@@ -79,7 +81,11 @@ public class StrategyManager extends Manager {
 
     // 자동으로 공격 유닛을 훈련하는 작업을 수행한다.
     private void doAttackUnitAutoTrain() {
-	if (strategyItems.contains(StrategyItem.AUTO_TRAIN_BIONIC_UNIT)) {
+	// 1초에 한 번만 수행된다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_BIONIC_UNIT)) {
 	    BuildManager buildManager = gameStatus.getBuildManager();
 	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
 		// 서플 여유가 4개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
@@ -111,22 +117,26 @@ public class StrategyManager extends Manager {
 
     // 아카데미와 관련된 작업을 수행한다.
     private void doAcademyJob() {
+	// 1초에 한 번만 수행된다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
 	Unit2 academy = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Academy);
 	if (null != academy) {
 	    // 사거리 업그레이드를 한다.
-	    if (strategyItems.contains(StrategyItem.AUTO_UPGRADE_U_238_Shells)) {
+	    if (hasStrategyItem(StrategyItem.AUTO_UPGRADE_U_238_Shells)) {
 		if (academy.canUpgrade(UpgradeType.U_238_Shells)) {
 		    academy.upgrade(UpgradeType.U_238_Shells);
 		}
 	    }
 
 	    // Comsat Station Add on
-	    if (strategyItems.contains(StrategyItem.AUTO_ADDON_COMSAT_STATION)) {
+	    if (hasStrategyItem(StrategyItem.AUTO_ADDON_COMSAT_STATION)) {
 		allianceUnitInfo.buildAddon(UnitType.Terran_Comsat_Station);
 	    }
 
 	    // 스팀팩 업그레이드를 한다.
-	    if (strategyItems.contains(StrategyItem.AUTO_UPGRADE_STIMPACK)) {
+	    if (hasStrategyItem(StrategyItem.AUTO_UPGRADE_STIMPACK)) {
 		if (academy.canResearch(TechType.Stim_Packs)) {
 		    academy.research(TechType.Stim_Packs);
 		}
@@ -136,14 +146,18 @@ public class StrategyManager extends Manager {
 
     // 벙커 관련된 작업을 수행한다.
     private void doBunkerJob() {
+	// 1초에 한 번만 수행된다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
 	Set<Unit2> bunkerSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Bunker);
 	for (Unit2 bunker : bunkerSet) {
-	    if (strategyItems.contains(StrategyItem.AUTO_LOAD_MARINE_TO_BUNKER)) {
+	    if (hasStrategyItem(StrategyItem.AUTO_LOAD_MARINE_TO_BUNKER)) {
 		if (0 < bunker.getSpaceRemaining()) {
 		    marineToBunker(allianceUnitInfo, bunker);
 		}
 	    }
-	    if (strategyItems.contains(StrategyItem.AUTO_REPAIR_BUNKER)) {
+	    if (hasStrategyItem(StrategyItem.AUTO_REPAIR_BUNKER)) {
 		if (gameStatus.getMineral() > 0) {
 		    if (UnitType.Terran_Bunker.maxHitPoints() > bunker.getHitPoints()) {
 			repairBunker(allianceUnitInfo, bunker);
@@ -188,8 +202,14 @@ public class StrategyManager extends Manager {
 	}
     }
 
+    // 필요할 경우, 스캔을 뿌린다.
     private void checkIfuseScan() {
-	if (strategyItems.contains(StrategyItem.AUTO_USING_SCAN)) {
+	// 1초에 한 번만 수행된다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	if (hasStrategyItem(StrategyItem.AUTO_USING_SCAN)) {
 	    // 스캔은 3초 이내에는 또 뿌리지 않는다.
 	    if (gameStatus.getFrameCount() < lastScanFrameCount + 3 * 42) {
 		return;
@@ -213,6 +233,30 @@ public class StrategyManager extends Manager {
 	}
     }
 
+    // 본진 주변에 적 유닛이 있으면, 방어한다.
+    private void doDefenceBase() {
+	// 1초에 한 번만 실행한다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+	if (hasStrategyItem(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE)) {
+	    // 커맨드 센터를 가져온다.
+	    Set<Unit2> commandCenterSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center);
+	    for (Unit2 commandCenter : commandCenterSet) {
+		// 커맨드 센터 반경 800 이내의 적 유닛 정보를 하나 가져온다.
+		Unit2 enemyUnit = enemyUnitInfo.getAnyUnitInRange(commandCenter.getPosition(), UnitKind.ALL, 800);
+		if (null != enemyUnit) {
+		    Log.info("본진(%s)에 침입한 적(%s) 발견함. 방어하자.", commandCenter, enemyUnit);
+		    // 커맨드 센터 반경 800 이내의 아군 유닛으로 방어한다.
+		    Set<Unit2> defenceAllianceUnitSet = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Combat_Unit, 800);
+		    for (Unit2 defenceAllianceUnit : defenceAllianceUnitSet) {
+			ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, enemyUnit.getPosition());
+		    }
+		}
+	    }
+	}
+    }
+
     // ///////////////////////////////////////////////////////////
     // Getter 및 Setter 류 메서드
     // ///////////////////////////////////////////////////////////
@@ -227,6 +271,10 @@ public class StrategyManager extends Manager {
 
     public Set<StrategyItem> getStrategyItems() {
 	return strategyItems;
+    }
+
+    public boolean hasStrategyItem(StrategyItem strategyItem) {
+	return strategyItems.contains(strategyItem);
     }
 
     public void setStrategyItems(Set<StrategyItem> strategyItems) {
@@ -249,5 +297,17 @@ public class StrategyManager extends Manager {
     public void clearAttackTilePosition() {
 	Log.info("공격 지점이 %s -> null 로 변경됨.", attackTilePosition);
 	attackTilePosition = null;
+    }
+
+    public boolean hasDefenceTilePosition() {
+	return null != defenceTilePosition ? true : false;
+    }
+
+    public TilePosition getDefenceTilePosition() {
+	return defenceTilePosition;
+    }
+
+    public void setDefenceTilePosition(TilePosition defenceTilePosition) {
+	this.defenceTilePosition = defenceTilePosition;
     }
 }
