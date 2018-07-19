@@ -3,6 +3,7 @@ import java.util.Set;
 
 import bwapi.Game;
 import bwapi.Position;
+import bwapi.TilePosition;
 
 // 유닛의 Command(Action)에 대한 유틸리티
 public class ActionUtil {
@@ -40,6 +41,10 @@ public class ActionUtil {
 
     public static boolean moveToPosition(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Position position) {
 	return moveToPosition(allianceUnitInfo, allianceUnit, position, 0);
+    }
+
+    public static boolean moveToPosition(UnitInfo unitInfo, Unit2 unit, TilePosition tilePosition) {
+	return moveToPosition(unitInfo, unit, tilePosition.toPosition(), 0);
     }
 
     public static boolean moveToPosition(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Position position, int margin) {
@@ -89,6 +94,10 @@ public class ActionUtil {
 	}
 
 	return result;
+    }
+
+    public static void attackPosition(UnitInfo unitInfo, Unit2 unit, TilePosition tilePosition) {
+	attackPosition(unitInfo, unit, tilePosition.toPosition());
     }
 
     public static boolean attackEnemyUnitForcibly(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Unit2 enemyUnit) {

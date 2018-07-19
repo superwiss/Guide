@@ -165,6 +165,7 @@ public class StrategyDefault extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_ADDON_COMSAT_STATION);
 	strategyItems.add(StrategyItem.AUTO_USING_SCAN);
 	strategyItems.add(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE);
+	//strategyItems.add(StrategyItem.AGGRESSIVE_MOVE_ATTACK);
     }
 
 }

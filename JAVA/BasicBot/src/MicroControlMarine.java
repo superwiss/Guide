@@ -3,6 +3,7 @@ import java.util.Set;
 
 import bwapi.Position;
 import bwapi.TechType;
+import bwapi.TilePosition;
 import bwapi.UnitType;
 
 // 매딕을 컨트롤 한다.
@@ -33,6 +34,8 @@ public class MicroControlMarine extends Manager {
 	    // 선두 유닛이 너무 앞서가면, 뒤따로 오는 유닛을 기다린다.
 	    waitBionicUnit();
 	}
+
+	aggressiveMoveAttack();
     }
 
     // 스팀팩을 사용할지 여부를 판단하고, 필요할 경우 스팀팩을 사용한다.
@@ -96,4 +99,32 @@ public class MicroControlMarine extends Manager {
 	    ActionUtil.attackPosition(allianceUnitInfo, attackableUnit, position);
 	}
     }
+
+    private void aggressiveMoveAttack() {
+	if (!strategyManager.hasStrategyItem(StrategyItem.AGGRESSIVE_MOVE_ATTACK)) {
+	    return;
+	}
+
+	if (false == strategyManager.hasAttackTilePosition()) {
+	    return;
+	}
+
+	Set<TilePosition> hillTilePositionSet = gameStatus.getLocationManager().getHillTilePosition();
+
+	TilePosition attackPosition = strategyManager.getAttackTilePositon();
+
+	Set<Unit2> unitSet = allianceUnitInfo.getUnitSet(UnitKind.Bionic_Attackable);
+	for (Unit2 unit : unitSet) {
+	    if (unit.exists()) {
+		if (hillTilePositionSet.contains(unit.getTilePosition())) {
+		    if (unit.getGroundWeaponCooldown() < 6) {
+			ActionUtil.attackPosition(allianceUnitInfo, unit, attackPosition);
+		    } else {
+			ActionUtil.moveToPosition(allianceUnitInfo, unit, attackPosition);
+		    }
+		}
+	    }
+	}
+    }
+
 }

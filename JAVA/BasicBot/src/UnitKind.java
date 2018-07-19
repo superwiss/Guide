@@ -8,7 +8,7 @@ public enum UnitKind {
     Worker_Gather_Gas, // 가스를 캐는 일꾼
 
     Combat_Unit, // 공격 유닛 (일꾼, 옵저버, 오버로드, 라바, 에그 등을 제외한 공격,마법 유닛)
-    Bionic_Unit, // 바이오닉 유닛
+    Bionic_Unit, // 바이오닉 유닛 (메딕과 SCV 포함)
     Bionic_Attackable, // 일꾼과 매딕을 제외한 공격용 바이오닉 유닛
 
     Clocked, // 클로킹 유닛

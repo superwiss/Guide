@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import bwapi.TilePosition;
 
@@ -357,5 +359,12 @@ public class LocationManagerOverWatch extends LocationManager {
     @Override
     public List<TilePosition> initFirstExpansionTurret() {
 	return new ArrayList<TilePosition>();
+    }
+
+    @Override
+    public Set<TilePosition> getHillTilePosition() {
+	Set<TilePosition> result = new HashSet<>();
+
+	return result;
     }
 }

@@ -179,6 +179,23 @@ public class GameStatus {
 	game.drawCircleMap(unit.getPosition().getX(), unit.getPosition().getY(), radius, color);
     }
 
+    public Position getMousePosition() {
+	return game.getMousePosition();
+    }
+
+    public Position getScreenPosition() {
+	return game.getScreenPosition();
+    }
+
+    public void drawTextMap(int x, int y, String message) {
+	game.drawTextMap(x, y, message);
+    }
+
+    public void drawLineMap(int x1, int y1, int x2, int y2, Color color) {
+	game.drawLineMap(x1, y1, x2, y2, color);
+
+    }
+
     @Override
     public String toString() {
 	String result = "";

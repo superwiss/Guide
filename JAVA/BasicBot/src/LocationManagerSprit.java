@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import bwapi.TilePosition;
 
@@ -449,4 +451,135 @@ public class LocationManagerSprit extends LocationManager {
 	return result;
     }
 
+    @Override
+    public Set<TilePosition> getHillTilePosition() {
+	Set<TilePosition> result = new HashSet<>();
+
+	// 1시 언덕
+	result.add(new TilePosition(96, 11));
+	result.add(new TilePosition(96, 12));
+	result.add(new TilePosition(96, 13));
+	result.add(new TilePosition(97, 10));
+	result.add(new TilePosition(97, 11));
+	result.add(new TilePosition(97, 12));
+	result.add(new TilePosition(97, 13));
+	result.add(new TilePosition(97, 14));
+	result.add(new TilePosition(98, 9));
+	result.add(new TilePosition(98, 10));
+	result.add(new TilePosition(98, 11));
+	result.add(new TilePosition(98, 12));
+	result.add(new TilePosition(98, 13));
+	result.add(new TilePosition(98, 14));
+	result.add(new TilePosition(99, 9));
+	result.add(new TilePosition(99, 10));
+	result.add(new TilePosition(99, 11));
+	result.add(new TilePosition(99, 12));
+	result.add(new TilePosition(100, 9));
+	result.add(new TilePosition(100, 10));
+	result.add(new TilePosition(100, 11));
+	result.add(new TilePosition(101, 9));
+	result.add(new TilePosition(101, 10));
+	result.add(new TilePosition(101, 11));
+
+	// 5시 언덕
+	result.add(new TilePosition(112, 95));
+	result.add(new TilePosition(112, 96));
+	result.add(new TilePosition(112, 97));
+	result.add(new TilePosition(112, 98));
+	result.add(new TilePosition(113, 95));
+	result.add(new TilePosition(113, 96));
+	result.add(new TilePosition(113, 97));
+	result.add(new TilePosition(113, 98));
+	result.add(new TilePosition(114, 95));
+	result.add(new TilePosition(114, 96));
+	result.add(new TilePosition(114, 97));
+	result.add(new TilePosition(114, 98));
+	result.add(new TilePosition(114, 99));
+	result.add(new TilePosition(115, 94));
+	result.add(new TilePosition(115, 95));
+	result.add(new TilePosition(115, 96));
+	result.add(new TilePosition(115, 97));
+	result.add(new TilePosition(115, 98));
+	result.add(new TilePosition(115, 99));
+	result.add(new TilePosition(116, 94));
+	result.add(new TilePosition(116, 95));
+	result.add(new TilePosition(116, 96));
+	result.add(new TilePosition(116, 97));
+	result.add(new TilePosition(116, 98));
+	result.add(new TilePosition(116, 99));
+	result.add(new TilePosition(117, 95));
+	result.add(new TilePosition(117, 96));
+	result.add(new TilePosition(117, 97));
+	result.add(new TilePosition(117, 98));
+	result.add(new TilePosition(117, 99));
+
+	// 7시 언덕
+	result.add(new TilePosition(26, 117));
+	result.add(new TilePosition(26, 118));
+	result.add(new TilePosition(26, 119));
+	result.add(new TilePosition(27, 116));
+	result.add(new TilePosition(27, 117));
+	result.add(new TilePosition(27, 118));
+	result.add(new TilePosition(27, 119));
+	result.add(new TilePosition(28, 115));
+	result.add(new TilePosition(28, 116));
+	result.add(new TilePosition(28, 117));
+	result.add(new TilePosition(28, 118));
+	result.add(new TilePosition(28, 119));
+	result.add(new TilePosition(29, 114));
+	result.add(new TilePosition(29, 115));
+	result.add(new TilePosition(29, 116));
+	result.add(new TilePosition(29, 117));
+	result.add(new TilePosition(29, 118));
+	result.add(new TilePosition(29, 119));
+	result.add(new TilePosition(30, 114));
+	result.add(new TilePosition(30, 115));
+	result.add(new TilePosition(30, 116));
+	result.add(new TilePosition(30, 117));
+	result.add(new TilePosition(30, 118));
+	result.add(new TilePosition(30, 119));
+	result.add(new TilePosition(31, 115));
+	result.add(new TilePosition(31, 116));
+	result.add(new TilePosition(31, 117));
+	result.add(new TilePosition(31, 118));
+	result.add(new TilePosition(32, 115));
+	result.add(new TilePosition(32, 116));
+	result.add(new TilePosition(32, 117));
+	result.add(new TilePosition(32, 118));
+
+	// 11시 언덕
+	result.add(new TilePosition(8, 29));
+	result.add(new TilePosition(8, 30));
+	result.add(new TilePosition(9, 28));
+	result.add(new TilePosition(9, 29));
+	result.add(new TilePosition(9, 30));
+	result.add(new TilePosition(10, 27));
+	result.add(new TilePosition(10, 28));
+	result.add(new TilePosition(10, 29));
+	result.add(new TilePosition(10, 30));
+	result.add(new TilePosition(10, 31));
+	result.add(new TilePosition(10, 32));
+	result.add(new TilePosition(11, 27));
+	result.add(new TilePosition(11, 28));
+	result.add(new TilePosition(11, 29));
+	result.add(new TilePosition(11, 30));
+	result.add(new TilePosition(11, 31));
+	result.add(new TilePosition(11, 32));
+	result.add(new TilePosition(11, 33));
+	result.add(new TilePosition(12, 27));
+	result.add(new TilePosition(12, 28));
+	result.add(new TilePosition(12, 29));
+	result.add(new TilePosition(12, 30));
+	result.add(new TilePosition(12, 31));
+	result.add(new TilePosition(12, 32));
+	result.add(new TilePosition(12, 33));
+	result.add(new TilePosition(13, 30));
+	result.add(new TilePosition(13, 31));
+	result.add(new TilePosition(13, 32));
+	result.add(new TilePosition(14, 30));
+	result.add(new TilePosition(14, 31));
+	result.add(new TilePosition(14, 32));
+
+	return result;
+    }
 }

@@ -33,6 +33,8 @@ public class MagiUXManager extends Manager {
 	drawUnitId();
 	drawHeadAllianceUnit();
 	drawBaseDefenceArea();
+	drawPositionAtMousePoint();
+	//drawMapGrid();
 
 	LocationManager locationManager = gameStatus.getLocationManager();
 
@@ -181,6 +183,37 @@ public class MagiUXManager extends Manager {
 	for (Unit2 commandCenter : commandCenterSet) {
 	    gameStatus.drawCircleMap(commandCenter, 800, Color.Green);
 	}
+    }
+
+    // 마우스 포인터의 Tile Position 위치를 표시한다.
+    private void drawPositionAtMousePoint() {
+	int mouseX = gameStatus.getMousePosition().getX() + gameStatus.getScreenPosition().getX();
+	int mouseY = gameStatus.getMousePosition().getY() + gameStatus.getScreenPosition().getY();
+	gameStatus.drawTextMap(mouseX + 20, mouseY, "(" + (int) (mouseX / Config.TILE_SIZE) + ", " + (int) (mouseY / Config.TILE_SIZE) + ")");
+    }
+
+    /// Tile Position 그리드를 Map 에 표시합니다
+    public void drawMapGrid() {
+	int cellSize = 32;
+	int mapWidth = 4096;
+	int mapHeight = 4096;
+	int cols = 128;
+	int rows = 128;
+
+	for (int i = 0; i < cols; i++) {
+	    MyBotModule.Broodwar.drawLineMap(i * cellSize, 0, i * cellSize, mapHeight, Color.Blue);
+	}
+
+	for (int j = 0; j < rows; j++) {
+	    MyBotModule.Broodwar.drawLineMap(0, j * cellSize, mapWidth, j * cellSize, Color.Blue);
+	}
+
+	for (int r = 0; r < rows; r += 2) {
+	    for (int c = 0; c < cols; c += 2) {
+		MyBotModule.Broodwar.drawTextMap(c * 32, r * 32, c + "," + r);
+	    }
+	}
+
     }
 
 }
