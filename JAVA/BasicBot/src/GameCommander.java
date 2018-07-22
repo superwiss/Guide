@@ -261,6 +261,7 @@ public class GameCommander implements EventDispatcher {
 
     /// 텍스트를 입력 후 엔터를 하여 다른 플레이어들에게 텍스트를 전달하려 할 때 발생하는 이벤트를 처리합니다
     public void onSendText(String text) {
+	Log.input("Input text: %s", text);
 	boolean statusMode = false;
 	if (text.startsWith("status")) {
 	    text = text.substring(7);
@@ -269,14 +270,14 @@ public class GameCommander implements EventDispatcher {
 	try {
 	    int number = Integer.parseInt(text);
 	    if (false == statusMode) {
-		Log.info("Set game speed to %d", number);
+		Log.input("Set game speed to %d", number);
 		gameStatus.getGame().setLocalSpeed(number);
 	    } else {
 		Unit2 unit = gameStatus.getAllianceUnitInfo().getUnit(number);
 		if (null == unit) {
 		    unit = gameStatus.getEnemyUnitInfo().getUnit(number);
 		}
-		Log.info("status %d", number);
+		Log.input("status %d", number);
 		UnitUtil.loggingDetailUnitInfo(unit);
 	    }
 	} catch (NumberFormatException e) {
@@ -285,13 +286,14 @@ public class GameCommander implements EventDispatcher {
 	    case "pp":
 	    case "ppp":
 		// 일시 정지를 위해서 3초만 대기한다.
-		Log.info("Set game speed to 3000");
+		Log.input("Set game speed to 3000");
 		gameStatus.getGame().setLocalSpeed(3000);
 		break;
 	    case "enemy":
-		Log.info("[EnemyUnits] %s", gameStatus.getEnemyUnitInfo().toString());
+		Log.input("[EnemyUnits] %s", gameStatus.getEnemyUnitInfo().toString());
 		break;
 	    case "enemyBuilding":
+		// 적군 빌딩 정보를 로그에 출력한다.
 		String msg = "";
 		UnitInfo enemyUnitInfo = gameStatus.getEnemyUnitInfo();
 		Set<Unit2> enemyBuildingIds = enemyUnitInfo.getUnitSet(UnitKind.Building);
@@ -301,13 +303,16 @@ public class GameCommander implements EventDispatcher {
 		    msg += String.format("Building=%s, TilePosition=%s, isVisible=%b, UnitType=%s, isMainBuilding=%b\n", enemyBuilding,
 			    enemyUnitInfo.getLastTilePosition(enemyBuilding), enemyBuilding.isVisible(), enemyBuilding.getType(), mainBuildingSet.contains(enemyBuilding));
 		}
-		Log.warn(msg);
+		Log.input(msg);
 		break;
 	    case "alliance":
-		Log.info("[AllianceUnits] :%s", gameStatus.getAllianceUnitInfo().toString());
+		Log.input("[AllianceUnits] :%s", gameStatus.getAllianceUnitInfo().toString());
+		break;
+	    case "getAttackPosition":
+		Log.info("Attack Position: %s", gameStatus.getStrategyManager().getAttackTilePositon());
 		break;
 	    default:
-		// nothing
+		Log.input("Input text has ignored.");
 		break;
 	    }
 	}

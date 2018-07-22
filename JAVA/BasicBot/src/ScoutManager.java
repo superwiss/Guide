@@ -101,9 +101,8 @@ public class ScoutManager extends Manager {
 	    // 발견한 적 건물의 위치와 Starting Location이 가까우면, 적의 본진을 발견한 것으로 유추할 수 있다.
 	    for (TilePosition tilePosition : locationManager.getSearchSequence()) {
 		int distance = UnitUtil.getDistance(tilePosition, enemyBuildingUnit);
-		if (32 >= distance) {
-		    Log.info("적 본진을 찾았습니다. 발견한 적 건물의 Tile Position=%s, 적 본진의 Tile Position=%s, 발견한 적 건물과 적 본진의 거리: %f", enemyBuildingUnit.getTilePosition(), tilePosition,
-			    distance);
+		if (1024 >= distance) {
+		    Log.info("적 본진을 찾았습니다. 발견한 적 건물=%s, 적 본진의 Tile Position=%s, 발견한 적 건물과 적 본진의 거리: %d", enemyBuildingUnit, tilePosition, distance);
 		    locationManager.setEnemyStartLocation(tilePosition);
 		    break;
 		}

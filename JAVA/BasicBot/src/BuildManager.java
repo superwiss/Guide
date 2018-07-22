@@ -64,6 +64,11 @@ public class BuildManager extends Manager {
     public void onUnitDiscover(Unit2 unit) {
 	super.onUnitDiscover(unit);
 
+	// 빌드 오더 메니져는 아군 유닛에 대해서만 신경쓴다.
+	if (!UnitUtil.isAllianceUnit(unit)) {
+	    return;
+	}
+
 	if (!queue.isEmpty() && 0 != gameStatus.getFrameCount()) {
 	    BuildOrderItem buildItem = queue.peek();
 	    if (buildItem.getOrder().equals(BuildOrderItem.Order.BUILD) && unit.getType().equals(buildItem.getTargetUnitType())) {

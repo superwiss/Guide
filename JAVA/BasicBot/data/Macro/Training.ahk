@@ -45,7 +45,9 @@ Training System Started.
 #c::
     startTime:=A_TickCount
     Loop %times% {
-        computer()
+        if (false = computer()) {
+            break
+        }
     }
 
     duration:=A_TickCount-startTime
@@ -142,9 +144,9 @@ computer() {
     ; 저그 선택
     ; MouseClickDrag, LEFT, 500, 150, 500, 185
     ; 테란 선택
-    ; MouseClickDrag, LEFT, 500, 150, 500, 215
+    MouseClickDrag, LEFT, 500, 150, 500, 215
     ; 프로토스 선택
-    MouseClickDrag, LEFT, 500, 150, 500, 250
+    ; MouseClickDrag, LEFT, 500, 150, 500, 250
 
     ; 게임을 시작하기 위해서 단축키 alt + o를 누른다.
     Sleep, 200
@@ -169,7 +171,13 @@ computer() {
     ; draw.bmp, defeat.bmp, victory.bmp 활용 가능.
     Loop {
         if (imgSearch("images\victory.bmp", hwnd, findX,findY)=true) {
-            break
+            return true
+        } else if (imgSearch("images\draw.bmp", hwnd, findX,findY)=true) {
+            MsgBox Draw game.
+            return false
+        } else if (imgSearch("images\defeat.bmp", hwnd, findX,findY)=true) {
+            MsgBox Defeat game.
+            return false
         } else {
             Sleep, 200
         }

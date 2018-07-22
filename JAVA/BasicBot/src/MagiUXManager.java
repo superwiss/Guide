@@ -172,8 +172,9 @@ public class MagiUXManager extends Manager {
 	if (null != strategyManager.getAttackTilePositon()) {
 	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
 	    Unit2 headAllianceUnit = allianceUnitInfo.getHeadAllianceUnit(UnitKind.Bionic_Attackable, attackPosition);
-	    gameStatus.drawCircleMap(headAllianceUnit.getPosition().getX(), headAllianceUnit.getPosition().getY(), 300, Color.Blue);
-
+	    if (null != headAllianceUnit) {
+		gameStatus.drawCircleMap(headAllianceUnit.getPosition().getX(), headAllianceUnit.getPosition().getY(), 300, Color.Blue);
+	    }
 	}
     }
 

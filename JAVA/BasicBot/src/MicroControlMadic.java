@@ -41,12 +41,15 @@ public class MicroControlMadic extends Manager {
 	    bionicSet = allianceUnitInfo.getUnitSet(UnitKind.Bionic_Unit);
 	    // 메딕을 제외한 - 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
 	    Unit2 headBionicUnit = allianceUnitInfo.getClosestUnit(bionicSet, attackPosition, medicUnitTypeSet);
-	    if (null != headBionicUnit) {
-		// 선두 바이오닉 유닛으로부터 공격 목표 지점 방향으로 +100 position 거리의 위치를 구한다.
-		newPosition = UnitUtil.getPositionAsDistance(headBionicUnit.getPosition(), attackPosition, 100);
-	    } else {
+	    if (null == headBionicUnit) {
 		Log.warn("선두 바이오닉 유닛이 존재하지 않아서 메딕을 컨트롤 할 수 없습니다.");
 		return;
+	    } else if (headBionicUnit.getPosition().equals(attackPosition)) {
+		// 선두 바이오닉 유닛이 이미 공격 지점에 위치하고 있다면 매딕도 그 지점으로 이동한다.
+		newPosition = attackPosition;
+	    } else if (null != headBionicUnit) {
+		// 선두 바이오닉 유닛으로부터 공격 목표 지점 방향으로 +100 position 거리의 위치를 구한다.
+		newPosition = UnitUtil.getPositionAsDistance(headBionicUnit.getPosition(), attackPosition, 100);
 	    }
 
 	    if (null == newPosition) {

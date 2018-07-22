@@ -35,7 +35,15 @@ public class StrategyDefault extends StrategyBase {
 	// 모든 공격 가능한 유닛셋을 가져온다.
 	Set<Unit2> attackableUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
-	if (true == strategyManager.hasAttackTilePosition() || (attackableUnitSet.size() > 60 && null != locationManager.getEnemyBaseLocation())) {
+	Log.debug("총 공격 조건 확인. 공격 위치: %s, 아군 공격 가능한 유닛 수: %d, 적 본진 위치: %s", strategyManager.getAttackTilePositon(), attackableUnitSet.size(),
+		locationManager.getEnemyBaseLocation());
+
+	if (gameStatus.getFrameCount() > 42 * 60 * 15 && 0 == enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
+	    // 15분이 넘는 시점부터는 적 건물이 없으면 eliminate 모드로 동작한다.
+	    strategyManager.clearAttackTilePosition();
+	    eliminateManager.search(allianceUnitInfo);
+	    Log.info("Eliminate Manager 동작 시작.");
+	} else if (true == strategyManager.hasAttackTilePosition() || (attackableUnitSet.size() > 60 && null != locationManager.getEnemyBaseLocation())) {
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnitSet.size());
 	    TilePosition attackTilePosition = calcAttackPosition();
 
@@ -45,10 +53,6 @@ public class StrategyDefault extends StrategyBase {
 		for (Unit2 attackableUnit : attackableUnitSet) {
 		    ActionUtil.attackPosition(allianceUnitInfo, attackableUnit, attackTilePosition.toPosition());
 		}
-	    } else {
-		strategyManager.clearAttackTilePosition();
-		eliminateManager.search(allianceUnitInfo);
-		Log.info("Eliminate Manager 동작 시작.");
 	    }
 	}
     }
@@ -57,12 +61,7 @@ public class StrategyDefault extends StrategyBase {
     private TilePosition calcAttackPosition() {
 	TilePosition result = null;
 
-	// 15분이 넘는 시점부터는 적 건물이 없으면 eliminate 모드로 동작한다.
-
-	if (gameStatus.getFrameCount() > 42 * 60 * 10 && 0 == enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
-	    Log.info("15분이 넘었고, 적 건물을 발견할 수 없으므로 Eliminate 모드로 동작한다.");
-	    result = null;
-	} else if (0 == totalAttackFrame) {
+	if (0 == totalAttackFrame) {
 	    result = locationManager.getFirstExtensionChokePoint();
 	    // 10초 동안 앞마당으로 집결한 뒤 총 공격을 간다.
 	    totalAttackFrame = gameStatus.getFrameCount() + 10 * 42;

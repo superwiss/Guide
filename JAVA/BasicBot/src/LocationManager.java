@@ -74,6 +74,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
     // 적군 본진의 위치에 대한 Setter
     @Override
     public void setEnemyStartLocation(TilePosition enemyBaseLocation) {
+	Log.info("LocationManager:setEnemyStartLocation() - ", enemyBaseLocation);
 	this.enemyBaseLocation = enemyBaseLocation;
     }
 

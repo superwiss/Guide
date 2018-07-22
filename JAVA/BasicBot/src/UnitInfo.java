@@ -129,6 +129,11 @@ public class UnitInfo {
     private void addOrRemove(Unit2 unit, boolean isAddMode) {
 	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
 
+	// Add on 건물일 경우는 skip 한다.
+	if (unitKinds.contains(UnitKind.Addon)) {
+	    return;
+	}
+
 	if (true == isAddMode) {
 	    unitSet.add(unit);
 

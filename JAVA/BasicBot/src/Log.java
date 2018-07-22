@@ -10,7 +10,7 @@ public class Log {
 
     public static enum Level {
 
-	NONE(10, "NONE"), ERROR(5, "ERROR"), WARN(4, "WARN"), INFO(3, "INFO"), DEBUG(2, "DEBUG"), TRACE(1, "TRACE"), ALL(0, "ALL");
+	NONE(10, "NONE"), INPUT(6, "FORCE"), ERROR(5, "ERROR"), WARN(4, "WARN"), INFO(3, "INFO"), DEBUG(2, "DEBUG"), TRACE(1, "TRACE"), ALL(0, "ALL");
 
 	private int intValue;
 	private String strValue;
@@ -34,6 +34,13 @@ public class Log {
     // 로그 레벨을 설정한다.
     public static void setLogLevel(Level level) {
 	Log.CURRENT_LEVEL = level;
+    }
+
+    // INPUT 로그
+    public static void input(String format, Object... args) {
+	if (checkLogLevel(Level.INPUT)) {
+	    print(String.format(format, args), Level.INPUT);
+	}
     }
 
     // ERROR 로그

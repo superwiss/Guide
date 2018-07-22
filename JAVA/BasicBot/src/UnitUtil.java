@@ -43,6 +43,11 @@ public class UnitUtil {
 	return unit.getPlayer().isEnemy(game.self());
     }
 
+    // Unit이 중립인지 판단한다. 중립면 true를 리턴한다.
+    public static boolean isNutral(Unit2 unit) {
+	return unit.getPlayer().isNeutral();
+    }
+
     // BWMirror에는 BWAPI에는 존재하는 UnitSet, Filter가 없다. 이를 위해서 UnitSet과 비슷한 목적의 Set<UnitKind>를 사용한다.
     public static Set<UnitKind> getUnitKinds(Unit2 unit) {
 	Set<UnitKind> result = new HashSet<>();
@@ -61,6 +66,10 @@ public class UnitUtil {
 		result.add(UnitKind.Resource_Mineral_Field);
 	    } else if (strUnitType.equals("Resource_Vespene_Geyser")) {
 		result.add(UnitKind.Resource_Vespene_Geyser);
+	    }
+	    // 애드온 건물 여부를 확인
+	    if (unit.getType().isAddon()) {
+		result.add(UnitKind.Addon);
 	    }
 
 	    switch (strUnitType) {
@@ -350,6 +359,15 @@ public class UnitUtil {
 		etcInfo += "[SecondaryOrder:" + unit.getSecondaryOrder() + "] ";
 	    }
 
+	    // force 정보를 출력
+	    if (isNutral(unit)) {
+		etcInfo += "\nForce: Nutral";
+	    } else if (isAllianceUnit(unit)) {
+		etcInfo += "\nForce: Alliance";
+	    } else if (isEnemyUnit(unit)) {
+		etcInfo += "\nForce: Enemy";
+	    }
+
 	    Log.trace(etcInfo);
 	}
     }
@@ -371,7 +389,13 @@ public class UnitUtil {
 
     // 두 Position 간의 거리를 리턴한다.
     public static int getDistance(Position p1, Position p2) {
-	return p1.getApproxDistance(p2);
+	int result = 0;
+
+	if (!p1.equals(p2)) {
+	    result = p1.getApproxDistance(p2);
+	}
+
+	return result;
     }
 
     // 두 Position 간의 거리를 리턴한다.

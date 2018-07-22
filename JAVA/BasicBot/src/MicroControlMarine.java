@@ -53,7 +53,6 @@ public class MicroControlMarine extends Manager {
 		    medicTotalEnergy += medic.getEnergy();
 		}
 		int enemyCount = enemyUnitInfo.getUnitsInRange(marine.getPosition(), UnitKind.Combat_Unit, 300).size();
-		Log.debug("아군(%s) 주변 매딕 수(%d), 적군 수(%d)", marine, medicCount, enemyCount);
 		// 마린의 반경 300 주위에 매딕이 1마리 이상, 적군이 3마리 이상, 매딕의 에너지 총 합이 20 이상, 마린의 체력이 15 이상이면 스팀팩을 사용한다.
 		boolean isUsingStimPack = false;
 		if (medicCount >= 1 && enemyCount >= 3 && medicTotalEnergy >= 20 && marine.getHitPoints() >= 25) {
@@ -87,7 +86,12 @@ public class MicroControlMarine extends Manager {
 		    attackAll(attackPosition);
 		}
 	    } else {
-		Log.info("선두 마린이 없습니다. 공격 바이오닉 공격 유닛 개수: %d", allianceUnitInfo.getUnitSet(UnitKind.Bionic_Attackable));
+		int bionicSize = 0;
+		Set<Unit2> bionicUnits = allianceUnitInfo.getUnitSet(UnitKind.Bionic_Attackable);
+		if (null != bionicUnits) {
+		    bionicSize = bionicUnits.size();
+		}
+		Log.info("선두 마린이 없습니다. 공격 바이오닉 공격 유닛 개수: %d", bionicSize);
 	    }
 	}
     }
