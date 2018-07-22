@@ -20,6 +20,10 @@ public class WorkerManager extends Manager {
 	    idleWorkerCheck();
 	}
 
+	if (gameStatus.isMatchedInterval(3)) {
+	    checkRebuild();
+	}
+
 	//loggingDetailSCVInfo();
     }
 
@@ -134,6 +138,22 @@ public class WorkerManager extends Manager {
 	}
 
 	return result;
+    }
+
+    // 건설이 중단된 건물이 있으면 건설을 재개한다.
+    private void checkRebuild() {
+	// 모든 건물 목록을 가져온다.
+	Set<Unit2> buildingSet = allianceUnitInfo.getUnitSet(UnitKind.Building);
+	for (Unit2 building : buildingSet) {
+	    if (!building.isCompleted() && null == building.getBuildUnit()) {
+		// 건물이 건설 중인데, 건설하고 있는 유닛(SCV)가 없으면 다시 rebuild한다.
+		Unit2 worker = getInterruptableWorker(building.getTilePosition());
+		if (worker.canRightClick(building)) {
+		    Log.debug("Rebuild Building=%s, Worker=%s", building, worker);
+		    worker.rightClick(building);
+		}
+	    }
+	}
     }
 
     private void loggingDetailSCVInfo() {
