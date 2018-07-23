@@ -27,12 +27,17 @@ public class MicroControlMarine extends Manager {
 	super.onFrame();
 
 	if (gameStatus.isMatchedInterval(1)) {
-	    checkIfUsingStimPack();
+	    if (strategyManager.hasStrategyItem(StrategyItem.AUTO_RESEARCH_STIMPACK)) {
+		checkIfUsingStimPack();
+	    }
 	}
 
 	if (gameStatus.isMatchedInterval(2)) {
 	    // 선두 유닛이 너무 앞서가면, 뒤따로 오는 유닛을 기다린다.
-	    waitBionicUnit();
+	    if (strategyManager.hasStrategyItem(StrategyItem.AUTO_TRAIN_BIONIC_UNIT)) {
+		waitBionicUnit();
+	    }
+
 	}
 
 	aggressiveMoveAttack();

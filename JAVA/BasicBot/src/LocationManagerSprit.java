@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Set;
 
 import bwapi.TilePosition;
+import bwta.BWTA;
+import bwta.BaseLocation;
+import bwta.Chokepoint;
 
 // 투혼 맵
 public class LocationManagerSprit extends LocationManager {
@@ -109,7 +112,7 @@ public class LocationManagerSprit extends LocationManager {
 	    result.add(new TilePosition(9, 25));
 	    result.add(new TilePosition(9, 20));
 	    result.add(new TilePosition(9, 17));
-	    result.add(new TilePosition(9, 14));
+	    result.add(new TilePosition(17, 14));
 	    result.add(new TilePosition(13, 17));
 	    result.add(new TilePosition(13, 14));
 	    //애드온 건물
@@ -423,7 +426,7 @@ public class LocationManagerSprit extends LocationManager {
 	    result.add(new TilePosition(14, 110));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result.add(new TilePosition(17, 14));
+	    result.add(new TilePosition(9, 14));
 	}
 
 	return result;
@@ -582,4 +585,5 @@ public class LocationManagerSprit extends LocationManager {
 
 	return result;
     }
+
 }

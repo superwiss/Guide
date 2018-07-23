@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Set;
 
 import bwapi.TilePosition;
+import bwta.BWTA;
+import bwta.BaseLocation;
+import bwta.Chokepoint;
 
 // 서킷 브레이커 맵
 public class LocationManagerCircuitBreaker extends LocationManager {
@@ -361,4 +364,21 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 
 	return result;
     }
+
+//    @Override
+//    public TilePosition initFirstExpansionLocaion() {
+//
+//	double tempDistance;
+//	double closestDistance = 1000000000;
+//	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+//	    if (targetBaseLocation.getTilePosition().equals(allianceBaseLocation))
+//		continue;
+//	    tempDistance = BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
+//	    if (tempDistance < closestDistance && tempDistance > 0) {
+//		closestDistance = tempDistance;
+//		allianceFirstExpansionLocation = targetBaseLocation.getTilePosition();
+//	    }
+//	}
+//	return allianceFirstExpansionLocation;
+//    }
 }

@@ -139,6 +139,7 @@ public class StrategyDefault extends StrategyBase {
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Engineering_Bay));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
@@ -159,8 +160,10 @@ public class StrategyDefault extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_REPAIR_BUNKER);
 	strategyItems.add(StrategyItem.AUTO_TRAIN_BIONIC_UNIT);
 	strategyItems.add(StrategyItem.SET_BARRACKS_RALLY);
-	strategyItems.add(StrategyItem.AUTO_UPGRADE_U_238_Shells);
-	strategyItems.add(StrategyItem.AUTO_UPGRADE_STIMPACK);
+	strategyItems.add(StrategyItem.AUTO_RESEARCH_U_238_Shells);
+	strategyItems.add(StrategyItem.AUTO_RESEARCH_STIMPACK);
+	strategyItems.add(StrategyItem.AUTO_UPGRADE_BIONIC_UNIT);
+	
 	strategyItems.add(StrategyItem.AUTO_ADDON_COMSAT_STATION);
 	strategyItems.add(StrategyItem.AUTO_USING_SCAN);
 	strategyItems.add(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE);

@@ -1,12 +1,18 @@
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import bwapi.TilePosition;
+import bwta.BWTA;
+import bwta.BaseLocation;
 
 public abstract class LocationManager extends Manager implements MapInfo {
 
     protected String mapName; // 지도 이름
     protected TilePosition allianceBaseLocation = null; // 아군 본진 위치
     protected TilePosition enemyBaseLocation = null; // 적군 본진 위치
+    protected List<TilePosition> allianceFirstExpansionLocation = null; // 아군 확장 위치
     protected List<TilePosition> baseLocations = null; // 맵 전체의 스타팅 포인트 위치들.
     private List<TilePosition> searchSequence = null; // 정찰할 위치(순서)
     protected List<TilePosition> trainingBuildings = null; // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치
@@ -34,12 +40,26 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	if (1 == gameStatus.getFrameCount()) {
 	    init(gameStatus.getAllianceUnitInfo().getAnyUnit(UnitKind.Terran_Command_Center));
 	}
+	
+//	allianceFirstExpansionLocation = initFirstExpansionLocaion();
+//	baseLocations = initBaseLocations();
+//	searchSequence = initSearchSequence();
+//	trainingBuildings = initTrainingBuildings();
+//	baseEntranceBunkers = initBaseEntranceBunker();
+//	size3by2Buildings = init3by2SizeBuildings();
+//	baseRefineries = initBaseRefinery();
+//	baseTurrets = initBaseTurret();
+//	firstExpansionTurrets = initFirstExpansionTurret();
+//	engineeringBay = initEngineeringBay();
+//	baseEntranceChokePoint = initBaseEntranceChokePoint();
+//	firstExtensionChokePoint = initFirstExtensionChokePoint();
     }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
     @Override
     public void init(Unit2 commandCenter) {
 	allianceBaseLocation = commandCenter.getTilePosition();
+	allianceFirstExpansionLocation = initFirstExpansionLocaion();
 	baseLocations = initBaseLocations();
 	searchSequence = initSearchSequence();
 	trainingBuildings = initTrainingBuildings();
@@ -63,6 +83,12 @@ public abstract class LocationManager extends Manager implements MapInfo {
     @Override
     public TilePosition getAllianceBaseLocation() {
 	return allianceBaseLocation;
+    }
+
+    // 아군 확장기지의 위치를 리턴한다.
+    @Override
+    public List<TilePosition> getFirstExpansionLocation() {
+	return allianceFirstExpansionLocation;
     }
 
     // 적군 본진의 위치에 대한 Getter
@@ -146,5 +172,25 @@ public abstract class LocationManager extends Manager implements MapInfo {
     @Override
     public String getMapName() {
 	return this.mapName;
+    }
+
+    // 아군 첫번째 확장의 위치를 리턴한다.
+    public List<TilePosition> initFirstExpansionLocaion() {
+	double tempDistance;
+	double closestDistance = 1000000000;
+	TilePosition firstExpansionLocation = null;
+	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+	    if (targetBaseLocation.getTilePosition().equals(allianceBaseLocation))
+		continue;
+	    tempDistance = BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
+	    if (tempDistance < closestDistance && tempDistance > 0) {
+		closestDistance = tempDistance;
+		firstExpansionLocation = targetBaseLocation.getTilePosition();
+	    }
+	}
+
+	List<TilePosition> result = new ArrayList<>();
+	result.add(firstExpansionLocation);
+	return result;
     }
 }

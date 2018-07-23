@@ -154,6 +154,20 @@ public class MagiUXManager extends Manager {
 	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Green, false);
 	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Engineering  " + sequence);
 	}
+
+	//엔지니어링 베이 위치
+	tilePositionList = locationManager.getFirstExpansionLocation();
+	for (TilePosition tilePosition : tilePositionList) {
+	    int x = tilePosition.getX();
+	    int y = tilePosition.getY();
+	    int x1 = x * 32 + 8;
+	    int y1 = y * 32 + 8;
+	    int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
+	    int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
+	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Blue, false);
+	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "First Expansion Location");
+	}
+
     }
 
     // Unit의 ID를 표시한다.

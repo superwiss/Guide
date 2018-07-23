@@ -23,6 +23,9 @@ public interface MapInfo {
     // 아군 본진 위치를 리턴
     abstract TilePosition getAllianceBaseLocation();
 
+    // 아군 첫번째 확장 위치를 리턴
+    abstract List<TilePosition> getFirstExpansionLocation();
+
     // 적군 본진 위치에 대한 Getter
     abstract TilePosition getEnemyBaseLocation();
 

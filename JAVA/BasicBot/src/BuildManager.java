@@ -81,6 +81,7 @@ public class BuildManager extends Manager {
 		queue.poll();
 	    }
 	}
+
     }
 
     @Override
@@ -132,7 +133,7 @@ public class BuildManager extends Manager {
 	    }
 	    break;
 	case ADD_ON:
-	    allianceUnitInfo.buildAddon(UnitType.Terran_Comsat_Station);
+	    allianceUnitInfo.buildAddon(buildOrderItem.getTargetUnitType());
 	    break;
 	case GATHER_GAS:
 	    Unit2 refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
@@ -165,14 +166,20 @@ public class BuildManager extends Manager {
 		UnitType buildingType = buildOrderItem.getTargetUnitType(); // 건설할 건물의 종류.
 		if (UnitType.Terran_Barracks.equals(buildingType)) {
 		    tilePositionList = locationManager.getTrainingBuildings();
+		} else if (UnitType.Terran_Factory.equals(buildingType)) {
+		    tilePositionList = locationManager.getTrainingBuildings();
 		} else if (UnitType.Terran_Refinery.equals(buildingType)) {
 		    tilePositionList = locationManager.getBaseRefinery();
 		} else if (UnitType.Terran_Supply_Depot.equals(buildingType)) {
 		    tilePositionList = locationManager.get3by2SizeBuildings();
 		} else if (UnitType.Terran_Academy.equals(buildingType)) {
 		    tilePositionList = locationManager.get3by2SizeBuildings();
+		} else if (UnitType.Terran_Engineering_Bay.equals(buildingType)) {
+		    tilePositionList = locationManager.getEngineeringBay();
 		} else if (UnitType.Terran_Bunker.equals(buildingType)) {
 		    tilePositionList = locationManager.getBaseEntranceBunker();
+		} else if (UnitType.Terran_Command_Center.equals(buildingType)) {
+		    tilePositionList = locationManager.getTrainingBuildings();
 		}
 
 		if (null != tilePositionList) {

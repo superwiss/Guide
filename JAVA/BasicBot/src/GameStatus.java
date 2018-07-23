@@ -147,6 +147,10 @@ public class GameStatus {
     public int getMineral() {
 	return game.self().minerals();
     }
+    
+    public int getGas() {
+	return game.self().gas();
+    }
 
     public int getSupplyRemain() {
 	return game.self().supplyTotal() - game.self().supplyUsed();
