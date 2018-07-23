@@ -73,8 +73,8 @@ public class UnitUtil {
 	    }
 
 	    switch (strUnitType) {
-	    case "Zerg_Lurker":
 	    case "Protoss_Dark_Templar":
+	    case "Zerg_Lurker":
 	    case "Terran_Wraith":
 		result.add(UnitKind.Clocked);
 		break;
@@ -408,6 +408,16 @@ public class UnitUtil {
 	return getDistance(p1.toPosition(), p2.getPosition());
     }
 
+    // 두 Position 간의 거리를 리턴한다.
+    public static int getDistance(Unit2 unit, TilePosition tilePosition) {
+	return getDistance(unit.getPosition(), tilePosition.toPosition());
+    }
+
+    // 두 Position 간의 거리를 리턴한다.
+    public static int getDistance(TilePosition tilePosition1, TilePosition tilePosition2) {
+	return getDistance(tilePosition1.toPosition(), tilePosition2.toPosition());
+    }
+
     // 공격 모션이 완료되었는지 리턴한다.
     // 예를 들어 마리의 경우, 공격이 끝나기도 전에 이동하면 총을 꺼내고 쏘기도 전에 총을 집어 넣고 이동한다.
     public static boolean isAttackFinished(Unit2 allianceUnit) {
@@ -604,5 +614,10 @@ public class UnitUtil {
     // unitType에 해당하는 unitKind를 리턴한다.
     public static UnitKind getUnitKindByUnitType(UnitType unitType) {
 	return UnitKind.valueOf(unitType.toString());
+    }
+
+    // unit이 unitKind 종류인지 여부를 리턴한다.
+    public static boolean compareUnitKind(Unit2 unit, UnitKind unitKind) {
+	return getUnitKinds(unit).contains(unitKind);
     }
 }

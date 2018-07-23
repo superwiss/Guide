@@ -6,7 +6,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
 
     protected String mapName; // 지도 이름
     protected TilePosition allianceBaseLocation = null; // 아군 본진 위치
-    protected TilePosition enemyBaseLocation = null; // 적군 본진 위치
+    protected TilePosition enemyStartLocation = null; // 적군 본진 위치
     protected List<TilePosition> baseLocations = null; // 맵 전체의 스타팅 포인트 위치들.
     private List<TilePosition> searchSequence = null; // 정찰할 위치(순서)
     protected List<TilePosition> trainingBuildings = null; // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치
@@ -67,15 +67,15 @@ public abstract class LocationManager extends Manager implements MapInfo {
 
     // 적군 본진의 위치에 대한 Getter
     @Override
-    public TilePosition getEnemyBaseLocation() {
-	return enemyBaseLocation;
+    public TilePosition getEnemyStartLocation() {
+	return enemyStartLocation;
     }
 
     // 적군 본진의 위치에 대한 Setter
     @Override
-    public void setEnemyStartLocation(TilePosition enemyBaseLocation) {
-	Log.info("LocationManager:setEnemyStartLocation() - ", enemyBaseLocation);
-	this.enemyBaseLocation = enemyBaseLocation;
+    public void setEnemyStartLocation(TilePosition enemyStartLocation) {
+	Log.info("LocationManager:setEnemyStartLocation() - ", enemyStartLocation);
+	this.enemyStartLocation = enemyStartLocation;
     }
 
     // 정찰할 위치(순서)를 리턴한다.

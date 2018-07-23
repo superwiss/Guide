@@ -92,7 +92,7 @@ public class UnitInfo {
     }
 
     public boolean isKindOf(Unit2 unit, UnitKind unitKind) {
-	return getUnitSet(UnitKind.Worker_Gather_Gas).contains(unit);
+	return getUnitSet(unitKind).contains(unit);
     }
 
     // unitKind 유닛 중에서 아무거나 하나 가져온 뒤, 그 유닛의 ID를 리턴한다.
@@ -130,7 +130,7 @@ public class UnitInfo {
 	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
 
 	// Add on 건물일 경우는 skip 한다.
-	if (unitKinds.contains(UnitKind.Addon)) {
+	if (UnitUtil.isEnemyUnit(unit) && unitKinds.contains(UnitKind.Addon)) {
 	    return;
 	}
 
@@ -428,7 +428,7 @@ public class UnitInfo {
 	return result;
     }
 
-    // 컴셋을 뿌린다.
+    // 스캔을 뿌린다.
     public boolean doScan(Position position) {
 	boolean result = false;
 
@@ -443,7 +443,9 @@ public class UnitInfo {
 	    }
 	}
 
+	Log.debug("target comsat: %s", targetComsat);
 	if (null != targetComsat && targetComsat.canUseTechPosition(TechType.Scanner_Sweep)) {
+	    Log.info("스캔 뿌림: %s", position);
 	    targetComsat.useTech(TechType.Scanner_Sweep, position);
 	    result = true;
 	}

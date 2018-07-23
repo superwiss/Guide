@@ -24,7 +24,7 @@ public interface MapInfo {
     abstract TilePosition getAllianceBaseLocation();
 
     // 적군 본진 위치에 대한 Getter
-    abstract TilePosition getEnemyBaseLocation();
+    abstract TilePosition getEnemyStartLocation();
 
     // 적군 본진 위치에 대한 Setter
     abstract void setEnemyStartLocation(TilePosition enemyBaseLocation);

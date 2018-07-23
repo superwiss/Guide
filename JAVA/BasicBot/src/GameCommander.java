@@ -59,6 +59,8 @@ public class GameCommander implements EventDispatcher {
 
 	ActionUtil.setGame(gameStatus.getGame());
 
+	gameStatus.sendText("MagiBot 2018.07.24.00");
+
 	try {
 	    EventData eventData = new EventData(EventData.ON_START, gameStatus);
 	    executeEventHandler(eventData);
@@ -123,14 +125,6 @@ public class GameCommander implements EventDispatcher {
 	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitDestroy(%s)", UnitUtil.toString(unit));
 
-	if (true == UnitUtil.isAllianceUnit(unit)) {
-	    gameStatus.getAllianceUnitInfo().remove(unit);
-	} else if (true == UnitUtil.isEnemyUnit(unit)) {
-	    gameStatus.getEnemyUnitInfo().remove(unit);
-	} else {
-	    // else 상황 = 즉 중립 건물, 중립 동물에 대해서는 아무런 처리도 하지 않는다.
-	}
-
 	try {
 	    EventData eventData = new EventData(EventData.ON_UNIT_DESTROY, unit);
 	    executeEventHandler(eventData);
@@ -138,6 +132,14 @@ public class GameCommander implements EventDispatcher {
 	    Log.error("onUnitDestroy() Exception: %s", e.toString());
 	    e.printStackTrace();
 	    throw e;
+	}
+
+	if (true == UnitUtil.isAllianceUnit(unit)) {
+	    gameStatus.getAllianceUnitInfo().remove(unit);
+	} else if (true == UnitUtil.isEnemyUnit(unit)) {
+	    gameStatus.getEnemyUnitInfo().remove(unit);
+	} else {
+	    // else 상황 = 즉 중립 건물, 중립 동물에 대해서는 아무런 처리도 하지 않는다.
 	}
     }
 
@@ -194,6 +196,15 @@ public class GameCommander implements EventDispatcher {
 	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
 
+	try {
+	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
+	    executeEventHandler(eventData);
+	} catch (Exception e) {
+	    Log.error("onUnitDiscover() Exception: %s", e.toString());
+	    e.printStackTrace();
+	    throw e;
+	}
+
 	if (true == UnitUtil.isAllianceUnit(unit)) {
 	    gameStatus.getAllianceUnitInfo().add(unit);
 	} else if (true == UnitUtil.isEnemyUnit(unit)) {
@@ -202,15 +213,6 @@ public class GameCommander implements EventDispatcher {
 	    if (unit.getType().isMineralField()) {
 		gameStatus.getAllianceUnitInfo().add(unit);
 	    }
-	}
-
-	try {
-	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
-	    executeEventHandler(eventData);
-	} catch (Exception e) {
-	    Log.error("onUnitDiscover() Exception: %s", e.toString());
-	    e.printStackTrace();
-	    throw e;
 	}
     }
 

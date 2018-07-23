@@ -14,8 +14,8 @@ public class ScoutManager extends Manager {
     public void onFrame() {
 	super.onFrame();
 
-	// 42프레임에 한 번씩 수행된다.
-	if (0 != gameStatus.getFrameCount() % 42) {
+	// 1초에 한 번씩 수행된다.
+	if (gameStatus.isMatchedInterval(1)) {
 	    return;
 	}
 
@@ -41,12 +41,7 @@ public class ScoutManager extends Manager {
 		// 정찰 위치의 fog of war가 사라지면 Queue에서 제거하고 다음 위치로 이동한다.
 		Log.info("위치(%s) 정찰 완료.", target);
 		searchQueue.poll();
-		checkEnemyStartingLocation(gameStatus.getEnemyUnitInfo());
-		if (null != locationManager.getEnemyBaseLocation() && 0 < enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
-		    Log.info("적 본진을 발견했으므로, 정찰 일꾼(%d)을 릴리즈 한다.", scoutUnit.getID());
-		    allianceUnitInfo.releaseScoutUnit(scoutUnit);
-		    return;
-		} else {
+		if (null == locationManager.getEnemyStartLocation()) {
 		    // 다음 지점으로 이동한다.
 		    onFrame();
 		}
@@ -58,8 +53,37 @@ public class ScoutManager extends Manager {
 	}
     }
 
-    public void addSearchQueue(TilePosition tilePosition) {
-	searchQueue.add(tilePosition);
+    @Override
+    protected void onUnitDiscover(Unit2 unit) {
+	super.onUnitDiscover(unit);
+
+	LocationManager locationManager = gameStatus.getLocationManager();
+
+	// 적 본진을 찾았으면 중단한다. 
+	if (null != locationManager.getEnemyStartLocation()) {
+	    return;
+	}
+
+	// 적 유닛에 대해서만 처리한다.
+	if (UnitUtil.isEnemyUnit(unit)) {
+
+	    // 적 메인 건물을 명시적으로 찾았을 경우를 처리
+	    Set<Unit2> enemyMainBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.MAIN_BUILDING);
+	    for (Unit2 enemyMainBuilding : enemyMainBuildingSet) {
+		for (TilePosition tilePosition : locationManager.getSearchSequence()) {
+		    if (tilePosition.equals(locationManager.getAllianceBaseLocation())) {
+			// 내 본진은 계산에 포함하지 않는다.
+			continue;
+		    }
+		    if (enemyMainBuilding.getTilePosition().equals(tilePosition)) {
+			gameStatus.sendText("Found Enemy Base. (explicit)");
+			foundEnemyBaseLocation(locationManager, tilePosition);
+			return;
+		    }
+		}
+
+	    }
+	}
     }
 
     @Override
@@ -72,47 +96,85 @@ public class ScoutManager extends Manager {
 
 	// 정찰중인 유닛이 죽었을 경우를 처리...
 	if (allianceUnitInfo.isKindOf(unit, UnitKind.Scouting_Unit)) {
-	    // 적 Main건물(커맨드센터, 넥서스, 해처리 류)을 찾기 전이지만, 적 건물이 존재할 경우, 적 건물의 위치를 기반으로 적 본진을 유추한다. 
-	    if (null == locationManager.getEnemyBaseLocation()) {
-		checkEnemyStartingLocation(enemyUnitInfo);
-	    }
-	    if (null == locationManager.getEnemyBaseLocation()) {
-		Log.info("정찰을 완료하기 전에 정찰 유닛(%d)이 죽었다. 다시 정찰하자.", unit.getID());
-		allianceUnitInfo.releaseScoutUnit(unit);
-		doFirstSearch(gameStatus);
-	    }
-	}
-    }
+	    Log.info("정찰 유닛(%s)이 죽음.", unit);
 
-    private void checkEnemyStartingLocation(UnitInfo enemyUnitInfo) {
-	LocationManager locationManager = gameStatus.getLocationManager();
+	    gameStatus.sendText("Scout Unit Dead.");
+	    allianceUnitInfo.releaseScoutUnit(unit);
 
-	if (true == checkIfguessSearchSuccess(locationManager)) {
-	    return;
-	}
-
-	Set<Unit2> enemyBuildingUnitSet = enemyUnitInfo.getUnitSet(UnitKind.Building);
-	for (Unit2 enemyBuildingUnit : enemyBuildingUnitSet) {
-	    // 적 본진을 찾았으면 계산을 중단한다.
-	    if (null != locationManager.getEnemyBaseLocation()) {
-		break;
+	    // 적 본진을 찾고 유닛이 죽었을 경우를 처리...
+	    if (null != locationManager.getEnemyStartLocation()) {
+		// 적 본진을 찾았으므로 더 이상 정찰을 하지 않는다.
+		return;
 	    }
 
-	    // 발견한 적 건물의 위치와 Starting Location이 가까우면, 적의 본진을 발견한 것으로 유추할 수 있다.
-	    for (TilePosition tilePosition : locationManager.getSearchSequence()) {
-		int distance = UnitUtil.getDistance(tilePosition, enemyBuildingUnit);
-		if (1024 >= distance) {
-		    Log.info("적 본진을 찾았습니다. 발견한 적 건물=%s, 적 본진의 Tile Position=%s, 발견한 적 건물과 적 본진의 거리: %d", enemyBuildingUnit, tilePosition, distance);
-		    locationManager.setEnemyStartLocation(tilePosition);
-		    break;
+	    // 정찰 가지 않은 곳이 1곳 뿐이라면 그 곳이 적 본진이라고 유추할 수 있다.
+	    TilePosition guessTilePosition = checkIfguessSearchSuccess(locationManager);
+	    if (null != guessTilePosition) {
+		// 적 본진을 유추했으므로 더 이상 정찰을 하지 않는다.
+		gameStatus.sendText("Found Enemy Base. (guess)");
+		foundEnemyBaseLocation(locationManager, guessTilePosition);
+		return;
+	    }
+
+	    // 현재까지 발견된 적 건물을 기반으로 적 위치를 유추한다.
+	    Set<Unit2> enemyBuildingUnitSet = enemyUnitInfo.getUnitSet(UnitKind.Building);
+	    for (Unit2 enemyBuildingUnit : enemyBuildingUnitSet) {
+
+		// 발견한 적 건물의 위치와 Starting Location이 가까우면, 적의 본진을 발견한 것으로 유추할 수 있다.
+		for (TilePosition tilePosition : locationManager.getSearchSequence()) {
+		    if (tilePosition.equals(locationManager.getAllianceBaseLocation())) {
+			// 내 본진은 계산에 포함하지 않는다.
+			continue;
+		    }
+		    int distance = Integer.MAX_VALUE;
+		    if (enemyBuildingUnit.isVisible()) {
+			distance = UnitUtil.getDistance(tilePosition, enemyBuildingUnit);
+		    } else {
+			TilePosition lastTilePosition = allianceUnitInfo.getLastTilePosition(enemyBuildingUnit);
+			distance = UnitUtil.getDistance(tilePosition, lastTilePosition);
+		    }
+		    Log.debug("적 건물: %s, 스타팅 포인트 위치: %s, 거리: %d", enemyBuildingUnit, tilePosition, distance);
+		    if (1024 >= distance) {
+			// 적 본진을 유추했으므로 더 이상 정찰을 하지 않는다.
+			gameStatus.sendText("Found Enemy Base. (guess)");
+			Log.info("적 본진을 찾았습니다. 발견한 적 건물=%s, 적 본진의 Tile Position=%s, 발견한 적 건물과 적 본진의 거리: %d", enemyBuildingUnit, tilePosition, distance);
+			foundEnemyBaseLocation(locationManager, tilePosition);
+			return;
+		    }
 		}
 	    }
+
+	    // 현재 정보로는 적 본진 위치를 알 수 없다. 어쩔 수 없이 정찰을 다시 한다. (가보지 않은 곳을 위주로...)
+	    searchQueue.clear();
+	    for (TilePosition tilePosition : locationManager.getSearchSequence()) {
+		if (tilePosition.equals(locationManager.getAllianceBaseLocation())) {
+		    // 내 본진은 계산에 포함하지 않는다.
+		    continue;
+		}
+		if (unit.getTargetPosition().equals(tilePosition.toPosition())) {
+		    // 방금 정찰하다 죽은 위치로는 정찰하지 않는다.
+		    continue;
+		}
+		if (gameStatus.isExplored(tilePosition)) {
+		    // 이미 정찰한 곳은 정찰하지 않는다.
+		    continue;
+		}
+		searchQueue.add(tilePosition);
+		gameStatus.sendText("Scout Again.");
+		Log.info("정찰을 완료하기 전에 정찰 유닛(%d)이 죽었다. 다시 정찰하자.", unit.getID());
+		allianceUnitInfo.releaseScoutUnit(unit);
+		doFirstSearch();
+	    }
 	}
     }
 
-    // 정찰을 실패했으나, 적 위치를 짐작할 수 있으면 true를 리턴한다.
-    private boolean checkIfguessSearchSuccess(LocationManager locationManager) {
-	boolean result = false;
+    public void addSearchQueue(TilePosition tilePosition) {
+	searchQueue.add(tilePosition);
+    }
+
+    // 정찰을 실패했으나, 적 위치를 짐작할 수 있으면 예상된 적 타일 위치를 리턴한다.
+    private TilePosition checkIfguessSearchSuccess(LocationManager locationManager) {
+	TilePosition result = null;
 
 	// 스타팅 포인트 4곳을 방문 했는지 확인한다.
 	int notFoundSize = 0;
@@ -127,14 +189,19 @@ public class ScoutManager extends Manager {
 
 	// 마지막 한 곳만 정찰을 실패했다면, 그곳이 적 본진이다.
 	if (notFoundSize == 1 && -1 != notFoundIndex) {
-	    locationManager.setEnemyStartLocation(locationManager.getBaseLocations(notFoundIndex));
-	    result = true;
+	    result = locationManager.getBaseLocations(notFoundIndex);
 	}
 
 	return result;
     }
 
-    public boolean doFirstSearch(GameStatus gameStatus) {
+    private void foundEnemyBaseLocation(LocationManager locationManager, TilePosition tilePosition) {
+	Log.info("적 본진을 찾았습니다. 적 본진의 Tile Position=%s", tilePosition);
+	locationManager.setEnemyStartLocation(tilePosition);
+	searchQueue.clear();
+    }
+
+    public boolean doFirstSearch() {
 	boolean result = true;
 	LocationManager locationManager = gameStatus.getLocationManager();
 	WorkerManager workerManager = gameStatus.getWorkerManager();

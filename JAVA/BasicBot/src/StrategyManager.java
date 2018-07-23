@@ -219,11 +219,15 @@ public class StrategyManager extends Manager {
 	    Log.trace("Clocked Unit Size: %d", clockedUnitSet.size());
 	    for (Unit2 clockedUnit : clockedUnitSet) {
 		if (null != clockedUnit && clockedUnit.exists()) {
-		    // 적 클로킹 유닛 150 거리 미만에 존재하는 아군 유닛이 5기 이상이면 스캔을 뿌린다.
-		    Set<Unit2> allianceUnitSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Terran_Marine, 150);
-		    Log.info("적 클로킹 유닛 발견: %s. 주변의 마린 수: %d", clockedUnit, allianceUnitSet.size());
+		    int distance = 300;
+		    if (UnitUtil.compareUnitKind(clockedUnit, UnitKind.Protoss_Dark_Templar)) {
+			// 다크 템플러는 충분히 가까운 거리에 있을때 스캔을 뿌린다.
+			distance = 150;
+		    }
+		    // 적 클로킹 유닛 distance 거리 미만에 존재하는 아군 유닛이 5기 이상이면 스캔을 뿌린다.
+		    Set<Unit2> allianceUnitSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Terran_Marine, distance);
+		    Log.info("적 클로킹 유닛 발견: %s. 주변의 마린 수: %d, 거리: %d", clockedUnit, allianceUnitSet.size(), distance);
 		    if (5 <= allianceUnitSet.size()) {
-			Log.info("스캔 뿌림: %s", clockedUnit.getPosition());
 			allianceUnitInfo.doScan(clockedUnit.getPosition());
 			lastScanFrameCount = gameStatus.getFrameCount();
 			break;
