@@ -148,6 +148,10 @@ public class GameStatus {
 	return game.self().minerals();
     }
 
+    public int getGatheredMinerals() {
+	return game.self().gatheredMinerals();
+    }
+
     public int getSupplyRemain() {
 	return game.self().supplyTotal() - game.self().supplyUsed();
     }

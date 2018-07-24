@@ -8,6 +8,7 @@ import bwapi.Position;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 
 public class UnitInfo {
 
@@ -350,45 +351,54 @@ public class UnitInfo {
     public boolean trainingUnit(UnitType targetUnitType) {
 	boolean result = false;
 
-	UnitType trainableBuildingType = null;
+	UnitType trainableBuildingType = getTrainableBuildingType(targetUnitType);
+
+	Unit2 trainableBuilding = getTrainableBuilding(trainableBuildingType, targetUnitType);
+	// 훈련하기
+	if (null != trainableBuilding) {
+	    if (trainableBuilding.canTrain(targetUnitType)) {
+		int beforeQueueSize = trainableBuilding.getTrainingQueue().size();
+		trainableBuilding.train(targetUnitType);
+		int afterQueueSize = trainableBuilding.getTrainingQueue().size();
+		if (afterQueueSize > beforeQueueSize) {
+		    result = true;
+		}
+
+	    }
+	}
+
+	return result;
+    }
+
+    private UnitType getTrainableBuildingType(UnitType targetUnitType) {
+	UnitType result = null;
 	switch (targetUnitType.toString()) {
 	case "Terran_SCV":
-	    trainableBuildingType = UnitType.Terran_Command_Center;
+	    result = UnitType.Terran_Command_Center;
 	    break;
 	case "Terran_Marine":
 	case "Terran_Firebat":
 	case "Terran_Ghost":
 	case "Terran_Medic":
-	    trainableBuildingType = UnitType.Terran_Barracks;
+	    result = UnitType.Terran_Barracks;
 	    break;
 	case "Terran_Vulture":
 	case "Terran_Siege_Tank_Siege_Mode":
+	case "Terran_Siege_Tank_Tank_Mode":
 	case "Terran_Goliath":
-	    trainableBuildingType = UnitType.Terran_Factory;
+	    result = UnitType.Terran_Factory;
 	    break;
 	case "Terran_Wraith":
 	case "Terran_Dropship":
 	case "Terran_Science_Vessel":
 	case "Terran_Battlecruiser":
 	case "Terran_Valkyrie":
-	    trainableBuildingType = UnitType.Terran_Starport;
+	    result = UnitType.Terran_Starport;
 	    break;
 	default:
 	    break;
 
 	}
-
-	Unit2 trainableBuilding = getTrainableBuilding(trainableBuildingType, targetUnitType);
-	// 훈련하기
-	if (null != trainableBuilding) {
-	    int beforeQueueSize = trainableBuilding.getTrainingQueue().size();
-	    trainableBuilding.train(targetUnitType);
-	    int afterQueueSize = trainableBuilding.getTrainingQueue().size();
-	    if (afterQueueSize > beforeQueueSize) {
-		result = true;
-	    }
-	}
-
 	return result;
     }
 
@@ -448,6 +458,60 @@ public class UnitInfo {
 	    Log.info("스캔 뿌림: %s", position);
 	    targetComsat.useTech(TechType.Scanner_Sweep, position);
 	    result = true;
+	}
+
+	return result;
+    }
+
+    // 업그레이드를 한다.
+    public boolean upgrade(UpgradeType upgradeType) {
+	boolean result = false;
+
+	if (null != upgradeType) {
+	    UnitType upgradableBuildingtType = null;
+	    switch (upgradeType.toString()) {
+	    case "Ion_Thrusters":
+		upgradableBuildingtType = UnitType.Terran_Machine_Shop;
+		break;
+	    default:
+		break;
+
+	    }
+
+	    Set<Unit2> upgradableBuildingSet = getUnitSet(upgradableBuildingtType);
+	    for (Unit2 upgradableBuilding : upgradableBuildingSet) {
+		if (null != upgradableBuilding && upgradableBuilding.canUpgrade(upgradeType)) {
+		    upgradableBuilding.upgrade(upgradeType);
+		    result = true;
+		}
+	    }
+	}
+
+	return result;
+    }
+
+    // 업그레이드를 한다. (테크)
+    public boolean upgrade(TechType upgradeType) {
+	boolean result = false;
+
+	if (null != upgradeType) {
+	    UnitType upgradableBuildingtType = null;
+	    switch (upgradeType.toString()) {
+	    case "Spider_Mines":
+		upgradableBuildingtType = UnitType.Terran_Machine_Shop;
+		break;
+	    default:
+		break;
+
+	    }
+
+	    Set<Unit2> upgradableBuildingSet = getUnitSet(upgradableBuildingtType);
+	    for (Unit2 upgradableBuilding : upgradableBuildingSet) {
+		if (null != upgradableBuilding && upgradableBuilding.canResearch(upgradeType)) {
+		    upgradableBuilding.research(upgradeType);
+		    result = true;
+		}
+	    }
 	}
 
 	return result;

@@ -22,6 +22,7 @@ public class StrategyManager extends Manager {
 
 	// TODO 상대방의 종족이나 ID에 따라서 전략을 선택한다.
 	strategy = new StrategyDefault();
+	//strategy = new StrategyTwoFactory();
 
 	strategy.onStart(gameStatus);
     }
