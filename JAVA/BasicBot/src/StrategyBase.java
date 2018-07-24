@@ -4,11 +4,12 @@ public abstract class StrategyBase {
     protected GameStatus gameStatus = null;
     protected UnitInfo allianceUnitInfo = null;
     protected UnitInfo enemyUnitInfo = null;
+    protected String strategyName = "";
 
     public abstract void initialBuildOrder();
 
     public abstract void initialStrategyItem(Set<StrategyItem> strategyItems);
-
+    
     public void onStart(GameStatus gameStatus) {
 	this.gameStatus = gameStatus;
 	this.allianceUnitInfo = gameStatus.getAllianceUnitInfo();
@@ -42,5 +43,9 @@ public abstract class StrategyBase {
 
     public void onUnitEvade(Unit2 unit) {
 
+    }
+
+    public String getStrategyName() {
+	return strategyName;
     }
 }
