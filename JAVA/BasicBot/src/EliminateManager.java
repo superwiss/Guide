@@ -7,7 +7,27 @@ import bwapi.TilePosition;
 public class EliminateManager extends Manager {
     private Queue<TilePosition> eliminateQueue = new LinkedList<>();
 
-    public void search(UnitInfo allianceUnitInfo) {
+    @Override
+    protected void onFrame() {
+	super.onFrame();
+
+	if (gameStatus.isMatchedInterval(3)) {
+
+	    // 게임 10분이 넘은 시점부터 동작한다.
+	    if (gameStatus.getFrameCount() < 24 * 60 * 10) {
+		return;
+	    }
+
+	    // 적 건물이 하나도 없으면 맵 전체를 탐색한다.
+	    if (0 == enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
+		// 적 건물이 없으므로 탐색 모드를 시작한다.
+		Log.info("Eliminate mode enable.");
+		search();
+	    }
+	}
+    }
+
+    public void search() {
 	if (eliminateQueue.isEmpty()) {
 	    initQueue();
 	}

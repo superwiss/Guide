@@ -10,6 +10,7 @@ import bwapi.UnitType;
 public class MicroControlMarine extends Manager {
     private final Set<UnitType> medicUnitTypeSet = new HashSet<>();
     private StrategyManager strategyManager = null;
+    private LocationManager locationManager = null;
 
     public MicroControlMarine() {
 	medicUnitTypeSet.add(UnitType.Terran_Medic);
@@ -20,6 +21,7 @@ public class MicroControlMarine extends Manager {
 	super.onStart(gameStatus);
 
 	strategyManager = gameStatus.getStrategyManager();
+	locationManager = gameStatus.getLocationManager();
     }
 
     @Override
@@ -77,6 +79,11 @@ public class MicroControlMarine extends Manager {
 	//공격을 갈 지점이 있을 경우에만 컨트롤을 한다.
 	if (true == strategyManager.hasAttackTilePosition()) {
 	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
+	    // 공격 지점을 이미 정복했고, 적 건물이 존재하지 않으면 아무것도 하지 않는다.
+	    if (gameStatus.isExplored(attackPosition.toTilePosition()) && 0 == enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
+		return;
+	    }
+
 	    Unit2 headBionicUnit = allianceUnitInfo.getHeadAllianceUnit(UnitKind.Bionic_Attackable, attackPosition);
 	    if (null != headBionicUnit) {
 		// 선두 바이오닉 유닛 300 주변의 마린 개수

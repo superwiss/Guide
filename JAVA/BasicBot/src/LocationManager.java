@@ -11,7 +11,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
 
     protected String mapName; // 지도 이름
     protected TilePosition allianceBaseLocation = null; // 아군 본진 위치
-    protected TilePosition enemyBaseLocation = null; // 적군 본진 위치
+    protected TilePosition enemyStartLocation = null; // 적군 본진 위치
     protected List<TilePosition> allianceFirstExpansionLocation = null; // 아군 확장 위치
     protected List<TilePosition> baseLocations = null; // 맵 전체의 스타팅 포인트 위치들.
     private List<TilePosition> searchSequence = null; // 정찰할 위치(순서)
@@ -40,19 +40,6 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	if (1 == gameStatus.getFrameCount()) {
 	    init(gameStatus.getAllianceUnitInfo().getAnyUnit(UnitKind.Terran_Command_Center));
 	}
-	
-//	allianceFirstExpansionLocation = initFirstExpansionLocaion();
-//	baseLocations = initBaseLocations();
-//	searchSequence = initSearchSequence();
-//	trainingBuildings = initTrainingBuildings();
-//	baseEntranceBunkers = initBaseEntranceBunker();
-//	size3by2Buildings = init3by2SizeBuildings();
-//	baseRefineries = initBaseRefinery();
-//	baseTurrets = initBaseTurret();
-//	firstExpansionTurrets = initFirstExpansionTurret();
-//	engineeringBay = initEngineeringBay();
-//	baseEntranceChokePoint = initBaseEntranceChokePoint();
-//	firstExtensionChokePoint = initFirstExtensionChokePoint();
     }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
@@ -85,23 +72,17 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	return allianceBaseLocation;
     }
 
-    // 아군 확장기지의 위치를 리턴한다.
-    @Override
-    public List<TilePosition> getFirstExpansionLocation() {
-	return allianceFirstExpansionLocation;
-    }
-
     // 적군 본진의 위치에 대한 Getter
     @Override
-    public TilePosition getEnemyBaseLocation() {
-	return enemyBaseLocation;
+    public TilePosition getEnemyStartLocation() {
+	return enemyStartLocation;
     }
 
     // 적군 본진의 위치에 대한 Setter
     @Override
-    public void setEnemyStartLocation(TilePosition enemyBaseLocation) {
-	Log.info("LocationManager:setEnemyStartLocation() - ", enemyBaseLocation);
-	this.enemyBaseLocation = enemyBaseLocation;
+    public void setEnemyStartLocation(TilePosition enemyStartLocation) {
+	Log.info("LocationManager:setEnemyStartLocation() - ", enemyStartLocation);
+	this.enemyStartLocation = enemyStartLocation;
     }
 
     // 정찰할 위치(순서)를 리턴한다.

@@ -7,7 +7,6 @@ public class StrategyDefault extends StrategyBase {
 
     private StrategyManager strategyManager = null;
     private LocationManager locationManager = null;
-    private EliminateManager eliminateManager = null;
 
     private int totalAttackFrame = 0;
 
@@ -17,7 +16,6 @@ public class StrategyDefault extends StrategyBase {
 
 	strategyManager = gameStatus.getStrategyManager();
 	locationManager = gameStatus.getLocationManager();
-	eliminateManager = gameStatus.getEliminateManager();
     }
 
     @Override
@@ -36,14 +34,9 @@ public class StrategyDefault extends StrategyBase {
 	Set<Unit2> attackableUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
 	Log.debug("총 공격 조건 확인. 공격 위치: %s, 아군 공격 가능한 유닛 수: %d, 적 본진 위치: %s", strategyManager.getAttackTilePositon(), attackableUnitSet.size(),
-		locationManager.getEnemyBaseLocation());
+		locationManager.getEnemyStartLocation());
 
-	if (gameStatus.getFrameCount() > 42 * 60 * 15 && 0 == enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
-	    // 15분이 넘는 시점부터는 적 건물이 없으면 eliminate 모드로 동작한다.
-	    strategyManager.clearAttackTilePosition();
-	    eliminateManager.search(allianceUnitInfo);
-	    Log.info("Eliminate Manager 동작 시작.");
-	} else if (true == strategyManager.hasAttackTilePosition() || (attackableUnitSet.size() > 60 && null != locationManager.getEnemyBaseLocation())) {
+	if (true == strategyManager.hasAttackTilePosition() || (attackableUnitSet.size() > 60 && null != locationManager.getEnemyStartLocation())) {
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnitSet.size());
 	    TilePosition attackTilePosition = calcAttackPosition();
 
@@ -90,14 +83,14 @@ public class StrategyDefault extends StrategyBase {
 			    result = enemyUnitInfo.getLastTilePosition(closestBuilding);
 			}
 		    } else {
-			TilePosition enemyBaseLocation = locationManager.getEnemyBaseLocation();
-			if (gameStatus.isExplored(enemyBaseLocation)) {
+			TilePosition enemyStartLocation = locationManager.getEnemyStartLocation();
+			if (gameStatus.isExplored(enemyStartLocation)) {
 			    Log.info("적 건물을 찾을 수 없다. 탐색하자");
 			    result = null;
 			} else {
 			    // 어떠한 적 건물도 찾지 못했지만, 적 본진 위치는 알고 있을 경우 (예를 들어 3곳을 정찰 성공했다면 남은 한 곳은 방문하지 않아도 적 본진이다.)
-			    Log.info("적 건물은 없지만, 적 위치는 알고 있다. 적 위치로 공격을 가자: %s", enemyBaseLocation);
-			    result = enemyBaseLocation;
+			    Log.info("적 건물은 없지만, 적 위치는 알고 있다. 적 위치로 공격을 가자: %s", enemyStartLocation);
+			    result = enemyStartLocation;
 			}
 		    }
 		}

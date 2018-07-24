@@ -119,7 +119,7 @@ public class BuildManager extends Manager {
 	    queue.poll();
 	    break;
 	case SCOUTING:
-	    boolean didScout = scoutManager.doFirstSearch(gameStatus);
+	    boolean didScout = scoutManager.doFirstSearch();
 	    if (true == didScout) {
 		queue.poll();
 	    }
@@ -157,8 +157,10 @@ public class BuildManager extends Manager {
 	case MOVE_SCV:
 	    Unit2 moveWorker = workerManager.getInterruptableWorker(buildOrderItem.getTilePosition());
 	    ActionUtil.moveToPosition(allianceUnitInfo, moveWorker, buildOrderItem.getTilePosition().toPosition());
-	    queue.poll();
-	    isMoving = true;
+	    if (gameStatus.isExplored(buildOrderItem.getTilePosition())) {
+		queue.poll();
+		isMoving = true;
+	    }
 	    break;
 	case BUILD:
 	    if (false == buildOrderItem.isInProgress()) {
@@ -184,15 +186,16 @@ public class BuildManager extends Manager {
 
 		if (null != tilePositionList) {
 		    for (TilePosition tilePosition : tilePositionList) {
+			/*
 			if (!gameStatus.isExplored(tilePosition)) {
-			    if (gameStatus.getMineral() + 50 > buildOrderItem.getTargetUnitType().mineralPrice()) {
-				if (false == isMoving) {
-				    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
-				    queue.addFirst(moveOrder);
-				}
+			    if (false == isMoving) {
+				Log.debug("current mineral: %d", gameStatus.getMineral());
+				BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
+				queue.addFirst(moveOrder);
 			    }
 			    break;
 			}
+			*/
 			// 건설 가능한 일꾼을 가져온다.
 			Unit2 worker = workerManager.getInterruptableWorker(tilePosition);
 			if (null != worker) {
@@ -205,6 +208,14 @@ public class BuildManager extends Manager {
 				allianceUnitInfo.removeUnitKind(UnitKind.Worker, worker);
 				Log.info("빌드 오더를 실행합니다: %s", buildOrderItem);
 				isMoving = false;
+				break;
+			    }
+			    if (!gameStatus.isExplored(tilePosition)) {
+				if (false == isMoving) {
+				    Log.debug("current mineral: %d", gameStatus.getMineral());
+				    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
+				    queue.addFirst(moveOrder);
+				}
 				break;
 			    }
 			} else {

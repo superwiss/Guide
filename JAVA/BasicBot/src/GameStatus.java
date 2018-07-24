@@ -200,6 +200,10 @@ public class GameStatus {
 
     }
 
+    public void sendText(String string) {
+	game.sendText(string);
+    }
+
     @Override
     public String toString() {
 	String result = "";
