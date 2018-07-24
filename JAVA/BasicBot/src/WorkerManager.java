@@ -118,7 +118,7 @@ public class WorkerManager extends Manager {
 	    Unit2 largestAmountMineral = getLargestAmountMineral(mineralSet, commandCenter, 300); // 커맨드 센터와 100 거리 이내의 미네랄 중, 가장 양이 많은 미네랄
 	    if (null != largestAmountMineral) {
 		worker.gather(largestAmountMineral);
-		mineralSet.remove(Integer.valueOf(largestAmountMineral.getID()));
+		mineralSet.remove(largestAmountMineral);
 	    }
 	}
     }
