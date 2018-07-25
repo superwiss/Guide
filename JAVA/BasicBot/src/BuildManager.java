@@ -15,7 +15,7 @@ import bwapi.UnitType;
 public class BuildManager extends Manager {
     private Deque<BuildOrderItem> queue = new LinkedList<>(); // 현재 빌드 오더 정보가 들어 있는 큐.
     private boolean initialBuildFinished = false; // 초기 빌드 오더가 완료되었는지 여부를 리턴.
-    private Map<Integer, Integer> buildingWorkerMap = new HashMap<>(); // 건설 중인 건물과, 이 건물을 짓고 있는 일꾼을 매핑하고 있는 맵
+    private Map<Unit2, Unit2> buildingWorkerMap = new HashMap<>(); // 건설 중인 건물과, 이 건물을 짓고 있는 일꾼을 매핑하고 있는 맵
     private boolean isMoving = false;
 
     @Override
@@ -59,6 +59,46 @@ public class BuildManager extends Manager {
 
 	    process(buildItem);
 	}
+
+	if (gameStatus.isMatchedInterval(1)) {
+	    rebalanceFactoryTrainingQueue();
+	}
+    }
+
+    private void rebalanceFactoryTrainingQueue() {
+	Unit2 emptyAddon = null;
+	Unit2 waitingAddon = null;
+	Unit2 emptyNotAddon = null;
+	Unit2 waitingNotAddon = null;
+
+	Set<Unit2> factorySet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory);
+	for (Unit2 factory : factorySet) {
+	    Unit2 addon = factory.getAddon();
+	    if (null == addon) {
+		if (factory.getTrainingQueue().size() >= 2) {
+		    waitingNotAddon = factory;
+		} else if (factory.getTrainingQueue().size() == 0) {
+		    emptyNotAddon = factory;
+		}
+	    } else if (addon.isCompleted()) {
+		if (factory.getTrainingQueue().size() >= 2) {
+		    waitingAddon = factory;
+		} else if (factory.getTrainingQueue().size() == 0) {
+		    emptyAddon = factory;
+		}
+	    }
+	}
+	if (null != emptyAddon && null != waitingAddon) {
+	    UnitType unit = waitingAddon.getTrainingQueue().get(1);
+	    waitingAddon.cancelTrain(1);
+	    emptyAddon.train(unit);
+	}
+
+	if (null != emptyNotAddon && null != waitingNotAddon) {
+	    UnitType unit = waitingNotAddon.getTrainingQueue().get(1);
+	    waitingNotAddon.cancelTrain(1);
+	    emptyNotAddon.train(unit);
+	}
     }
 
     @Override
@@ -72,8 +112,12 @@ public class BuildManager extends Manager {
 
 	if (!queue.isEmpty() && 0 != gameStatus.getFrameCount()) {
 	    BuildOrderItem buildItem = queue.peek();
-	    if (buildItem.getOrder().equals(BuildOrderItem.Order.BUILD) && unit.getType().equals(buildItem.getTargetUnitType())) {
-		buildingWorkerMap.put(unit.getID(), buildItem.getWorker().getID());
+	    if ((buildItem.getOrder().equals(BuildOrderItem.Order.BUILD) || buildItem.getOrder().equals(BuildOrderItem.Order.ADD_ON))
+		    && unit.getType().equals(buildItem.getTargetUnitType())) {
+		// 건설일 경우만 일꾼을 관리해준다. (애드온은 일꾼을 사용하지 않았으므로 관리하지 않는다.)
+		if (buildItem.getOrder().equals(BuildOrderItem.Order.BUILD)) {
+		    buildingWorkerMap.put(unit, buildItem.getWorker());
+		}
 		Log.debug("BuildOrder Finish: %s", buildItem.toString());
 		if (buildItem.getTargetUnitType().equals(UnitType.Terran_Refinery)) {
 		    allianceUnitInfo.removeUnitKind(UnitKind.Worker, buildItem.getWorker());
@@ -82,19 +126,16 @@ public class BuildManager extends Manager {
 		queue.poll();
 	    }
 	}
-
     }
 
     @Override
     protected void onUnitComplete(Unit2 unit) {
 	super.onUnitComplete(unit);
 
-	Integer unitId = unit.getID();
-	if (buildingWorkerMap.containsKey(unitId)) {
-	    Integer workerId = buildingWorkerMap.get(unitId);
-	    buildingWorkerMap.remove(unitId);
-	    allianceUnitInfo.addUnitKind(UnitKind.Worker, allianceUnitInfo.getUnit(workerId));
-
+	if (buildingWorkerMap.containsKey(unit)) {
+	    Unit2 worker = buildingWorkerMap.get(unit);
+	    buildingWorkerMap.remove(worker);
+	    allianceUnitInfo.addUnitKind(UnitKind.Worker, worker);
 	}
     }
 
@@ -126,15 +167,24 @@ public class BuildManager extends Manager {
 	    }
 	    break;
 	case TRAINING:
-	    UnitType targetUnitType = buildOrderItem.getTargetUnitType();
+	    UnitType targetUnitTypeForTraining = buildOrderItem.getTargetUnitType();
 
-	    if (true == allianceUnitInfo.trainingUnit(targetUnitType)) {
+	    if (true == allianceUnitInfo.trainingUnit(targetUnitTypeForTraining)) {
 		queue.poll();
 		Log.debug("BuildOrder Finish: %s", buildOrderItem.toString());
 	    }
 	    break;
 	case ADD_ON:
 	    allianceUnitInfo.buildAddon(buildOrderItem.getTargetUnitType());
+	    break;
+	case UPGRADE:
+	    if (true == allianceUnitInfo.upgrade(buildOrderItem.getUpgradeType())) {
+		queue.poll();
+		Log.debug("BuildOrder Finish: %s", buildOrderItem.toString());
+	    } else if (true == allianceUnitInfo.upgrade(buildOrderItem.getTechType())) {
+		queue.poll();
+		Log.debug("BuildOrder Finish: %s", buildOrderItem.toString());
+	    }
 	    break;
 	case GATHER_GAS:
 	    Unit2 refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
@@ -191,23 +241,27 @@ public class BuildManager extends Manager {
 		}
 
 		if (null != tilePositionList) {
+		    // 
 		    for (TilePosition tilePosition : tilePositionList) {
-			/*
-			if (!gameStatus.isExplored(tilePosition)) {
-			    if (false == isMoving) {
-				Log.debug("current mineral: %d", gameStatus.getMineral());
-				BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
-				queue.addFirst(moveOrder);
+
+			boolean alreadyBuilt = false;
+			Set<Unit2> buildingSet = allianceUnitInfo.getUnitSet(UnitKind.Building);
+			for (Unit2 building : buildingSet) {
+			    if (building.getTilePosition().equals(tilePosition)) {
+				alreadyBuilt = true;
+				break;
 			    }
-			    break;
 			}
-			*/
+			if (true == alreadyBuilt) {
+			    continue;
+			}
+
 			// 건설 가능한 일꾼을 가져온다.
 			Unit2 worker = workerManager.getInterruptableWorker(tilePosition);
 			if (null != worker) {
-			    // 일꾼이 건물을 지을 수 있으면
 			    boolean canBuild = worker.canBuild(buildingType, tilePosition);
 			    if (true == canBuild) {
+				// 건물을 건설할 수 있는 상태가 되면, 건설을 즉시 시작한다.
 				worker.build(buildingType, tilePosition);
 				buildOrderItem.setInProgress(true);
 				buildOrderItem.setWorker(worker);
@@ -215,19 +269,86 @@ public class BuildManager extends Manager {
 				Log.info("빌드 오더를 실행합니다: %s", buildOrderItem);
 				isMoving = false;
 				break;
-			    }
-			    if (!gameStatus.isExplored(tilePosition)) {
-				if (false == isMoving) {
-				    Log.debug("current mineral: %d", gameStatus.getMineral());
-				    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
-				    queue.addFirst(moveOrder);
+			    } else {
+				// 건설할 수 없는 상태라면, 어느 정도 타이밍에 일꾼이 건설할 위치로 미리 이동해야 할지 컨트롤 한다. 
+
+				// 이미 건물을 짓기 위해서 이동 중이라면 아무것도 하지 않고 skip 한다.
+				if (true == isMoving) {
+				    break;
+				}
+
+				// 건설을 위해서 이동하는 동안 얼마나 미네랄을 모을 수 있을지 계산한다.
+				int marginMineral = getMarginMinerals(workerManager, worker, tilePosition);
+
+				if (gameStatus.getMineral() + marginMineral > buildOrderItem.getTargetUnitType().mineralPrice()) {
+				    if (false == isMoving) {
+					Log.debug("미리 이동: current mineral: %d, margin mineral: %d, building price: %d", gameStatus.getMineral(), marginMineral,
+						buildOrderItem.getTargetUnitType().mineralPrice());
+					BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
+					queue.addFirst(moveOrder);
+				    }
 				}
 				break;
+
+				/*
+				if (0 != marginMineral) {
+				    // 빌드 오더에 설정된바와 같이 타이트하게 움직인다.
+				    if (gameStatus.getMineral() + marginMineral > buildOrderItem.getTargetUnitType().mineralPrice()) {
+					if (false == isMoving) {
+					    Log.debug("미리 이동: current mineral: %d, margin mineral: %d, building price: %d", gameStatus.getMineral(), marginMineral,
+						    buildOrderItem.getTargetUnitType().mineralPrice());
+					    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
+					    queue.addFirst(moveOrder);
+					}
+					break;
+				    }
+				} else {
+				    // 다소 동선의 낭비는 있지만, 실패하지 않기 위해서 미리 이동한다.
+				    if (!gameStatus.isExplored(tilePosition)) {
+					if (false == isMoving) {
+					    Log.debug("보이지 않아서 미리 이동. current mineral: %d", gameStatus.getMineral());
+					    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
+					    queue.addFirst(moveOrder);
+					}
+					break;
+				    }
+				}
+				*/
 			    }
 			} else {
 			    Log.error("건물을 건설할 일꾼이 없습니다. buildOrderItem: %s", buildOrderItem);
 			}
+
 		    }
+		    /*
+		    for (TilePosition tilePosition : tilePositionList) {
+		    // 건설 가능한 일꾼을 가져온다.
+		    Unit2 worker = workerManager.getInterruptableWorker(tilePosition);
+		    if (null != worker) {
+		        // 일꾼이 건물을 지을 수 있으면
+		        boolean canBuild = worker.canBuild(buildingType, tilePosition);
+		        if (true == canBuild) {
+		    	worker.build(buildingType, tilePosition);
+		    	buildOrderItem.setInProgress(true);
+		    	buildOrderItem.setWorker(worker);
+		    	allianceUnitInfo.removeUnitKind(UnitKind.Worker, worker);
+		    	Log.info("빌드 오더를 실행합니다: %s", buildOrderItem);
+		    	isMoving = false;
+		    	break;
+		        }
+		        if (!gameStatus.isExplored(tilePosition)) {
+		    	if (false == isMoving) {
+		    	    Log.debug("current mineral: %d", gameStatus.getMineral());
+		    	    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
+		    	    queue.addFirst(moveOrder);
+		    	}
+		    	break;
+		        }
+		    } else {
+		        Log.error("건물을 건설할 일꾼이 없습니다. buildOrderItem: %s", buildOrderItem);
+		    }
+		    }
+		    */
 		} else {
 		    Log.error("더 이상 건물을 지을 공간이 없습니다. BuildOrderItem: ", buildOrderItem);
 		}
@@ -236,6 +357,14 @@ public class BuildManager extends Manager {
 	default:
 	    break;
 	}
+    }
+
+    private int getMarginMinerals(WorkerManager workerManager, Unit2 worker, TilePosition tilePosition) {
+	int distance = UnitUtil.getDistance(worker, tilePosition);
+	double moveTime = distance / worker.getType().topSpeed() / 42;
+	int mineralIncome = workerManager.getMineralIncome();
+
+	return (int) (moveTime * mineralIncome);
     }
 
     // 초기 빌드 오더가 완료되었는지 여부를 리턴한다.

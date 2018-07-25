@@ -67,24 +67,30 @@ public class UnitUtil {
 	    } else if (strUnitType.equals("Resource_Vespene_Geyser")) {
 		result.add(UnitKind.Resource_Vespene_Geyser);
 	    }
+
 	    // 애드온 건물 여부를 확인
 	    if (unit.getType().isAddon()) {
 		result.add(UnitKind.Addon);
 	    }
 
-	    switch (strUnitType) {
-	    case "Protoss_Dark_Templar":
-	    case "Zerg_Lurker":
-	    case "Terran_Wraith":
-		result.add(UnitKind.Clocked);
-		break;
-	    default:
-		break;
-	    }
+	    checkIfClockingUnit(result, strUnitType);
 
 	}
 
 	return result;
+
+    }
+
+    private static void checkIfClockingUnit(Set<UnitKind> result, String strUnitType) {
+	switch (strUnitType) {
+	case "Protoss_Dark_Templar":
+	case "Zerg_Lurker":
+	case "Terran_Wraith":
+	    result.add(UnitKind.Clocked);
+	    break;
+	default:
+	    break;
+	}
     }
 
     // 유닛의 타입을 판별해서 스펙을 리턴한다.

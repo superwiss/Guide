@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -8,11 +9,13 @@ import java.util.Set;
 
 import bwapi.Order;
 import bwapi.TilePosition;
-import bwapi.Unit;
 import bwapi.UnitType;
 
 /// 일꾼 유닛들의 상태를 관리하고 컨트롤하는 class
 public class WorkerManager extends Manager {
+    private Deque<Integer> mineralQueue = new LinkedList<>();
+    private int mineralIncome = 0; // 초당 얼마만큼의 미네랄을 모으는지 확인 
+
     @Override
     public void onFrame() {
 	super.onFrame();
@@ -20,6 +23,10 @@ public class WorkerManager extends Manager {
 	// 최초 일꾼을 미네랄에 골고루 분배시킨다.
 	if (1 < gameStatus.getFrameCount()) {
 	    idleWorkerCheck();
+	}
+
+	if (gameStatus.isMatchedInterval(1)) {
+	    updateResourceGatheringRate();
 	}
 
 	if (gameStatus.isMatchedInterval(3)) {
@@ -62,6 +69,10 @@ public class WorkerManager extends Manager {
 	}
 
 	return result;
+    }
+
+    public int getMineralIncome() {
+	return mineralIncome;
     }
 
     // 일꾼이 새로운 임무(정찰, 건설, 수리 등)를 수행할 수 있는지 여부를 리턴한다.
@@ -315,7 +326,7 @@ public class WorkerManager extends Manager {
 	    Unit2 largestAmountMineral = getLargestAmountMineral(mineralSet, commandCenter, 300); // 커맨드 센터와 100 거리 이내의 미네랄 중, 가장 양이 많은 미네랄
 	    if (null != largestAmountMineral) {
 		worker.gather(largestAmountMineral);
-		mineralSet.remove(Integer.valueOf(largestAmountMineral.getID()));
+		mineralSet.remove(largestAmountMineral);
 	    }
 	}
     }
@@ -351,6 +362,16 @@ public class WorkerManager extends Manager {
 		}
 	    }
 	}
+    }
+
+    // 초당 어느 정도의 비율로 자원을 캐는지 모니터링 한다.
+    private void updateResourceGatheringRate() {
+	if (mineralQueue.size() > 10) {
+	    mineralQueue.pollFirst();
+	}
+	mineralQueue.offer(gameStatus.getGatheredMinerals());
+	mineralIncome = (mineralQueue.peekLast() - mineralQueue.peekFirst()) / mineralQueue.size();
+	Log.info("미네랄 채취량: %d", mineralIncome);
     }
 
     private void loggingDetailSCVInfo() {

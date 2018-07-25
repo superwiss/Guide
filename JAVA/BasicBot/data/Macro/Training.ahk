@@ -1,7 +1,7 @@
 #include, library\Gdip.ahk
 #include, library\gdip_imagesearch.ahk
 
-times:=10
+times:=1
 pToken:=Gdip_Startup()
 
 MsgBox,
@@ -114,7 +114,7 @@ training_once() {
 
 computer() {
     ; Run Eclipse
-    ControlSend,,^{F11},workspace - Java
+    ControlSend,,{F11},workspace - Java
 
     ; 이전에 진행한 게임의 Summary 화면이 띄워져 있을 수 있으므로, 단축키 alt + o를 누른다.
     WinActivate,ahk_class SWarClass
@@ -165,7 +165,7 @@ computer() {
     ; 게임 속도를 빠르게 조절한다.
     ControlSend,,{Esc},ahk_class SWarClass
     Sleep, 100
-    ControlSend,,{Enter}0{Enter},ahk_class SWarClass
+    ;ControlSend,,{Enter}0{Enter},ahk_class SWarClass
 
     ; victory 화면이 나올 때까지 대기한다.
     ; draw.bmp, defeat.bmp, victory.bmp 활용 가능.

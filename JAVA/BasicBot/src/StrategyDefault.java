@@ -10,6 +10,10 @@ public class StrategyDefault extends StrategyBase {
 
     private int totalAttackFrame = 0;
 
+    public StrategyDefault() {
+	strategyName = "Default";
+    }
+
     @Override
     public void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
