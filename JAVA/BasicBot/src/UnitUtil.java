@@ -596,6 +596,7 @@ public class UnitUtil {
 	case "Protoss_Dark_Templar":
 	case "Zerg_Lurker":
 	case "Terran_Wraith":
+	case "Protoss_Observer":
 	    unitKindSet.add(UnitKind.Clocked);
 	    break;
 	default:
