@@ -171,6 +171,8 @@ public class StrategyManager extends Manager {
 	    if (hasStrategyItem(StrategyItem.AUTO_LOAD_MARINE_TO_BUNKER)) {
 		if (0 < bunker.getSpaceRemaining()) {
 		    marineToBunker(allianceUnitInfo, bunker);
+		} else {
+		    repairCount = 3;
 		}
 	    }
 	    if (hasStrategyItem(StrategyItem.AUTO_REPAIR_BUNKER)) {
