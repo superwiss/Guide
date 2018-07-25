@@ -196,15 +196,6 @@ public class GameCommander implements EventDispatcher {
 	Unit2 unit = Unit2.get(rawUnit);
 	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
 
-	try {
-	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
-	    executeEventHandler(eventData);
-	} catch (Exception e) {
-	    Log.error("onUnitDiscover() Exception: %s", e.toString());
-	    e.printStackTrace();
-	    throw e;
-	}
-
 	if (true == UnitUtil.isAllianceUnit(unit)) {
 	    gameStatus.getAllianceUnitInfo().add(unit);
 	} else if (true == UnitUtil.isEnemyUnit(unit)) {
@@ -213,6 +204,15 @@ public class GameCommander implements EventDispatcher {
 	    if (unit.getType().isMineralField()) {
 		gameStatus.getAllianceUnitInfo().add(unit);
 	    }
+	}
+
+	try {
+	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
+	    executeEventHandler(eventData);
+	} catch (Exception e) {
+	    Log.error("onUnitDiscover() Exception: %s", e.toString());
+	    e.printStackTrace();
+	    throw e;
 	}
     }
 
