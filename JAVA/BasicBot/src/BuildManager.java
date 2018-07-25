@@ -139,8 +139,14 @@ public class BuildManager extends Manager {
 	}
     }
 
-    public void add(BuildOrderItem buildItem) {
-	queue.offer(buildItem);
+    // 높은 우선 순위로 빌드 오더 큐에 넣는다.
+    public void addFirst(BuildOrderItem buildItem) {
+	queue.addFirst(buildItem);
+    }
+
+    // 낮은 우선 순위로 빌드 오더 큐에 넣는다.
+    public void addLast(BuildOrderItem buildItem) {
+	queue.addLast(buildItem);
     }
 
     public int getQueueSize() {
