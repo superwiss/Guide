@@ -9,10 +9,10 @@ public class GameStatus {
     private Game game;
 
     // 아군의 유닛 정보
-    private UnitInfo allianceUnitInfo = new UnitInfo();
+    private UnitInfo allianceUnitInfo = new UnitInfo(this);
 
     // 적군의 유닛 정보
-    private UnitInfo enemyUnitInfo = new UnitInfo();
+    private UnitInfo enemyUnitInfo = new UnitInfo(this);
 
     // Manager
     private LocationManager locationManager = null;
@@ -148,6 +148,10 @@ public class GameStatus {
 	return game.self().minerals();
     }
 
+    public int getGas() {
+	return game.self().gas();
+    }
+
     public int getGatheredMinerals() {
 	return game.self().gatheredMinerals();
     }
@@ -156,6 +160,17 @@ public class GameStatus {
 	return game.self().gatheredGas();
     }
 
+    // 보유 중인 서플라이 용량. (게임 상에는 8이라고 표시되지만, BWAPI에서는 2를 곱한 16으로 계산된다.)
+    public int getSupplyTotal() {
+	return game.self().supplyTotal();
+    }
+
+    // 사용 중인 서플라이 용량. (게임 상에는 8이라고 표시되지만, BWAPI에서는 2를 곱한 16으로 계산된다.)
+    public int getSupplyUsed() {
+	return game.self().supplyUsed();
+    }
+
+    // 여유가 있는 서플라이 용량. (게임 상에는 8이라고 표시되지만, BWAPI에서는 2를 곱한 16으로 계산된다.)
     public int getSupplyRemain() {
 	return game.self().supplyTotal() - game.self().supplyUsed();
     }

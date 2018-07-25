@@ -31,8 +31,11 @@ public class UnitInfo {
     // 유닛의 마지막 위치
     private Map<Unit2, TilePosition> lastTilePositoin = new HashMap<>();
 
+    private GameStatus gameStatus;
+
     // 생성자
-    public UnitInfo() {
+    public UnitInfo(GameStatus gameStatus) {
+	this.gameStatus = gameStatus;
 	// unitFilter를 초기화 한다.
 	for (UnitKind unitKind : UnitKind.values()) {
 	    Set<Unit2> set = new HashSet<>();
@@ -567,4 +570,29 @@ public class UnitInfo {
 
 	return result;
     }
+
+    // 예약 생산되어서, 훈련 대기 중인 유닛의 서플라이 양을 리턴한다.
+    public int getReservedSupply() {
+	int result = 0;
+
+	Set<Unit2> buildingSet = getUnitSet(UnitKind.Building_Trainable);
+	for (Unit2 building : buildingSet) {
+	    List<UnitType> trainingQueue = building.getTrainingQueue();
+	    if (trainingQueue.size() > 1) {
+		for (UnitType unitType : trainingQueue) {
+		    Log.debug("건물(%s)에서 유닛(%s)가 예약 생산 대기 중...", building, unitType);
+		    result += unitType.supplyRequired();
+		}
+		result -= trainingQueue.get(0).supplyRequired();
+	    }
+	}
+
+	return result;
+    }
+
+    // 건물을 생산할 수 있는 자원의 여유가 되는지 여부를 리턴한다.
+    public boolean checkResourceIfCanBuild(UnitType unitType) {
+	return gameStatus.getMineral() > unitType.mineralPrice() && gameStatus.getGas() > unitType.gasPrice();
+    }
+
 }

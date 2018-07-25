@@ -8,6 +8,7 @@ import bwapi.UpgradeType;
 
 public class StrategyManager extends Manager {
 
+    private BuildManager buildManager;
     private StrategyBase strategy = null; // 현재 전략
     private Set<StrategyItem> strategyItems = new HashSet<>(); // 전략 전술 플래그
     private TilePosition attackTilePosition = null; // 공격 지점. 공격 지점이 null이면 유닛들은 대기한다. 공격 지점이 설정되면, 유닛들은 해당 지점으로 Attack Position을 수행한다.
@@ -20,12 +21,15 @@ public class StrategyManager extends Manager {
     protected void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
 
+	// 각종 매니져 설정
+	buildManager = gameStatus.getBuildManager();
+
 	// 거의 모든 전략에서 사용될 수 있는 범용적인 전략을 세팅한다.
 	setPassiveStrategyItem();
 
 	// TODO 상대방의 종족이나 ID에 따라서 전략을 선택한다.
-	strategy = new StrategyDefault();
-	//strategy = new StrategyTwoFactory();
+	//strategy = new StrategyDefault();
+	strategy = new StrategyTwoFactory();
 
 	strategy.onStart(gameStatus);
     }
@@ -39,6 +43,9 @@ public class StrategyManager extends Manager {
 	doAcademyJob();
 	doAttackUnitAutoTrain();
 	doDefenceBase();
+	doAutoBuildSupply();
+	doAutoTrainVulture();
+	doAutoBuildFactory();
 
 	strategy.onFrame();
     }
@@ -246,6 +253,7 @@ public class StrategyManager extends Manager {
 	}
     }
 
+    // StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE 구현부
     // 본진 주변에 적 유닛이 있으면, 방어한다.
     private void doDefenceBase() {
 	// 1초에 한 번만 실행한다.
@@ -268,6 +276,60 @@ public class StrategyManager extends Manager {
 		}
 	    }
 	}
+    }
+
+    // 벌쳐를 자동으로 생성해준다.
+    private void doAutoTrainVulture() {
+	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_VULTURE)) {
+	    Set<Unit2> factorySet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory);
+	    for (Unit2 factory : factorySet) {
+		if (!factory.isCompleted()) {
+		    continue;
+		}
+		if (0 == factory.getTrainingQueue().size()) {
+		    int trainingRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture);
+		    if (1 > trainingRemainSize) {
+			Log.info("벌쳐 생산. 남은 훈련시간: %d, 팩토리: %s", factory.getRemainingTrainTime(), factory);
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture));
+		    }
+		}
+	    }
+	}
+    }
+
+    // 팩토리를 자동으로 추가한다.
+    private void doAutoBuildFactory() {
+	// 1초에 한 번만 실행한다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	// 돈과 가스가 남으면 팩토리를 지어본다.
+	if (hasStrategyItem(StrategyItem.AUTO_BUILD_FACTORY)) {
+	    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Factory)) {
+		if (allianceUnitInfo.checkResourceIfCanBuild(UnitType.Terran_Factory)) {
+		    int buildFactoryRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory);
+		    if (1 > buildFactoryRemainSize) {
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
+		    }
+		}
+	    }
+	}
+    }
+
+    // StrategyItem.AUTO_BUILD_SUPPLY 구현부
+    // 빌드 오더 큐에 들어있는 유닛을 보고, 서플라이 디팟을 짓는 최적 타이밍을 계산한다.
+    private void doAutoBuildSupply() {
+	// 1초에 한 번만 실행한다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+	if (!hasStrategyItem(StrategyItem.AUTO_BUILD_SUPPLY)) {
+	    return;
+	}
+
+	// 서플라이를 짓기 위해서 빌드 오더 큐 재배열.
+	buildManager.rearrangeForSupply();
     }
 
     // ///////////////////////////////////////////////////////////
@@ -322,5 +384,13 @@ public class StrategyManager extends Manager {
 
     public void setDefenceTilePosition(TilePosition defenceTilePosition) {
 	this.defenceTilePosition = defenceTilePosition;
+    }
+
+    public boolean addStrategyItems(StrategyItem strategyIteme) {
+	return strategyItems.add(strategyIteme);
+    }
+
+    public boolean removeStrategyItems(StrategyItem strategyItem) {
+	return strategyItems.remove(strategyItem);
     }
 }

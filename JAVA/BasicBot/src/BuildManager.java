@@ -13,6 +13,7 @@ import bwapi.UnitType;
 /// 빌드 명령 중 건물 건설 명령은 ConstructionManager로 전달합니다
 /// @see ConstructionManager
 public class BuildManager extends Manager {
+    private StrategyManager strategyManager;
     private Deque<BuildOrderItem> queue = new LinkedList<>(); // 현재 빌드 오더 정보가 들어 있는 큐.
     private boolean initialBuildFinished = false; // 초기 빌드 오더가 완료되었는지 여부를 리턴.
     private Map<Unit2, Unit2> buildingWorkerMap = new HashMap<>(); // 건설 중인 건물과, 이 건물을 짓고 있는 일꾼을 매핑하고 있는 맵
@@ -21,6 +22,7 @@ public class BuildManager extends Manager {
     @Override
     protected void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
+	strategyManager = gameStatus.getStrategyManager();
     }
 
     @Override
@@ -172,6 +174,14 @@ public class BuildManager extends Manager {
 		queue.poll();
 	    }
 	    break;
+	case SET_STRATEGY_ITEM:
+	    strategyManager.addStrategyItems(buildOrderItem.getStrategyItem());
+	    queue.poll();
+	    break;
+	case CLEAR_STRATEGY_ITEM:
+	    strategyManager.removeStrategyItems(buildOrderItem.getStrategyItem());
+	    queue.poll();
+	    break;
 	case TRAINING:
 	    UnitType targetUnitTypeForTraining = buildOrderItem.getTargetUnitType();
 
@@ -313,5 +323,85 @@ public class BuildManager extends Manager {
     // 초기 빌드 오더가 완료되었는지 여부를 리턴한다.
     public boolean isInitialBuildFinished() {
 	return initialBuildFinished;
+    }
+
+    public void rearrangeForSupply() {
+	final int supplyProvided = UnitType.Terran_Supply_Depot.supplyProvided();
+
+	// 서플라이가 꽉 찼으면 더 이상 짓지 않는다.
+	if (gameStatus.getSupplyTotal() >= 400) {
+	    return;
+	}
+
+	// 현재 남아있는 서플라이 여유량을 가져온다.
+	int supplyRemain = gameStatus.getSupplyRemain();
+
+	// 빌드 오더 큐에는 없지만, 예약되어서 생산을 대기 중인 유닛의 서플라이 사용량을 계산한다.
+	int supplyReserved = allianceUnitInfo.getReservedSupply();
+
+	// 여유 서플라이 양에 훈련 대기 중인 유닛과 건설중인 서플라이 디팟을 반영한다.
+	supplyRemain = supplyRemain - supplyReserved + getUnderConstructingSupplyDepotSize() * supplyProvided;
+	Log.info("서플라이 여유량=%d", supplyRemain);
+
+	Deque<BuildOrderItem> newQueue = new LinkedList<>(); // 새로 재배열 될 큐.
+
+	// 큐를 순회하면서, 서플라이가 부족한 시점에 서플라이를 생성한다.
+	Log.debug("빌드 오더 재배열 시작");
+	for (BuildOrderItem buildOrderItem : queue) {
+	    if (buildOrderItem.getOrder().equals(BuildOrderItem.Order.TRAINING)) {
+		supplyRemain -= buildOrderItem.getTargetUnitType().supplyRequired();
+		Log.debug("빌드 오더 큐에 유닛 훈련해서 여유량 감소함=%d", supplyRemain);
+	    } else if (buildOrderItem.getOrder().equals(BuildOrderItem.Order.BUILD) && buildOrderItem.getTargetUnitType().equals(UnitType.Terran_Supply_Depot)) {
+		supplyRemain += supplyProvided;
+		Log.debug("빌드 오더 큐에 서플라이 건설해서 여유량 증가함=%d", supplyRemain);
+	    }
+	    Log.debug("빌드 오더 큐의 서플라이 여유량=%d", supplyRemain);
+	    // 서플라이가 부족하다면, 서플라이 짓는 빌드 오더를 추가한다.
+	    while (supplyRemain < 16) {
+		BuildOrderItem buildOrderBuildSupplyDepot = new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot);
+		Log.debug("신규 빌드 오더 add: %s", buildOrderBuildSupplyDepot);
+		supplyRemain += supplyProvided;
+		Log.debug("빌드 오더 큐에 서플라이 신규 추가해서 여유량 증가함=%d", supplyRemain);
+		newQueue.add(buildOrderBuildSupplyDepot);
+	    }
+	    Log.debug("기존 빌드 오더 add: %s", buildOrderItem);
+	    newQueue.add(buildOrderItem);
+	}
+	while (supplyRemain < 16) {
+	    BuildOrderItem buildOrderBuildSupplyDepot = new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot);
+	    Log.debug("신규 빌드 오더 add: %s", buildOrderBuildSupplyDepot);
+	    supplyRemain += supplyProvided;
+	    Log.debug("빌드 오더 큐에 서플라이 신규 추가해서 여유량 증가함=%d", supplyRemain);
+	    newQueue.add(buildOrderBuildSupplyDepot);
+	}
+	queue = newQueue;
+	Log.debug("빌드 오더 재배열 완료");
+    }
+
+    // 현재 건설중인(완성되지 않은) 서플라이 디팟의 개수
+    private int getUnderConstructingSupplyDepotSize() {
+	int result = 0;
+
+	for (Unit2 building : allianceUnitInfo.getUnitSet(UnitKind.Building)) {
+	    if (building.getType().equals(UnitType.Terran_Supply_Depot) && !building.isCompleted()) {
+		result += 1;
+	    }
+	}
+
+	return result;
+    }
+
+    // 현재 빌드 오더 큐에서 order를 대기 중인 unitType의 개수
+    public int getBuildOrderQueueItemCount(BuildOrderItem.Order order, UnitType unitType) {
+	int result = 0;
+
+	for (BuildOrderItem buildOrderItem : queue) {
+	    if (buildOrderItem.getOrder().equals(order) && buildOrderItem.getTargetUnitType().equals(unitType)) {
+		result += 1;
+	    }
+
+	}
+
+	return result;
     }
 };

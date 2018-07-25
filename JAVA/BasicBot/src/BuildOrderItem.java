@@ -5,7 +5,7 @@ import bwapi.UpgradeType;
 
 public class BuildOrderItem {
     public enum Order {
-	INITIAL_BUILDORDER_FINISH, TRAINING, BUILD, SCOUTING, GATHER_GAS, MOVE_SCV, ADD_ON, UPGRADE
+	INITIAL_BUILDORDER_FINISH, TRAINING, BUILD, SCOUTING, GATHER_GAS, MOVE_SCV, ADD_ON, UPGRADE, SET_STRATEGY_ITEM, CLEAR_STRATEGY_ITEM
     }
 
     private Order order;
@@ -15,6 +15,7 @@ public class BuildOrderItem {
     private UpgradeType upgradeType;
     private TechType techType;
     private boolean inProgress = false;
+    private StrategyItem strategyItem;
 
     public BuildOrderItem(Order order) {
 	this.order = order;
@@ -39,6 +40,11 @@ public class BuildOrderItem {
     public BuildOrderItem(Order order, TechType techType) {
 	this.order = order;
 	this.techType = techType;
+    }
+
+    public BuildOrderItem(Order order, StrategyItem strategyItem) {
+	this.order = order;
+	this.strategyItem = strategyItem;
     }
 
     public Order getOrder() {
@@ -81,10 +87,13 @@ public class BuildOrderItem {
 	return upgradeType;
     }
 
+    public StrategyItem getStrategyItem() {
+	return strategyItem;
+    }
+
     @Override
     public String toString() {
-	return "MagiBuildItem[Order=" + order.toString() + ",targetUnitType=" + targetUnitType + ",worker=" + (null != worker ? worker.getID() : "null") + ",inProgress="
-		+ String.valueOf(inProgress) + ",tilePosition=" + (null != tilePosition ? tilePosition.toString() : "null") + ", upgradeType=" + upgradeType + ", techType="
-		+ techType + "]";
+	return "MagiBuildItem[Order=" + order.toString() + ", targetUnitType=" + targetUnitType + ", worker=" + worker + ", inProgress=" + inProgress + ", tilePosition=" + tilePosition
+		+ ", upgradeType=" + upgradeType + ", techType=" + techType + ", strategyItem=" + strategyItem + "]";
     }
 }
