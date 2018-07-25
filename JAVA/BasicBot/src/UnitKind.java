@@ -16,6 +16,7 @@ public enum UnitKind {
     Scouting_Unit, // 정찰 유닛
 
     Building, // 건물
+    Building_Trainable, // 유닛 생산이 가능한 건물
 
     Addon, // 애드온 건물
 

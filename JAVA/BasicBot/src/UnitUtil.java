@@ -67,30 +67,10 @@ public class UnitUtil {
 	    } else if (strUnitType.equals("Resource_Vespene_Geyser")) {
 		result.add(UnitKind.Resource_Vespene_Geyser);
 	    }
-
-	    // 애드온 건물 여부를 확인
-	    if (unit.getType().isAddon()) {
-		result.add(UnitKind.Addon);
-	    }
-
-	    checkIfClockingUnit(result, strUnitType);
-
 	}
 
 	return result;
 
-    }
-
-    private static void checkIfClockingUnit(Set<UnitKind> result, String strUnitType) {
-	switch (strUnitType) {
-	case "Protoss_Dark_Templar":
-	case "Zerg_Lurker":
-	case "Terran_Wraith":
-	    result.add(UnitKind.Clocked);
-	    break;
-	default:
-	    break;
-	}
     }
 
     // 유닛의 타입을 판별해서 스펙을 리턴한다.
@@ -500,10 +480,11 @@ public class UnitUtil {
 	String strUnitType = unitType.toString();
 
 	checkIfWorker(unitKindSet, strUnitType);
-	checkIfMainBuilding(unitKindSet, strUnitType);
+	checkIfMainBuilding(unitKindSet, unitType);
 	checkIfCombatUnit(unitKindSet, strUnitType);
 	checkIfBionicUnit(unitKindSet, unitType);
 	checkIfBuilding(unitKindSet, unitType);
+	checkIfClockingUnit(unitKindSet, strUnitType);
 
 	unitKindSet.add(UnitKind.ALL);
     }
@@ -522,17 +503,31 @@ public class UnitUtil {
     }
 
     // Command Center, Nexus, Hatchery 류의 메인 빌딩 여부 반환.
-    private static void checkIfMainBuilding(final Set<UnitKind> unitKindSet, final String strUnitType) {
-	switch (strUnitType) {
+    // UnitKind.MAIN_BUILDING : 건물 여부 판단.
+    // UnitKind.Addon : 애드온 건물 여부 판단.
+    // UnitKind.Building_Trainable : 유닛을 훈련 가능한 건물 여부 판단.
+    private static void checkIfMainBuilding(final Set<UnitKind> unitKindSet, final UnitType unitType) {
+	switch (unitType.toString()) {
 	case "Terran_Command_Center":
 	case "Protoss_Nexus":
 	case "Zerg_Hatchery":
 	case "Zerg_Lair":
 	case "Zerg_Hive":
 	    unitKindSet.add(UnitKind.MAIN_BUILDING);
+	    unitKindSet.add(UnitKind.Building_Trainable);
+	    break;
+	case "Terran_Barracks":
+	case "Terran_Factory":
+	case "Terran_Starport":
+	    unitKindSet.add(UnitKind.Building_Trainable);
 	    break;
 	default:
 	    break;
+	}
+
+	// 애드온 건물 여부를 확인
+	if (unitType.isAddon()) {
+	    unitKindSet.add(UnitKind.Addon);
 	}
     }
 
@@ -593,6 +588,18 @@ public class UnitUtil {
     private static void checkIfBuilding(final Set<UnitKind> unitKindSet, final UnitType unitType) {
 	if (unitType.isBuilding()) {
 	    unitKindSet.add(UnitKind.Building);
+	}
+    }
+
+    private static void checkIfClockingUnit(final Set<UnitKind> unitKindSet, final String strUnitType) {
+	switch (strUnitType) {
+	case "Protoss_Dark_Templar":
+	case "Zerg_Lurker":
+	case "Terran_Wraith":
+	    unitKindSet.add(UnitKind.Clocked);
+	    break;
+	default:
+	    break;
 	}
     }
 
