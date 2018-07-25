@@ -20,6 +20,9 @@ public class StrategyManager extends Manager {
     protected void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
 
+	// 거의 모든 전략에서 사용될 수 있는 범용적인 전략을 세팅한다.
+	setPassiveStrategyItem();
+
 	// TODO 상대방의 종족이나 ID에 따라서 전략을 선택한다.
 	strategy = new StrategyDefault();
 	//strategy = new StrategyTwoFactory();
@@ -76,8 +79,13 @@ public class StrategyManager extends Manager {
 	strategy.onUnitEvade(unit);
     }
 
+    private void setPassiveStrategyItem() {
+	strategyItems.add(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE);
+	strategyItems.add(StrategyItem.AUTO_REPAIR_BUNKER);
+    }
+
     // ///////////////////////////////////////////////////////////
-    // StrategyImte 구현부
+    // StrategyItem 구현부
     // ///////////////////////////////////////////////////////////
 
     // 자동으로 공격 유닛을 훈련하는 작업을 수행한다.

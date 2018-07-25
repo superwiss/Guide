@@ -100,7 +100,7 @@ public class StrategyTwoFactory extends StrategyBase {
 
     @Override
     public void initialStrategyItem(Set<StrategyItem> strategyItems) {
-	strategyItems.add(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE);
+	// Do nothing
     }
 
 }
