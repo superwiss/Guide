@@ -26,12 +26,7 @@ public class StrategyManager extends Manager {
 	super.onStart(gameStatus);
 
 	// TODO 상대방의 종족이나 ID에 따라서 전략을 선택한다.
-<<<<<<< HEAD
 	strategy = new StrategyDefense();
-=======
-	strategy = new StrategyDefault();
-	//strategy = new StrategyTwoFactory();
->>>>>>> refs/remotes/origin/Development
 
 	strategy.onStart(gameStatus);
     }
@@ -117,6 +112,14 @@ public class StrategyManager extends Manager {
 		    factory.setRallyPoint(locationManager.getFirstExtensionChokePoint().toPosition());
 		}
 	    }
+
+	    for (Unit2 factory : allianceUnitInfo.getUnitSet(UnitKind.Terran_Barracks)) {
+		if (multiCount == 0) {
+		    factory.setRallyPoint(locationManager.getBaseEntranceChokePoint().toPosition());
+		} else if (multiCount == 1) {
+		    factory.setRallyPoint(locationManager.getFirstExtensionChokePoint().toPosition());
+		}
+	    }
 	}
     }
 
@@ -126,6 +129,7 @@ public class StrategyManager extends Manager {
 	if (hasStrategyItem(StrategyItem.AUTO_ASSIGN_GAS_SCV)) {
 
 	    BuildManager buildManager = gameStatus.getBuildManager();
+	    WorkerManager workerManager = gameStatus.getWorkerManager();
 
 	    //이니셜 빌드오더가 끝났을 경우
 	    if (buildManager.isInitialBuildFinished()) {
@@ -140,11 +144,11 @@ public class StrategyManager extends Manager {
 		for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
 
 		    //대상 커맨드 센터에 할당된 가스 일꾼이 3기 미만일 경우,
-		    System.out.println("할당된 가스 일꾼 " + findUnitSetNear(commandCenter, UnitKind.Worker_Gather_Gas, 320).size());
-		    if (findUnitSetNear(commandCenter, UnitKind.Worker_Gather_Gas, 320).size() < 3) {
+		    System.out.println("할당된 가스 일꾼 " + allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Worker_Gather_Gas, 320).size());
+		    if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Worker_Gather_Gas, 320).size() < 3) {
 
 			//대상 커맨드 센터에 할당된 리파이너리를 가져온다.
-			Unit2 refinery = findOneUnitNear(commandCenter, UnitKind.Terran_Refinery, 320);
+			Unit2 refinery = allianceUnitInfo.findOneUnitNear(commandCenter, UnitKind.Terran_Refinery, 320);
 
 			//리파이너를 찾았을 경우
 			System.out.println("리파이너리를 찾아보자");
@@ -153,8 +157,8 @@ public class StrategyManager extends Manager {
 			    System.out.println("리파이너리를 찾았다");
 			    //대상 커맨드 센터 주변의 미네랄 일꾼을 찾는다.
 			    //미네랄 일꾼이 3기 이상이고, 리파이너리가 지어져 있으면 미네랄 일꾼을 가스에 할당한다.
-			    System.out.println("현재 미네랄 일꾼 " + findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size());
-			    if (findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size() >= 3 && refinery.isCompleted()) {
+			    System.out.println("현재 미네랄 일꾼 " + workerManager.findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size());
+			    if (workerManager.findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size() >= 3 && refinery.isCompleted()) {
 				buildManager.add(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS, refinery));
 			    } else {
 				//미네랄 일꾼이 부족하거나 리파이너리가 건설 중이다.
@@ -164,15 +168,17 @@ public class StrategyManager extends Manager {
 			} else {
 			    //리파이너리가 없어서 건설이 필요하다.
 			    //큐에 아무것도 없고, 대상 커맨드 센터가 완성되었을 경우 리파이너리 건설
+			    System.out.println("큐사이즈 " + buildManager.getQueueSize());
 			    if (0 == buildManager.getQueueSize() && commandCenter.isCompleted() && !commandCenter.isLifted()) {
-				System.out.println("건설ㅋㅋ");
+				System.out.println("건설ㅋㅋ" + commandCenter.getID());
 				//대상 커맨드 센터 주변의 베스핀 가스를 가져온다.
 				//가져온 베스핀 가스 위치에 리파이너리를 건설한다.
-				Unit2 vespene = findOneUnitNear(commandCenter, UnitKind.Resource_Vespene_Geyser, 320);
+				Unit2 vespene = allianceUnitInfo.findOneUnitNear(commandCenter, UnitKind.Resource_Vespene_Geyser, 320);
 				if (vespene != null) {
 				    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery, vespene.getTilePosition()));
 				} else {
-				    return;
+				    System.out.println("여긴 베스핀이 없어");
+				    continue;
 				}
 			    } else {
 				System.out.println("큐가 찼다 or 커맨드가 건설중이다.");
@@ -193,16 +199,18 @@ public class StrategyManager extends Manager {
 
 	if (hasStrategyItem(StrategyItem.AUTO_BALANCE_SCV)) {
 
+	    WorkerManager workerManager = gameStatus.getWorkerManager();
+
 	    //모든 커맨드 센터의 미네랄을 캐는 일꾼 숫자를 가져온다.
 	    int total_scv = 0;
 	    for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-		total_scv += findUnitSetNear(commandCenter, UnitKind.Terran_SCV, 320).size();
+		total_scv += allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Terran_SCV, 320).size();
 	    }
 
 	    //모든 커맨드 센터 근처의 미네랄 덩이 수를 가져온다.
 	    int total_mineral = 0;
 	    for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-		total_mineral += findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size();
+		total_mineral += allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size();
 	    }
 
 	    System.out.println("토탈 scv " + total_scv);
@@ -211,7 +219,11 @@ public class StrategyManager extends Manager {
 	    //각 커맨드 센터의 일꾼 부족 현황을 가져온다.
 	    for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
 
-		int result = checkMineralBalance(commandCenter, total_scv, total_mineral);
+		if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size() == 0) {
+		    continue;
+		}
+
+		int result = workerManager.checkMineralBalance(commandCenter, total_scv, total_mineral);
 
 		//부족한 커맨드 센터에 대해, 여유량 만큼 scv를 이동시킨다.
 		if (result < 0 && commandCenter.isCompleted() && !commandCenter.isLifted()) {
@@ -219,7 +231,12 @@ public class StrategyManager extends Manager {
 		    //여유가 있는 커맨드 센터를 가져온다.
 		    Unit2 enoughCommand = null;
 		    for (Unit2 commandCenter2 : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-			int result2 = checkMineralBalance(commandCenter2, total_scv, total_mineral);
+
+			if (allianceUnitInfo.findUnitSetNear(commandCenter2, UnitKind.Resource_Mineral_Field, 320).size() == 0) {
+			    continue;
+			}
+
+			int result2 = workerManager.checkMineralBalance(commandCenter2, total_scv, total_mineral);
 			if (result2 > 0) {
 			    enoughCommand = commandCenter;
 			}
@@ -230,7 +247,7 @@ public class StrategyManager extends Manager {
 		    if (enoughCommand == null) {
 			return;
 		    } else {
-			scvCandidate = findMineralWorkerSetNear(enoughCommand, UnitKind.Terran_SCV, 320);
+			scvCandidate = workerManager.findMineralWorkerSetNear(enoughCommand, UnitKind.Terran_SCV, 320);
 		    }
 
 		    //부족한 숫자만큼 scv를 stop시켜 다른 커맨드 센터에 할당되게 한다.
@@ -245,78 +262,6 @@ public class StrategyManager extends Manager {
 		}
 	    }
 	}
-    }
-
-    //대상 유닛 근처에 있는 유닛셋 전체를 리턴한다.
-    public Set<Unit2> findUnitSetNear(Unit2 baseUnit, UnitKind wantFind, int findRange) {
-
-	Set<Unit2> targetUnitSet = new HashSet<>(allianceUnitInfo.getUnitSet(wantFind));
-	Set<Unit2> nearUnitSet = new HashSet<>();
-
-	for (Unit2 targetUnit : targetUnitSet) {
-	    if (targetUnit.getDistance(baseUnit) < findRange) {
-		nearUnitSet.add(targetUnit);
-	    }
-	}
-
-	return nearUnitSet;
-    }
-
-    //대상 유닛 근처에 있는 유닛 하나를 리턴한다.
-    public Unit2 findOneUnitNear(Unit2 baseUnit, UnitKind wantFind, int findRange) {
-
-	Set<Unit2> targetUnitSet = findUnitSetNear(baseUnit, wantFind, findRange);
-	Unit2 findUnit = null;
-
-	for (Unit2 targetUnit : targetUnitSet) {
-	    findUnit = targetUnit;
-	}
-
-	return findUnit;
-    }
-
-    //대상 유닛 근처에 있는 미네랄 일꾼을 리턴한다.
-    public Set<Unit2> findMineralWorkerSetNear(Unit2 baseUnit, UnitKind wantFind, int findRange) {
-
-	Set<Unit2> scvUnitSet = findUnitSetNear(baseUnit, wantFind, findRange);
-	Set<Unit2> findUnitSet = new HashSet<>();
-	WorkerManager workerManager = gameStatus.getWorkerManager();
-
-	for (Unit2 scv : scvUnitSet) {
-	    if (workerManager.isinterruptableWorker(scv)) {
-		findUnitSet.add(scv);
-	    }
-	}
-
-	return findUnitSet;
-    }
-
-    private int checkMineralBalance(Unit2 commandCenter, int total_scv, int total_mineral) {
-
-	int mineralCount = findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size();
-	System.out.println("현재 미네랄 숫자 " + mineralCount);
-	int scvCount = findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size();
-	System.out.println("현재 scv 숫자 " + scvCount);
-
-	double d = (mineralCount / (double) total_mineral);
-	System.out.println("d" + d);
-	int goodNum = (int) (total_scv * (d));
-	System.out.println("적정 숫자 " + goodNum);
-
-	int result = scvCount - goodNum;
-	System.out.println("결과 값 " + result);
-	return result;
-    }
-
-    public int getMineralNearCommandCenter(Unit2 commandCenter) {
-	int mineralCount = 0;
-	Set<Unit2> mineralSet = new HashSet<>(allianceUnitInfo.getUnitSet(UnitKind.Resource_Mineral_Field));
-	for (Unit2 mineral : mineralSet) {
-	    if (mineral.getDistance(commandCenter) < 320) {
-		mineralCount++;
-	    }
-	}
-	return mineralCount;
     }
 
     // 자동으로 SCV를 훈련하는 작업을 수행한다
@@ -341,19 +286,16 @@ public class StrategyManager extends Manager {
 
 	    for (Unit2 commandCenter : commandCenters) {
 
-		int minerals = getMineralNearCommandCenter(commandCenter);
-		System.out.println("커맨드 센터 근처 미네랄" + minerals);
+		int minerals = allianceUnitInfo.getMineralNearCommandCenter(commandCenter);
 		if (minerals > 0) {
 		    mineral_count += minerals;
 		}
 	    }
 
-	    System.out.println("큐사이즈 " + buildManager.getQueueSize());
 	    if (0 == buildManager.getQueueSize()) {
 
 		if (gameStatus.getMineral() >= 50) {
 
-		    System.out.println("커맨드 센터 수 " + commandCenters.size());
 		    int maxworkerCount = mineral_count * 2 + 8 * commandCenters.size();
 
 		    Set<Unit2> scvSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_SCV);
@@ -415,7 +357,7 @@ public class StrategyManager extends Manager {
 	    BuildManager buildManager = gameStatus.getBuildManager();
 	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
 		// 서플 여유가 6개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
-		if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 6 * 2) {
+		if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 10 * 2) {
 		    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 		} else if (gameStatus.getMineral() > 200 && gameStatus.getGas() > 100 && 4 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size()
 			&& 0 == buildManager.getQueueSize()) {
@@ -494,6 +436,35 @@ public class StrategyManager extends Manager {
 	}
 
 	LocationManager locaionManager = gameStatus.getLocationManager();
+
+	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE) && multiCount == 0 && allianceUnitInfo.getUnitSet(UnitKind.Terran_Barracks).size() > 0) {
+
+	    Unit2 entranceBarrack = null;
+	    Set<Unit2> barrackUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Barracks);
+	    for (Unit2 unit : barrackUnitSet) {
+		entranceBarrack = unit;
+		continue;
+	    }
+
+	    if (!entranceBarrack.isCompleted()) {
+		return;
+	    }
+
+	    if (allianceUnitInfo.findUnitSetNearTile(locaionManager.getFirstExpansionLocation().get(0), UnitKind.Terran_SCV, 300).size() > 0) {
+
+		if (entranceBarrack.isLifted()) {
+
+		} else {
+		    entranceBarrack.lift();
+		}
+	    } else {
+		if (entranceBarrack.isLifted()) {
+		    entranceBarrack.land(new TilePosition(locaionManager.getEntranceBuilding().get(0).getX(), locaionManager.getEntranceBuilding().get(0).getY()));
+		} else {
+
+		}
+	    }
+	}
 
 	if (hasStrategyItem(StrategyItem.AUTO_LIFT_COMMAND_CENTER) && multiCount == 1) {
 

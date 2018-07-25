@@ -57,7 +57,10 @@ public interface MapInfo {
 
     // 본진 입구 벙커를 지을 위치를 리턴한다.
     abstract List<TilePosition> getBaseEntranceBunker();
-
+    
+    // 본진 탱크를 배치할 위치를 리턴한다.
+    abstract List<TilePosition> getBaseTankPoint();
+    
     // 3*2 사이즈 건물을 짓기 위한 위치들을 설정한다. (서플라이 디팟, 아마데미 등)
     abstract List<TilePosition> init3by2SizeBuildings();
 
@@ -66,6 +69,9 @@ public interface MapInfo {
 
     // 본진 가스를 짓기 위한 위치를 설정한다.
     abstract List<TilePosition> initBaseRefinery();
+    
+    // 본진 탱크 배치를 위한 위치를 설정한다.
+    abstract List<TilePosition> initBaseTankPoint();
 
     // 본진 가스를 짓기 위한 위치를 리턴한다.
     abstract List<TilePosition> getBaseRefinery();

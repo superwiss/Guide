@@ -194,6 +194,21 @@ public class MagiUXManager extends Manager {
 	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Second Entrance Building");
 	}
 
+	//확장 터렛 건설 위치
+	tilePositionList = locationManager.getBaseTankPoint();
+	sequence = 0;
+	for (TilePosition tilePosition : tilePositionList) {
+	    sequence++;
+	    int x = tilePosition.getX();
+	    int y = tilePosition.getY();
+	    int x1 = x * 32 + 8;
+	    int y1 = y * 32 + 8;
+	    int x2 = (x + UnitType.Terran_Missile_Turret.tileSize().getX()) * 32 - 8;
+	    int y2 = (y + UnitType.Terran_Missile_Turret.tileSize().getY()) * 32 - 8;
+	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Red, false);
+	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Tank " + sequence);
+	}
+
     }
 
     // Unit의 ID를 표시한다.

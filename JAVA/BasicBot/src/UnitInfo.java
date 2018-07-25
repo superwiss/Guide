@@ -567,4 +567,61 @@ public class UnitInfo {
 
 	return result;
     }
+    
+    //대상 유닛 근처에 있는 유닛 하나를 리턴한다.
+    public Unit2 findOneUnitNear(Unit2 baseUnit, UnitKind wantFind, int findRange) {
+
+	Set<Unit2> targetUnitSet = findUnitSetNear(baseUnit, wantFind, findRange);
+	Unit2 findUnit = null;
+
+	for (Unit2 targetUnit : targetUnitSet) {
+	    findUnit = targetUnit;
+	}
+
+	return findUnit;
+    }
+    
+    //대상 유닛 근처에 있는 유닛셋 전체를 리턴한다.
+    public Set<Unit2> findUnitSetNearTile(TilePosition basePosition, UnitKind wantFind, int findRange) {
+
+	Set<Unit2> targetUnitSet = new HashSet<>(getUnitSet(wantFind));
+	Set<Unit2> nearUnitSet = new HashSet<>();
+
+	for (Unit2 targetUnit : targetUnitSet) {
+	    if (targetUnit.getDistance(basePosition.toPosition()) < findRange) {
+		nearUnitSet.add(targetUnit);
+	    }
+	}
+
+	return nearUnitSet;
+    }
+
+
+    
+    //대상 유닛 근처에 있는 유닛셋 전체를 리턴한다.
+    public Set<Unit2> findUnitSetNear(Unit2 baseUnit, UnitKind wantFind, int findRange) {
+
+	Set<Unit2> targetUnitSet = new HashSet<>(getUnitSet(wantFind));
+	Set<Unit2> nearUnitSet = new HashSet<>();
+
+	for (Unit2 targetUnit : targetUnitSet) {
+	    if (targetUnit.getDistance(baseUnit) < findRange) {
+		nearUnitSet.add(targetUnit);
+	    }
+	}
+
+	return nearUnitSet;
+    }
+    
+    public int getMineralNearCommandCenter(Unit2 commandCenter) {
+	int mineralCount = 0;
+	Set<Unit2> mineralSet = new HashSet<>(getUnitSet(UnitKind.Resource_Mineral_Field));
+	for (Unit2 mineral : mineralSet) {
+	    if (mineral.getDistance(commandCenter) < 320) {
+		mineralCount++;
+	    }
+	}
+	return mineralCount;
+    }
+    
 }

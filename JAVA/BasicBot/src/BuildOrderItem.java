@@ -1,5 +1,7 @@
+import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 
 public class BuildOrderItem {
     public enum Order {

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import bwapi.Order;
 import bwapi.TilePosition;
@@ -187,7 +188,14 @@ public class BuildManager extends Manager {
 	    }
 	    break;
 	case GATHER_GAS:
-	    Unit2 refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
+	    
+	    Unit2 refinery = null;
+	    if (buildOrderItem.getTargetUnit() != null) {
+		refinery = buildOrderItem.getTargetUnit();
+	    } else {
+		refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
+	    }
+	    
 	    if (null != refinery && refinery.isCompleted()) {
 		Unit2 workerForGatherGas = workerManager.getInterruptableWorker(refinery.getTilePosition());
 		if (null != workerForGatherGas) {

@@ -391,4 +391,10 @@ public class LocationManagerOverWatch extends LocationManager {
 	// TODO Auto-generated method stub
 	return null;
     }
+
+    @Override
+    public List<TilePosition> initBaseTankPoint() {
+	// TODO Auto-generated method stub
+	return null;
+    }
 }

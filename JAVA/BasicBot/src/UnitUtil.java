@@ -627,4 +627,5 @@ public class UnitUtil {
     public static boolean compareUnitKind(Unit2 unit, UnitKind unitKind) {
 	return getUnitKinds(unit).contains(unitKind);
     }
+
 }

@@ -93,65 +93,6 @@ public class WorkerManager extends Manager {
 	return result;
     }
 
-    //    public Unit2 getMineralToMine(Unit2 worker) {
-    //
-    //	// get the depot associated with this unit
-    //	Unit2 depot = getWorkerDepot(worker);
-    //	Unit2 bestMineral = null;
-    //	double bestDist = 100000000;
-    //	double bestNumAssigned = 10000000;
-    //	int workerCnt = depotWorkerCount.get(depot.getID());
-    //	int minCnt = 0;
-    //
-    //	if (depot != null) {
-    //
-    //	    List<Unit2> mineralPatches = getMineralPatchesNearDepot(depot);
-    //	    minCnt = mineralPatches.size();
-    //	    if (workerCnt > minCnt) {
-    //		bestDist = 0;
-    //	    }
-    //
-    //	    //해당 일꾼이 속한 커맨드 센터의 미네랄 들에 대하여
-    //	    for (Unit2 mineral : mineralPatches) {
-    //
-    //		//미네랄과 커맨드 센터와의 거리
-    //		double dist = mineral.getDistance(depot);
-    //		//해당 미네랄에 속한 일꾼의 숫자
-    //		double numAssigned = workersOnMineralPatch.get(mineral.getID());
-    //
-    //		//미네랄 일꾼의 숫자가 미네랄보다 적을 경우
-    //		if (workerCnt <= minCnt) {
-    //		    //해당 미네랄에 속한 일꾼의 숫자가 기존보다 작으면
-    //		    if (numAssigned < bestNumAssigned) {
-    //			bestMineral = mineral;
-    //			bestDist = dist;
-    //			bestNumAssigned = numAssigned;
-    //		    } else if (numAssigned == bestNumAssigned) {
-    //			if (dist < bestDist) {
-    //			    bestMineral = mineral;
-    //			    bestDist = dist;
-    //			    bestNumAssigned = numAssigned;
-    //			}
-    //		    }
-    //		} else {
-    //		    if (numAssigned < bestNumAssigned) {
-    //			bestMineral = mineral;
-    //			bestDist = dist;
-    //			bestNumAssigned = numAssigned;
-    //		    } else if (numAssigned == bestNumAssigned) {
-    //			if (dist > bestDist) {
-    //			    bestMineral = mineral;
-    //			    bestDist = dist;
-    //			    bestNumAssigned = numAssigned;
-    //			}
-    //		    }
-    //		}
-    //
-    //	    }
-    //	}
-    //	return bestMineral;
-    //    }
-
     // idle 상태의 일꾼을 찾아서 미네랄을 캐도록 일을 시킨다.
     private void idleWorkerCheck() {
 	Set<Unit2> workerSet = allianceUnitInfo.getUnitSet(UnitType.Terran_SCV); // 전체 일꾼 목록
@@ -175,17 +116,25 @@ public class WorkerManager extends Manager {
 		//모든 커맨드 센터의 미네랄을 캐는 일꾼 숫자를 가져온다.
 		//모든 커맨드 센터 근처의 미네랄 덩이 수를 가져온다.
 		int total_scv = 0;
+		int total_gas_scv = 0;
 		int total_mineral = 0;
 		for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-		    total_scv += findUnitSetNear(commandCenter, UnitKind.Terran_SCV, 320).size();
-		    total_mineral += findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size();
+		    total_scv += allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Terran_SCV, 320).size();
+		    total_gas_scv += allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Worker_Gather_Gas, 320).size();
+		    total_mineral += allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size();
 		}
+		total_scv = total_scv - total_gas_scv;
 
 		//부족한 있는 커맨드 센터를 가져온다.
 		Unit2 enoughCommand = null;
 		for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
+
+		    if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 300).size() == 0) {
+			continue;
+		    }
+
 		    int result2 = checkMineralBalance(commandCenter, total_scv, total_mineral);
-		    if (result2 <= 0) {
+		    if (result2 <= 1) {
 			enoughCommand = commandCenter;
 		    }
 		}
@@ -207,27 +156,13 @@ public class WorkerManager extends Manager {
 	}
     }
 
-    //대상 유닛 근처에 있는 유닛셋 전체를 리턴한다.
-    public Set<Unit2> findUnitSetNear(Unit2 baseUnit, UnitKind wantFind, int findRange) {
+    public int checkMineralBalance(Unit2 commandCenter, int total_scv, int total_mineral) {
 
-	Set<Unit2> targetUnitSet = new HashSet<>(allianceUnitInfo.getUnitSet(wantFind));
-	Set<Unit2> nearUnitSet = new HashSet<>();
-
-	for (Unit2 targetUnit : targetUnitSet) {
-	    if (targetUnit.getDistance(baseUnit) < findRange) {
-		nearUnitSet.add(targetUnit);
-	    }
-	}
-
-	return nearUnitSet;
-    }
-    
-    private int checkMineralBalance(Unit2 commandCenter, int total_scv, int total_mineral) {
-
-	int mineralCount = findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size();
+	int mineralCount = allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size();
 	System.out.println("현재 미네랄 숫자 " + mineralCount);
 	int scvCount = findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size();
 	System.out.println("현재 scv 숫자 " + scvCount);
+	System.out.println("토탈 scv 숫자 " + total_scv);
 
 	double d = (mineralCount / (double) total_mineral);
 	System.out.println("d" + d);
@@ -238,11 +173,11 @@ public class WorkerManager extends Manager {
 	System.out.println("결과 값 " + result);
 	return result;
     }
-    
+
     //대상 유닛 근처에 있는 미네랄 일꾼을 리턴한다.
     public Set<Unit2> findMineralWorkerSetNear(Unit2 baseUnit, UnitKind wantFind, int findRange) {
 
-	Set<Unit2> scvUnitSet = findUnitSetNear(baseUnit, wantFind, findRange);
+	Set<Unit2> scvUnitSet = allianceUnitInfo.findUnitSetNear(baseUnit, wantFind, findRange);
 	Set<Unit2> findUnitSet = new HashSet<>();
 	WorkerManager workerManager = gameStatus.getWorkerManager();
 
@@ -255,55 +190,55 @@ public class WorkerManager extends Manager {
 	return findUnitSet;
     }
 
-//    private Unit2 getBestCommandCenter(Set<Unit2> commandCenterSet) {
-//
-//	//현재 미네랄을 캐는 일꾼 숫자를 모두 가져온다. (40마리의 일꾼)
-//	Set<Unit2> scvCandidate = new HashSet<>();
-//	for (Unit2 worker : allianceUnitInfo.getUnitSet(UnitKind.Worker)) {
-//	    if (isinterruptableWorker(worker)) {
-//		scvCandidate.add(worker);
-//	    }
-//	}
-//
-//	Set<Unit2> mineralCandidate = new HashSet<>();
-//	for (Unit2 mineral : allianceUnitInfo.getUnitSet(UnitKind.Resource_Mineral_Field)) {
-//
-//	    for (Unit2 commandCenter : commandCenterSet) {
-//		if (mineral.getDistance(commandCenter) < 320) {
-//		    mineralCandidate.add(mineral);
-//		}
-//	    }
-//
-//	}
-//
-//	int total_scv = scvCandidate.size();
-//	int total_mineral = mineralCandidate.size();
-//
-//	System.out.println("토탈 scv " + total_scv);
-//	System.out.println("총 미네랄 " + total_mineral);
-//
-//	for (Unit2 commandCenter : commandCenterSet) {
-//
-//	    int mineralCount = getMineralPatchesNearDepot(commandCenter).size();
-//	    System.out.println("현재 미네랄 숫자 " + mineralCount);
-//	    int scvCount = getNumAssignedWorkers(commandCenter);
-//	    System.out.println("현재 scv 숫자 " + scvCount);
-//
-//	    double d = (mineralCount / (double) total_mineral);
-//	    System.out.println("d" + d);
-//	    int goodNum = (int) (total_scv * (d));
-//	    System.out.println("적정 숫자 " + goodNum);
-//
-//	    int ans = scvCount - goodNum;
-//	    System.out.println("결과 값 " + ans);
-//
-//	    if (ans <= 0) {
-//		//부족한 커맨드 센터
-//		return commandCenter;
-//	    }
-//	}
-//	return null;
-//    }
+    //    private Unit2 getBestCommandCenter(Set<Unit2> commandCenterSet) {
+    //
+    //	//현재 미네랄을 캐는 일꾼 숫자를 모두 가져온다. (40마리의 일꾼)
+    //	Set<Unit2> scvCandidate = new HashSet<>();
+    //	for (Unit2 worker : allianceUnitInfo.getUnitSet(UnitKind.Worker)) {
+    //	    if (isinterruptableWorker(worker)) {
+    //		scvCandidate.add(worker);
+    //	    }
+    //	}
+    //
+    //	Set<Unit2> mineralCandidate = new HashSet<>();
+    //	for (Unit2 mineral : allianceUnitInfo.getUnitSet(UnitKind.Resource_Mineral_Field)) {
+    //
+    //	    for (Unit2 commandCenter : commandCenterSet) {
+    //		if (mineral.getDistance(commandCenter) < 320) {
+    //		    mineralCandidate.add(mineral);
+    //		}
+    //	    }
+    //
+    //	}
+    //
+    //	int total_scv = scvCandidate.size();
+    //	int total_mineral = mineralCandidate.size();
+    //
+    //	System.out.println("토탈 scv " + total_scv);
+    //	System.out.println("총 미네랄 " + total_mineral);
+    //
+    //	for (Unit2 commandCenter : commandCenterSet) {
+    //
+    //	    int mineralCount = getMineralPatchesNearDepot(commandCenter).size();
+    //	    System.out.println("현재 미네랄 숫자 " + mineralCount);
+    //	    int scvCount = getNumAssignedWorkers(commandCenter);
+    //	    System.out.println("현재 scv 숫자 " + scvCount);
+    //
+    //	    double d = (mineralCount / (double) total_mineral);
+    //	    System.out.println("d" + d);
+    //	    int goodNum = (int) (total_scv * (d));
+    //	    System.out.println("적정 숫자 " + goodNum);
+    //
+    //	    int ans = scvCount - goodNum;
+    //	    System.out.println("결과 값 " + ans);
+    //
+    //	    if (ans <= 0) {
+    //		//부족한 커맨드 센터
+    //		return commandCenter;
+    //	    }
+    //	}
+    //	return null;
+    //    }
 
     public int getNumAssignedWorkers(Unit2 commandCenter) {
 
@@ -371,7 +306,7 @@ public class WorkerManager extends Manager {
 	}
 	mineralQueue.offer(gameStatus.getGatheredMinerals());
 	mineralIncome = (mineralQueue.peekLast() - mineralQueue.peekFirst()) / mineralQueue.size();
-	Log.info("미네랄 채취량: %d", mineralIncome);
+	//	Log.info("미네랄 채취량: %d", mineralIncome);
     }
 
     private void loggingDetailSCVInfo() {

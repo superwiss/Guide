@@ -389,6 +389,13 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	return null;
     }
 
+    @Override
+    public List<TilePosition> initBaseTankPoint() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+
 //    @Override
 //    public TilePosition initFirstExpansionLocaion() {
 //

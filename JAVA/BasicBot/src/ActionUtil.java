@@ -225,18 +225,18 @@ public class ActionUtil {
 	    // 이 현상을 막기 위해서 강제 공격 상태가 아닌 상태에서 강제 공격 명령이 들어오면 이전과 동일한 명령이더라도 Accept한다.
 	    allianceUnitInfo.updateLastAction(allianceUnit, currentActionDetail);
 	    result = true;
-	    Log.trace("Action Accepted: " + currentActionDetail);
+//	    Log.trace("Action Accepted: " + currentActionDetail);
 	} else if (null != lastActionDetail && lastActionDetail.getActionFrame() + 10 <= currentActionDetail.getActionFrame()) {
 	    // 10프레임이 지났으면 동일한 명령이 들어오더라도 다시 수행한다.
 	    allianceUnitInfo.updateLastAction(allianceUnit, currentActionDetail);
 	    result = true;
-	    Log.trace("Action Accepted (Last action frame: %d): %s", lastActionDetail.getActionFrame(), currentActionDetail);
+//	    Log.trace("Action Accepted (Last action frame: %d): %s", lastActionDetail.getActionFrame(), currentActionDetail);
 	} else if (forceAttackUnitIdSet.contains(Integer.valueOf(allianceUnit.getID()))) {
 	    // 강제 공격 상태라면, 계속 강제 공격을 할 수 있도록 어떠한 액션도 무시한다.
-	    Log.trace("Action Rejected: " + currentActionDetail);
+//	    Log.trace("Action Rejected: " + currentActionDetail);
 	} else if (currentActionDetail.equals(lastActionDetail)) {
 	    // 이전과 동일한 액션이라면 무시한다.
-	    Log.trace("Action Rejected: " + currentActionDetail);
+//	    Log.trace("Action Rejected: " + currentActionDetail);
 	} else {
 	    // 이전과 다른 액션이다. Accept 할 준비를 한다.
 	    result = true;
@@ -256,7 +256,7 @@ public class ActionUtil {
 	    if (false != result) {
 		allianceUnitInfo.updateLastAction(allianceUnit, currentActionDetail);
 		result = true;
-		Log.trace("Action Accepted: " + currentActionDetail);
+//		Log.trace("Action Accepted: " + currentActionDetail);
 	    }
 	}
 
