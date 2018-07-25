@@ -280,66 +280,12 @@ public class BuildManager extends Manager {
 				    }
 				}
 				break;
-
-				/*
-				if (0 != marginMineral) {
-				    // 빌드 오더에 설정된바와 같이 타이트하게 움직인다.
-				    if (gameStatus.getMineral() + marginMineral > buildOrderItem.getTargetUnitType().mineralPrice()) {
-					if (false == isMoving) {
-					    Log.debug("미리 이동: current mineral: %d, margin mineral: %d, building price: %d", gameStatus.getMineral(), marginMineral,
-						    buildOrderItem.getTargetUnitType().mineralPrice());
-					    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
-					    queue.addFirst(moveOrder);
-					}
-					break;
-				    }
-				} else {
-				    // 다소 동선의 낭비는 있지만, 실패하지 않기 위해서 미리 이동한다.
-				    if (!gameStatus.isExplored(tilePosition)) {
-					if (false == isMoving) {
-					    Log.debug("보이지 않아서 미리 이동. current mineral: %d", gameStatus.getMineral());
-					    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
-					    queue.addFirst(moveOrder);
-					}
-					break;
-				    }
-				}
-				*/
 			    }
 			} else {
 			    Log.error("건물을 건설할 일꾼이 없습니다. buildOrderItem: %s", buildOrderItem);
 			}
 
 		    }
-		    /*
-		    for (TilePosition tilePosition : tilePositionList) {
-		    // 건설 가능한 일꾼을 가져온다.
-		    Unit2 worker = workerManager.getInterruptableWorker(tilePosition);
-		    if (null != worker) {
-		        // 일꾼이 건물을 지을 수 있으면
-		        boolean canBuild = worker.canBuild(buildingType, tilePosition);
-		        if (true == canBuild) {
-		    	worker.build(buildingType, tilePosition);
-		    	buildOrderItem.setInProgress(true);
-		    	buildOrderItem.setWorker(worker);
-		    	allianceUnitInfo.removeUnitKind(UnitKind.Worker, worker);
-		    	Log.info("빌드 오더를 실행합니다: %s", buildOrderItem);
-		    	isMoving = false;
-		    	break;
-		        }
-		        if (!gameStatus.isExplored(tilePosition)) {
-		    	if (false == isMoving) {
-		    	    Log.debug("current mineral: %d", gameStatus.getMineral());
-		    	    BuildOrderItem moveOrder = new BuildOrderItem(BuildOrderItem.Order.MOVE_SCV, tilePosition);
-		    	    queue.addFirst(moveOrder);
-		    	}
-		    	break;
-		        }
-		    } else {
-		        Log.error("건물을 건설할 일꾼이 없습니다. buildOrderItem: %s", buildOrderItem);
-		    }
-		    }
-		    */
 		} else {
 		    Log.error("더 이상 건물을 지을 공간이 없습니다. BuildOrderItem: ", buildOrderItem);
 		}

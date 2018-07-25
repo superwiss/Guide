@@ -13,7 +13,9 @@ import bwapi.UnitType;
 /// 일꾼 유닛들의 상태를 관리하고 컨트롤하는 class
 public class WorkerManager extends Manager {
     private Deque<Integer> mineralQueue = new LinkedList<>();
+    private Deque<Integer> gasQueue = new LinkedList<>();
     private int mineralIncome = 0; // 초당 얼마만큼의 미네랄을 모으는지 확인 
+    private int gasIncome = 0; // 초당 얼마만큼의 가스를 모으는지 확인 
 
     @Override
     public void onFrame() {
@@ -70,7 +72,13 @@ public class WorkerManager extends Manager {
 	return result;
     }
 
+    // 프레임 당 예상되는 미네랄 수입
     public int getMineralIncome() {
+	return mineralIncome;
+    }
+
+    // 프레임 당 예상되는 가스 수입
+    public int getGasIncome() {
 	return mineralIncome;
     }
 
@@ -175,7 +183,13 @@ public class WorkerManager extends Manager {
 	}
 	mineralQueue.offer(gameStatus.getGatheredMinerals());
 	mineralIncome = (mineralQueue.peekLast() - mineralQueue.peekFirst()) / mineralQueue.size();
-	Log.info("미네랄 채취량: %d", mineralIncome);
+
+	if (gasQueue.size() > 10) {
+	    gasQueue.pollFirst();
+	}
+	gasQueue.offer(gameStatus.getGatheredGas());
+	gasIncome = (gasQueue.peekLast() - gasQueue.peekFirst()) / gasQueue.size();
+	Log.info("미네랄 채취량=%d, 가스 채취량=%d", mineralIncome, gasIncome);
     }
 
     private void loggingDetailSCVInfo() {
