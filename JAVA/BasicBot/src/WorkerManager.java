@@ -92,7 +92,7 @@ public class WorkerManager extends Manager {
 		result = false;
 	    } else {
 		// 커맨드센터에서 훈련중인 SCV가 아니고, 건설중이 아니고, idle 상태의 일꾼이거나 미네랄을 캐는 일꾼이면 OK
-		result = worker.isCompleted() && !worker.isConstructing()
+		result = worker.isCompleted() && !worker.isConstructing() && !worker.isRepairing()
 			&& (worker.isIdle() || worker.isGatheringMinerals() || worker.isMoving() || worker.getOrder().equals(Order.MoveToMinerals));
 	    }
 	}
