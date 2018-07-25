@@ -1,8 +1,11 @@
 public enum StrategyItem {
     // 벙커가 있으면 마린을 벙커에 집어 넣는다.
+    AUTO_TRAIN_SCV,
     AUTO_TRAIN_BIONIC_UNIT, // 자동으로 바이오닉 유닛을  훈련한다.
     AUTO_TRAIN_MECHANIC_UNIT, // 자동으로 메카닉 유닛을  훈련한다.
     AUTO_UPGRADE_BIONIC_UNIT, // 자동으로 바이오닉 유닛의 공방업 업그레이드를 한다.
+    AUTO_BALANCE_SCV, // 자동으로 미네랄 일꾼의 밸런스를 맞춘다.
+    AUTO_ASSIGN_GAS_SCV,
     
     AUTO_RESEARCH_U_238_Shells, // 자동으로 마린 사거리 리서치를 한다.
     AUTO_RESEARCH_STIMPACK, // 자동으로 스팀팩 리서치를 한다.

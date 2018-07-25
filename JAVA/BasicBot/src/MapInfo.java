@@ -44,6 +44,14 @@ public interface MapInfo {
     // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치를 리턴한다.
     abstract List<TilePosition> getTrainingBuildings();
 
+    abstract List<TilePosition> initEntranceBuildings();
+    
+    abstract List<TilePosition> getEntranceBuilding();
+    
+    abstract List<TilePosition> initSecondEntranceBuildings();
+    
+    abstract List<TilePosition> getSecondEntranceBuilding();
+    
     // 본진 입구 벙커를 지을 위치를 설정한다.
     abstract List<TilePosition> initBaseEntranceBunker();
 

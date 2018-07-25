@@ -586,4 +586,28 @@ public class LocationManagerSprit extends LocationManager {
 	return result;
     }
 
+    @Override
+    public List<TilePosition> getFirstExpansionLocation() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public List<TilePosition> initEntranceBuildings() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public List<TilePosition> initSecondEntranceBuildings() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public List<TilePosition> getSecondEntranceBuilding() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
 }

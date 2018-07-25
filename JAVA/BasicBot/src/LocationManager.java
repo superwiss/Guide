@@ -22,6 +22,8 @@ public abstract class LocationManager extends Manager implements MapInfo {
     protected List<TilePosition> baseTurrets = null; // 본진에 위치한 터렛의 위치
     protected List<TilePosition> firstExpansionTurrets = null; // 본진에 위치한 터렛의 위치
     protected List<TilePosition> engineeringBay = null; // 엔지니어링 베이 타일의 위치
+    protected List<TilePosition> entranceBuilding = null; // 엔지니어링 베이 타일의 위치
+    protected List<TilePosition> secondEntranceBuilding = null; // 엔지니어링 베이 타일의 위치
     private TilePosition baseEntranceChokePoint = null; // 본진 입구 방어를 위한 위치
     private TilePosition firstExtensionChokePoint = null; // 앞마당 입구 방어를 위한 위치
 
@@ -40,6 +42,11 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	if (1 == gameStatus.getFrameCount()) {
 	    init(gameStatus.getAllianceUnitInfo().getAnyUnit(UnitKind.Terran_Command_Center));
 	}
+	
+//	baseEntranceBunkers = initBaseEntranceBunker();
+//	entranceBuilding = initEntranceBuildings();
+//	secondEntranceBuilding = initSecondEntranceBuildings();
+//	firstExtensionChokePoint = initFirstExtensionChokePoint();
     }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
@@ -58,6 +65,8 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	engineeringBay = initEngineeringBay();
 	baseEntranceChokePoint = initBaseEntranceChokePoint();
 	firstExtensionChokePoint = initFirstExtensionChokePoint();
+	entranceBuilding = initEntranceBuildings();
+	secondEntranceBuilding = initSecondEntranceBuildings();
     }
 
     // index번째 스타팅 포인트 위치를 리턴한다.
@@ -101,6 +110,16 @@ public abstract class LocationManager extends Manager implements MapInfo {
     @Override
     public List<TilePosition> getBaseEntranceBunker() {
 	return baseEntranceBunkers;
+    }
+    
+    @Override
+    public List<TilePosition> getEntranceBuilding() {
+	return entranceBuilding;
+    }
+    
+    @Override
+    public List<TilePosition> getSecondEntranceBuilding() {
+	return secondEntranceBuilding;
     }
 
     // 3*2 사이즈 건물을 짓기 위한 위치들을 리턴한다. (서플라이 디팟, 아마데미 등)
@@ -153,6 +172,11 @@ public abstract class LocationManager extends Manager implements MapInfo {
     @Override
     public String getMapName() {
 	return this.mapName;
+    }
+
+    @Override
+    public List<TilePosition> getFirstExpansionLocation() {
+	return allianceFirstExpansionLocation;
     }
 
     // 아군 첫번째 확장의 위치를 리턴한다.

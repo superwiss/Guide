@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,7 +30,7 @@ public class BuildManager extends Manager {
 	if (!queue.isEmpty()) {
 	    BuildOrderItem buildItem = queue.peek();
 	    if (false == buildItem.isInProgress()) {
-		Log.info("BuildOrder Start: %s", buildItem.toString());
+		//		Log.info("BuildOrder Start: %s", buildItem.toString());
 	    } else {
 		// 건설 시작했는데, (돈이 없는 등의 이유로 취소되어서) 할당된 일꾼이 없으면, 건설을 다시 시작한다.
 		if (buildItem.getOrder().equals(BuildOrderItem.Order.BUILD)) {
@@ -164,14 +165,19 @@ public class BuildManager extends Manager {
 	    break;
 	case BUILD:
 	    if (false == buildOrderItem.isInProgress()) {
-		List<TilePosition> tilePositionList = null; // 건물을 지을 위치
+		List<TilePosition> tilePositionList = new ArrayList<>();
+		; // 건물을 지을 위치
 		UnitType buildingType = buildOrderItem.getTargetUnitType(); // 건설할 건물의 종류.
 		if (UnitType.Terran_Barracks.equals(buildingType)) {
-		    tilePositionList = locationManager.getTrainingBuildings();
+		    tilePositionList = locationManager.getEntranceBuilding();
 		} else if (UnitType.Terran_Factory.equals(buildingType)) {
 		    tilePositionList = locationManager.getTrainingBuildings();
 		} else if (UnitType.Terran_Refinery.equals(buildingType)) {
-		    tilePositionList = locationManager.getBaseRefinery();
+		    if (buildOrderItem.getTilePosition() != null) {
+			tilePositionList.add(buildOrderItem.getTilePosition());
+		    } else {
+			tilePositionList = locationManager.getBaseRefinery();
+		    }
 		} else if (UnitType.Terran_Supply_Depot.equals(buildingType)) {
 		    tilePositionList = locationManager.get3by2SizeBuildings();
 		} else if (UnitType.Terran_Academy.equals(buildingType)) {

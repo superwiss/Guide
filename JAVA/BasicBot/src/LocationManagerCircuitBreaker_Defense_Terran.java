@@ -64,7 +64,6 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result.add(new TilePosition(118, 23));
 	    result.add(new TilePosition(118, 19));
 	    result.add(new TilePosition(118, 15));
 	    result.add(new TilePosition(111, 19));
@@ -76,7 +75,6 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    result.add(new TilePosition(105, 15));
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result.add(new TilePosition(118, 102));
 	    result.add(new TilePosition(118, 106));
 	    result.add(new TilePosition(118, 110));
 	    result.add(new TilePosition(111, 106));
@@ -88,7 +86,6 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    result.add(new TilePosition(111, 118));
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result.add(new TilePosition(0, 101));
 	    result.add(new TilePosition(0, 105));
 	    result.add(new TilePosition(4, 106));
 	    result.add(new TilePosition(0, 109));
@@ -100,7 +97,6 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    result.add(new TilePosition(12, 121));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result.add(new TilePosition(0, 24));
 	    result.add(new TilePosition(0, 20));
 	    result.add(new TilePosition(0, 16));
 	    result.add(new TilePosition(7, 16));
@@ -115,6 +111,46 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	return result;
     }
 
+    @Override
+    public List<TilePosition> initEntranceBuildings() {
+	List<TilePosition> result = new ArrayList<>();
+
+	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+	    // 1시
+	    result.add(new TilePosition(118, 23));
+	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+	    // 5시
+	    result.add(new TilePosition(118, 102));
+	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+	    // 7시
+	    result.add(new TilePosition(0, 101));
+	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+	    // 11시
+	    result.add(new TilePosition(0, 24));
+	}
+	return result;
+    }
+    
+    @Override
+    public List<TilePosition> initSecondEntranceBuildings() {
+	List<TilePosition> result = new ArrayList<>();
+
+	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+	    // 1시
+	    result.add(new TilePosition(110, 36));
+	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+	    // 5시
+	    result.add(new TilePosition(110, 90));
+	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+	    // 7시
+	    result.add(new TilePosition(14, 90));
+	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+	    // 11시
+	    result.add(new TilePosition(16, 31));
+	}
+	return result;
+    }
+
     // 본진 입구 벙커를 지을 위치를 설정한다.
     @Override
     public List<TilePosition> initBaseEntranceBunker() {
@@ -122,16 +158,16 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result.add(new TilePosition(122, 25));
+	    result.add(new TilePosition(114, 35));
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result.add(new TilePosition(122, 102));
+	    result.add(new TilePosition(114, 92));
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result.add(new TilePosition(4, 102));
+	    result.add(new TilePosition(11, 92));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result.add(new TilePosition(4, 24));
+	    result.add(new TilePosition(13, 32));
 	}
 
 	return result;
@@ -333,16 +369,16 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result = new TilePosition(109, 34);
+	    result = new TilePosition(112, 33);
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result = new TilePosition(109, 93);
+	    result = new TilePosition(112, 96);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result = new TilePosition(18, 93);
+	    result = new TilePosition(15, 95);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result = new TilePosition(18, 34);
+	    result = new TilePosition(15, 36);
 	}
 
 	return result;
@@ -365,20 +401,27 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	return result;
     }
 
-//    @Override
-//    public TilePosition initFirstExpansionLocaion() {
-//
-//	double tempDistance;
-//	double closestDistance = 1000000000;
-//	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
-//	    if (targetBaseLocation.getTilePosition().equals(allianceBaseLocation))
-//		continue;
-//	    tempDistance = BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
-//	    if (tempDistance < closestDistance && tempDistance > 0) {
-//		closestDistance = tempDistance;
-//		allianceFirstExpansionLocation = targetBaseLocation.getTilePosition();
-//	    }
-//	}
-//	return allianceFirstExpansionLocation;
-//    }
+    @Override
+    public List<TilePosition> getFirstExpansionLocation() {
+	return allianceFirstExpansionLocation;
+    }
+
+
+
+    //    @Override
+    //    public TilePosition initFirstExpansionLocaion() {
+    //
+    //	double tempDistance;
+    //	double closestDistance = 1000000000;
+    //	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+    //	    if (targetBaseLocation.getTilePosition().equals(allianceBaseLocation))
+    //		continue;
+    //	    tempDistance = BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
+    //	    if (tempDistance < closestDistance && tempDistance > 0) {
+    //		closestDistance = tempDistance;
+    //		allianceFirstExpansionLocation = targetBaseLocation.getTilePosition();
+    //	    }
+    //	}
+    //	return allianceFirstExpansionLocation;
+    //    }
 }

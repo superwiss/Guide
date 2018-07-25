@@ -9,6 +9,7 @@ public class BuildOrderItem {
     private Order order;
     private UnitType targetUnitType;
     private Unit2 worker;
+    private Unit2 targetUnit;
     private TilePosition tilePosition;
     private boolean inProgress = false;
 
@@ -22,9 +23,21 @@ public class BuildOrderItem {
 
     }
 
+    public BuildOrderItem(Order order, UnitType targetUnitType, TilePosition tilePosition) {
+	this.order = order;
+	this.targetUnitType = targetUnitType;
+	this.tilePosition = tilePosition;
+
+    }
+
     public BuildOrderItem(Order order, TilePosition tilePosition) {
 	this.order = order;
 	this.tilePosition = tilePosition;
+    }
+
+    public BuildOrderItem(Order order, Unit2 targetUnit) {
+	this.order = order;
+	this.targetUnit = targetUnit;
     }
 
     public Order getOrder() {
@@ -33,6 +46,10 @@ public class BuildOrderItem {
 
     public UnitType getTargetUnitType() {
 	return targetUnitType;
+    }
+
+    public Unit2 getTargetUnit() {
+	return targetUnit;
     }
 
     public Unit2 getWorker() {
