@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import bwapi.Color;
 import bwapi.Order;
+import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 
@@ -188,14 +190,14 @@ public class BuildManager extends Manager {
 	    }
 	    break;
 	case GATHER_GAS:
-	    
+
 	    Unit2 refinery = null;
 	    if (buildOrderItem.getTargetUnit() != null) {
 		refinery = buildOrderItem.getTargetUnit();
 	    } else {
 		refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
 	    }
-	    
+
 	    if (null != refinery && refinery.isCompleted()) {
 		Unit2 workerForGatherGas = workerManager.getInterruptableWorker(refinery.getTilePosition());
 		if (null != workerForGatherGas) {
@@ -278,6 +280,28 @@ public class BuildManager extends Manager {
 				isMoving = false;
 				break;
 			    } else {
+
+				//건설하려는 위치에 유닛이 있는지 확인한다.
+				//확장 초크포인트 위치
+				//                Position test = tilePosition.toPosition();
+				//                MyBotModule.Broodwar.drawCircleMap(test.getX()+ 50, test.getY(), 90, Color.Red);
+				MyBotModule.Broodwar.drawCircleMap(tilePosition.getX() * 32 + 60, tilePosition.getY() * 32 + 50, 80, Color.Red);
+				System.out.println(tilePosition);
+
+				TilePosition checkTile = new TilePosition(tilePosition.getX() + 2, tilePosition.getY() + 1);
+				System.out.println(tilePosition);
+
+				MyBotModule.Broodwar.drawCircleMap(checkTile.getX() * 32, checkTile.getY() * 32, 80, Color.Green);
+				System.out.println(tilePosition);
+
+				for (Unit2 unit2 : allianceUnitInfo.findUnitSetNearTile(checkTile, UnitKind.ALL, 80)) {
+				    System.out.println(unit2.getType().toString());
+
+				    Position randomPosition = randomPosition(unit2.getPosition(), 500);
+				    System.out.println("랜덤포지션" + randomPosition);
+				    ActionUtil.moveToPosition(allianceUnitInfo, unit2, randomPosition, 100);
+				}
+
 				// 건설할 수 없는 상태라면, 어느 정도 타이밍에 일꾼이 건설할 위치로 미리 이동해야 할지 컨트롤 한다. 
 
 				// 이미 건물을 짓기 위해서 이동 중이라면 아무것도 하지 않고 skip 한다.
@@ -365,6 +389,13 @@ public class BuildManager extends Manager {
 	default:
 	    break;
 	}
+    }
+
+    public static Position randomPosition(Position sourcePosition, int dist) {
+	int x = sourcePosition.getX() + (int) (Math.random() * dist) - dist / 2;
+	int y = sourcePosition.getY() + (int) (Math.random() * dist) - dist / 2;
+	Position destPosition = new Position(x, y);
+	return destPosition;
     }
 
     private int getMarginMinerals(WorkerManager workerManager, Unit2 worker, TilePosition tilePosition) {

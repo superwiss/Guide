@@ -198,6 +198,7 @@ public class ScoutManager extends Manager {
     private void foundEnemyBaseLocation(LocationManager locationManager, TilePosition tilePosition) {
 	Log.info("적 본진을 찾았습니다. 적 본진의 Tile Position=%s", tilePosition);
 	locationManager.setEnemyStartLocation(tilePosition);
+	locationManager.initEnemyFirstExpansionLocaion();
 	searchQueue.clear();
     }
 

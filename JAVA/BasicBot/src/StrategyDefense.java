@@ -181,6 +181,12 @@ public class StrategyDefense extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_ASSIGN_GAS_SCV);
 	strategyItems.add(StrategyItem.SET_FACTORY_RALLY);
 	strategyItems.add(StrategyItem.BLOCK_ENTRANCE);
+	
+	strategyItems.add(StrategyItem.AUTO_RESEARCH_ION_THRUSTERS);
+	strategyItems.add(StrategyItem.AUTO_RESEARCH_CHARON_BOOSTERS);
+	
+	strategyItems.add(StrategyItem.AUTO_BUILD_TWO_ARMORY);
+	strategyItems.add(StrategyItem.AUTO_UPGRADE_MECHANIC_UNIT);
 
 	//strategyItems.add(StrategyItem.AUTO_TRAIN_BIONIC_UNIT);
 	//strategyItems.add(StrategyItem.SET_BARRACKS_RALLY);

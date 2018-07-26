@@ -76,14 +76,14 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    // 5시
 	    result.add(new TilePosition(118, 106));
 	    result.add(new TilePosition(111, 105));
-	    result.add(new TilePosition(105, 108));
+	    result.add(new TilePosition(105, 109));
 	    result.add(new TilePosition(118, 110));
 	    result.add(new TilePosition(111, 109));
-	    
+
 	    result.add(new TilePosition(111, 113));
-	    result.add(new TilePosition(105, 112));
+	    result.add(new TilePosition(105, 113));
 	    result.add(new TilePosition(105, 116));
-	    result.add(new TilePosition(111, 117));
+	    result.add(new TilePosition(111, 118));
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
 	    result.add(new TilePosition(0, 107));
@@ -208,31 +208,31 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    result.add(new TilePosition(125, 102));
 	    result.add(new TilePosition(120, 125));
 	    result.add(new TilePosition(120, 123));
-	    
+
 	    result.add(new TilePosition(117, 125));
 	    result.add(new TilePosition(117, 123));
 	    result.add(new TilePosition(114, 125));
 	    result.add(new TilePosition(114, 123));
 	    result.add(new TilePosition(111, 125));
-	    
+
 	    result.add(new TilePosition(111, 123));
 	    result.add(new TilePosition(108, 125));
 	    result.add(new TilePosition(108, 123));
 	    result.add(new TilePosition(105, 125));
 	    result.add(new TilePosition(105, 123));
-	    
+
 	    result.add(new TilePosition(102, 125));
 	    result.add(new TilePosition(102, 123));
 	    result.add(new TilePosition(99, 125));
 	    result.add(new TilePosition(96, 125));
 	    result.add(new TilePosition(99, 123));
-	    
+
 	    result.add(new TilePosition(96, 123));
 	    result.add(new TilePosition(114, 121));
 	    result.add(new TilePosition(111, 121));
 	    result.add(new TilePosition(108, 121));
 	    result.add(new TilePosition(105, 121));
-	    
+
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
 	    result.add(new TilePosition(7, 102));
@@ -256,7 +256,6 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    result.add(new TilePosition(14, 123));
 	    result.add(new TilePosition(11, 123));
 	    result.add(new TilePosition(8, 123));
-	    result.add(new TilePosition(26, 121));
 	    result.add(new TilePosition(23, 121));
 	    result.add(new TilePosition(20, 121));
 	    result.add(new TilePosition(20, 119));
@@ -358,7 +357,7 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    result = new TilePosition(11, 104);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result = new TilePosition(10, 23);
+	    result = new TilePosition(11, 24);
 	}
 	return result;
     }
@@ -429,20 +428,9 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	return allianceFirstExpansionLocation;
     }
 
-    //    @Override
-    //    public TilePosition initFirstExpansionLocaion() {
-    //
-    //	double tempDistance;
-    //	double closestDistance = 1000000000;
-    //	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
-    //	    if (targetBaseLocation.getTilePosition().equals(allianceBaseLocation))
-    //		continue;
-    //	    tempDistance = BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
-    //	    if (tempDistance < closestDistance && tempDistance > 0) {
-    //		closestDistance = tempDistance;
-    //		allianceFirstExpansionLocation = targetBaseLocation.getTilePosition();
-    //	    }
-    //	}
-    //	return allianceFirstExpansionLocation;
-    //    }
+    @Override
+    public List<TilePosition> getEnemyFirstExpansionLocation() {
+	return enemyFirstExpansionLocation;
+    }
+
 }

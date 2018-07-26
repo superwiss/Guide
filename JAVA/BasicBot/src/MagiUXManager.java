@@ -6,6 +6,8 @@ import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.UnitType;
+import bwta.BWTA;
+import bwta.BaseLocation;
 
 /// 봇 프로그램 개발의 편의성 향상을 위해 게임 화면에 추가 정보들을 표시하는 class<br>
 /// 여러 Manager 들로부터 정보를 조회하여 Screen 혹은 Map 에 정보를 표시합니다
@@ -209,6 +211,101 @@ public class MagiUXManager extends Manager {
 	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Tank " + sequence);
 	}
 
+	for (BaseLocation targetBaseLocation : BWTA.getStartLocations()) {
+	    TilePosition tt = targetBaseLocation.getTilePosition();
+	    int x = tt.getX();
+	    int y = tt.getY();
+	    int x1 = x * 32 + 8;
+	    int y1 = y * 32 + 8;
+	    int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
+	    int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
+	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Purple, false);
+	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Expansion " + sequence);
+	}
+
+	//	System.out.println("적 본진으로부터의 거리 " + locationManager.getEnemyStartLocation().getDistance(locationManager.getAllianceBaseLocation()));
+	//서킷브레이커 가로전 110.0
+	//서킷브레이커 대각전 154.8
+	//서킷브레이커 세로전 109.0
+
+//		double tempDistance;
+//		double sourceDistance;
+//		double closestDistance = 1000000000;
+//		TilePosition sourceBaseLocation = locationManager.getFirstExpansionLocation().get(0);
+//		TilePosition enemyBaseLocation = locationManager.getEnemyStartLocation();
+//		BaseLocation base = null;
+//	
+//		for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+//		    TilePosition tt = targetBaseLocation.getTilePosition();
+//	
+//		    if (tt.equals(locationManager.allianceBaseLocation))
+//			continue;
+//		    if (tt.equals(locationManager.getFirstExpansionLocation().get(0)))
+//			continue;
+//		    if (tt.equals(locationManager.enemyStartLocation))
+//			continue;
+//		    if (tt.equals(locationManager.getEnemyFirstExpansionLocation().get(0)))
+//			continue;
+//	
+//		    //건물이 이미 지어져 있는곳 패스
+//		    if (hasBuildingAroundBaseLocation(tt, 350) == true) {
+//			continue;
+//		    }
+//	
+//		    int x = tt.getX();
+//		    int y = tt.getY();
+//		    int x1 = x * 32 + 8;
+//		    int y1 = y * 32 + 8;
+//		    int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
+//		    int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
+//		    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Cyan, false);
+//		    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Expansionsss " + sequence);
+//	
+//		    System.out.println("확장 위치 정보 " + targetBaseLocation.getTilePosition().getX() + " : " + targetBaseLocation.getTilePosition().getY());
+//		    sourceDistance = sourceBaseLocation.getDistance(targetBaseLocation.getTilePosition());
+//		    System.out.println("내 확장으로부터의 거리" + sourceDistance);
+//		    tempDistance = sourceDistance - enemyBaseLocation.getDistance(targetBaseLocation.getTilePosition());
+//		    System.out.println("적 본진으로부터의 거리 " + enemyBaseLocation.getDistance(targetBaseLocation.getTilePosition()));
+//		    System.out.println("총점수 " + tempDistance);
+//	
+//		    if (tempDistance < closestDistance && sourceDistance > 0) {
+//			closestDistance = tempDistance;
+//			base = targetBaseLocation;
+//		    }
+//		}
+//	
+//		TilePosition wow = base.getTilePosition();
+//		int x = wow.getX();
+//		int y = wow.getY();
+//		int x1 = x * 32 + 8;
+//		int y1 = y * 32 + 8;
+//		int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
+//		int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
+//		MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Red, false);
+//		MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Expansionsss " + sequence);
+
+    }
+
+    /// 해당 BaseLocation 에 player의 건물이 존재하는지 리턴합니다
+    /// @param baseLocation 대상 BaseLocation
+    /// @param player 아군 / 적군
+    /// @param radius TilePosition 단위
+    public boolean hasBuildingAroundBaseLocation(TilePosition baseLocation, int radius) {
+
+	// invalid regions aren't considered the same, but they will both be null
+	if (baseLocation == null) {
+	    return false;
+	}
+
+	if (allianceUnitInfo.getUnitsInRange(baseLocation.toPosition(), UnitKind.MAIN_BUILDING, radius).size() > 0) {
+	    return true;
+	}
+
+	if (enemyUnitInfo.getUnitsInRange(baseLocation.toPosition(), UnitKind.MAIN_BUILDING, radius).size() > 0) {
+	    return true;
+	}
+
+	return false;
     }
 
     // Unit의 ID를 표시한다.

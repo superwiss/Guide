@@ -501,6 +501,8 @@ public class UnitUtil {
 
 	checkIfWorker(unitKindSet, strUnitType);
 	checkIfMainBuilding(unitKindSet, strUnitType);
+	checkIfSiegeTank(unitKindSet, strUnitType);
+	checkIfMechanicUnit(unitKindSet, strUnitType);
 	checkIfCombatUnit(unitKindSet, strUnitType);
 	checkIfBionicUnit(unitKindSet, unitType);
 	checkIfBuilding(unitKindSet, unitType);
@@ -530,6 +532,32 @@ public class UnitUtil {
 	case "Zerg_Lair":
 	case "Zerg_Hive":
 	    unitKindSet.add(UnitKind.MAIN_BUILDING);
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    // 탱크모드와 시즈모드를 합쳐서 관리
+    private static void checkIfMechanicUnit(final Set<UnitKind> unitKindSet, final String strUnitType) {
+	switch (strUnitType) {
+	case "Terran_Vulture":
+	case "Terran_Siege_Tank_Siege_Mode":
+	case "Terran_Siege_Tank_Tank_Mode":
+	case "Terran_Goliath":
+	    unitKindSet.add(UnitKind.Mechanic_Unit);
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    // 메카닉 유닛들을 합쳐서 관리한다.
+    private static void checkIfSiegeTank(final Set<UnitKind> unitKindSet, final String strUnitType) {
+	switch (strUnitType) {
+	case "Terran_Siege_Tank_Siege_Mode":
+	case "Terran_Siege_Tank_Tank_Mode":
+	    unitKindSet.add(UnitKind.Terran_Siege_Tank);
 	    break;
 	default:
 	    break;

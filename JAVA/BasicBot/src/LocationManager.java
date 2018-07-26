@@ -13,6 +13,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
     protected TilePosition allianceBaseLocation = null; // 아군 본진 위치
     protected TilePosition enemyStartLocation = null; // 적군 본진 위치
     protected List<TilePosition> allianceFirstExpansionLocation = null; // 아군 확장 위치
+    protected List<TilePosition> enemyFirstExpansionLocation = null; // 적군 확장 위치
     protected List<TilePosition> baseLocations = null; // 맵 전체의 스타팅 포인트 위치들.
     private List<TilePosition> searchSequence = null; // 정찰할 위치(순서)
     protected List<TilePosition> trainingBuildings = null; // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치
@@ -43,15 +44,15 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	if (1 == gameStatus.getFrameCount()) {
 	    init(gameStatus.getAllianceUnitInfo().getAnyUnit(UnitKind.Terran_Command_Center));
 	}
-	
-//	size3by2Buildings = init3by2SizeBuildings();
-//	baseEntranceBunkers = initBaseEntranceBunker();
-//	entranceBuilding = initEntranceBuildings();
-//	secondEntranceBuilding = initSecondEntranceBuildings();
-//	firstExtensionChokePoint = initFirstExtensionChokePoint();
-//	trainingBuildings = initTrainingBuildings();
-//	baseEntranceChokePoint = initBaseEntranceChokePoint();
-//	baseTankPoint = initBaseTankPoint();
+
+	//	size3by2Buildings = init3by2SizeBuildings();
+	//	baseEntranceBunkers = initBaseEntranceBunker();
+	//	entranceBuilding = initEntranceBuildings();
+	//	secondEntranceBuilding = initSecondEntranceBuildings();
+	//	firstExtensionChokePoint = initFirstExtensionChokePoint();
+	//	trainingBuildings = initTrainingBuildings();
+	//	baseEntranceChokePoint = initBaseEntranceChokePoint();
+	//	baseTankPoint = initBaseTankPoint();
     }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
@@ -117,12 +118,12 @@ public abstract class LocationManager extends Manager implements MapInfo {
     public List<TilePosition> getBaseEntranceBunker() {
 	return baseEntranceBunkers;
     }
-    
+
     @Override
     public List<TilePosition> getEntranceBuilding() {
 	return entranceBuilding;
     }
-    
+
     @Override
     public List<TilePosition> getSecondEntranceBuilding() {
 	return secondEntranceBuilding;
@@ -169,7 +170,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
     public TilePosition getFirstExtensionChokePoint() {
 	return firstExtensionChokePoint;
     }
-    
+
     // 앞마당 입구 방어를 위한 위치를 리턴한다.
     @Override
     public List<TilePosition> getBaseTankPoint() {
@@ -190,6 +191,11 @@ public abstract class LocationManager extends Manager implements MapInfo {
     public List<TilePosition> getFirstExpansionLocation() {
 	return allianceFirstExpansionLocation;
     }
+    
+    @Override
+    public List<TilePosition> getEnemyFirstExpansionLocation() {
+	return enemyFirstExpansionLocation;
+    }
 
     // 아군 첫번째 확장의 위치를 리턴한다.
     public List<TilePosition> initFirstExpansionLocaion() {
@@ -209,5 +215,25 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	List<TilePosition> result = new ArrayList<>();
 	result.add(firstExpansionLocation);
 	return result;
+    }
+
+    // 적군 첫번째 확장의 위치를 리턴한다.
+    public void initEnemyFirstExpansionLocaion() {
+	double tempDistance;
+	double closestDistance = 1000000000;
+	TilePosition firstEnemyExpansionLocation = null;
+	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+	    if (targetBaseLocation.getTilePosition().equals(enemyStartLocation))
+		continue;
+	    tempDistance = BWTA.getGroundDistance(enemyStartLocation, targetBaseLocation.getTilePosition());
+	    if (tempDistance < closestDistance && tempDistance > 0) {
+		closestDistance = tempDistance;
+		firstEnemyExpansionLocation = targetBaseLocation.getTilePosition();
+	    }
+	}
+
+	List<TilePosition> result = new ArrayList<>();
+	result.add(firstEnemyExpansionLocation);
+	enemyFirstExpansionLocation = result;
     }
 }

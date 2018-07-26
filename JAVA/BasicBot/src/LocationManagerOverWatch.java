@@ -397,4 +397,10 @@ public class LocationManagerOverWatch extends LocationManager {
 	// TODO Auto-generated method stub
 	return null;
     }
+
+    @Override
+    public List<TilePosition> getEnemyFirstExpansionLocation() {
+	// TODO Auto-generated method stub
+	return null;
+    }
 }

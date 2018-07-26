@@ -10,6 +10,7 @@ public enum UnitKind {
     Combat_Unit, // 공격 유닛 (일꾼, 옵저버, 오버로드, 라바, 에그 등을 제외한 공격,마법 유닛)
     Bionic_Unit, // 바이오닉 유닛 (메딕과 SCV 포함)
     Bionic_Attackable, // 일꾼과 매딕을 제외한 공격용 바이오닉 유닛
+    Mechanic_Unit, //메카닉 유닛
 
     Clocked, // 클로킹 유닛
 
@@ -20,6 +21,8 @@ public enum UnitKind {
     Addon, // 애드온 건물
 
     MAIN_BUILDING, // 커맨드 센터, 넥서스, 해쳐리 류의 빌딩들...
+    
+    Terran_Siege_Tank, //탱크모드와 시즈모드를 합쳐서 관리
 
     // /////////////////////////////////////////////////////////////////////////
     // UnitType을 래핑했다.

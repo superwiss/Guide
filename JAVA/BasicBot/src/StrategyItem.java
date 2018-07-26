@@ -7,9 +7,15 @@ public enum StrategyItem {
     AUTO_BALANCE_SCV, // 자동으로 미네랄 일꾼의 밸런스를 맞춘다.
     AUTO_ASSIGN_GAS_SCV,
     BLOCK_ENTRANCE,
+    AUTO_BUILD_TWO_ARMORY,
+    AUTO_UPGRADE_MECHANIC_UNIT,
     
     AUTO_RESEARCH_U_238_Shells, // 자동으로 마린 사거리 리서치를 한다.
     AUTO_RESEARCH_STIMPACK, // 자동으로 스팀팩 리서치를 한다.
+    AUTO_RESEARCH_ION_THRUSTERS,
+    AUTO_RESEARCH_CHARON_BOOSTERS,
+    AUTO_RESEARCH_SPIDER_MINES,
+    AUTO_RESEARCH_SIEGE_MODE,
 
     AUTO_ADDON_COMSAT_STATION, // 자동으로 컴샛 스테이션 애드온을 단다.
     AUTO_ADDON_MACHINE_SHOP, // 자동으로 머신샵 애드온을 단다.

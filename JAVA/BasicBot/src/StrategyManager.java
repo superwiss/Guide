@@ -38,6 +38,7 @@ public class StrategyManager extends Manager {
 	checkIfuseScan();
 	doBunkerJob();
 	doAcademyJob();
+	doArmoryJob();
 	doAttackUnitAutoTrain();
 	doDefenceBase();
 	doEngineeringBayJob();
@@ -47,6 +48,7 @@ public class StrategyManager extends Manager {
 	doSCVAutoTrain();
 	doFactoryRally();
 	doRefineryJob();
+	doMachineShopJob();
 
 	strategy.onFrame();
     }
@@ -355,28 +357,49 @@ public class StrategyManager extends Manager {
 
 	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_MECHANIC_UNIT)) {
 	    BuildManager buildManager = gameStatus.getBuildManager();
-	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
-		// 서플 여유가 6개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
+
+	    if (true == buildManager.isInitialBuildFinished() && 0 == buildManager.getQueueSize()) {
+		// 서플 여유가 10개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
 		if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 10 * 2) {
 		    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-		} else if (gameStatus.getMineral() > 200 && gameStatus.getGas() > 100 && 4 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size()
-			&& 0 == buildManager.getQueueSize()) {
-		    // 팩토리가 4개 미만이고, BuildOrder Queue가 비어있으면 팩토리를 짓는다.
-		    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
-		} else if (gameStatus.getMineral() >= 75) {
-		    Unit2 barracks = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Factory, UnitType.Terran_Vulture);
-		    if (null != barracks) {
-			Set<Unit2> tankSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Siege_Tank_Tank_Mode);
+		} else if (gameStatus.getMineral() > 200 && gameStatus.getGas() > 100 && 0 == buildManager.getQueueSize()) {
+
+		    if (4 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size()) {
+			// 팩토리가 4개 미만이고, BuildOrder Queue가 비어있으면 팩토리를 짓는다.
+			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
+		    } else if (4 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() && multiCount > 1) {
+			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
+		    }
+		}
+
+		if (gameStatus.getMineral() >= 75) {
+
+		    System.out.println("생산");
+		    Unit2 factory = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Factory, UnitType.Terran_Vulture);
+		    if (null != factory) {
+			Set<Unit2> tankSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Siege_Tank);
 			Set<Unit2> vultureSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Vulture);
+			Set<Unit2> goliathSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath);
+
 			int tankCount = tankSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Factory, UnitType.Terran_Siege_Tank_Tank_Mode);
 			int vultureCount = vultureSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Factory, UnitType.Terran_Vulture);
+			int goliathCount = goliathSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Factory, UnitType.Terran_Goliath);
 
 			// 벌쳐4마리당 탱크 1대
-			Log.info("탱크/벌쳐 생산. 탱크 수: %d, 벌쳐 수: %d", tankCount, vultureCount);
-			if (tankCount * 4 < vultureCount) {
-			    barracks.train(UnitType.Terran_Siege_Tank_Tank_Mode);
+			System.out.println(gameStatus.getMineral());
+			System.out.println(gameStatus.getGas());
+			Log.info("메카닉 생산. 탱크 수: %d, 벌쳐 수: %d, 골리앗 수: %d", tankCount, vultureCount, goliathCount);
+
+			if (tankCount < vultureCount) {
+			    if (factory.canTrain(UnitType.Terran_Siege_Tank_Tank_Mode)) {
+				factory.train(UnitType.Terran_Siege_Tank_Tank_Mode);
+			    }
+			} else if (goliathCount < vultureCount) {
+			    if (factory.canTrain(UnitType.Terran_Goliath)) {
+				factory.train(UnitType.Terran_Goliath);
+			    }
 			} else {
-			    barracks.train(UnitType.Terran_Vulture);
+			    factory.train(UnitType.Terran_Vulture);
 			}
 		    }
 		}
@@ -408,6 +431,96 @@ public class StrategyManager extends Manager {
 	    if (hasStrategyItem(StrategyItem.AUTO_RESEARCH_STIMPACK)) {
 		if (academy.canResearch(TechType.Stim_Packs)) {
 		    academy.research(TechType.Stim_Packs);
+		}
+	    }
+	} else {
+	    BuildManager buildManager = gameStatus.getBuildManager();
+	    if (gameStatus.getMineral() > 150 && 0 == buildManager.getQueueSize() && gameStatus.getFrameCount() > 12000) {
+		buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
+	    }
+	}
+    }
+
+    // 아머리와 관련된 작업을 수행한다.
+    private void doArmoryJob() {
+	// 1초에 한 번만 수행된다.
+	if (!gameStatus.isMatchedInterval(2)) {
+	    return;
+	}
+
+	//아머리 건설
+	Unit2 factory = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Factory);
+	if (null != factory) {
+	    if (hasStrategyItem(StrategyItem.AUTO_BUILD_TWO_ARMORY)) {
+		BuildManager buildManager = gameStatus.getBuildManager();
+		if (gameStatus.getMineral() > 100 && gameStatus.getGas() > 50 && 0 == buildManager.getQueueSize() && buildManager.isInitialBuildFinished()) {
+		    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Armory).size() == 0) {
+			// 첫번째 아머리는 바로 짓는다.
+			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Armory));
+		    } else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Armory).size() < 2 && allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 24) {
+			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Armory));
+		    }
+		}
+	    }
+	}
+
+	//아머리 업그레이드
+	if (hasStrategyItem(StrategyItem.AUTO_UPGRADE_MECHANIC_UNIT)) {
+
+	    Unit2 armory = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Armory);
+
+	    if (null != armory) {
+
+		// 공격력, 방어력 1레벨 업그레이드를 한다.
+		if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) == 0 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Weapons)) {
+		    armory.upgrade(UpgradeType.Terran_Vehicle_Weapons);
+		} else if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating) == 0 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Plating)) {
+		    armory.upgrade(UpgradeType.Terran_Vehicle_Plating);
+		}
+
+		// 메카닉 병력이 18마리 이상일 경우 계속해서 공격력 방어력 업그레이드를 한다.
+		int mechanicCount = allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size();
+		if (mechanicCount > 18 && null != allianceUnitInfo.getAnyUnit(UnitKind.Terran_Science_Facility)) {
+		    if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) < 3 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Weapons)) {
+			armory.upgrade(UpgradeType.Terran_Vehicle_Weapons);
+		    } else if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating) < 3 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Plating)) {
+			armory.upgrade(UpgradeType.Terran_Vehicle_Plating);
+		    }
+		}
+	    }
+	}
+    }
+
+    // 머신샵과 관련된 작업을 수행한다.
+    private void doMachineShopJob() {
+	// 1초에 한 번만 수행된다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+	Unit2 machineShop = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Machine_Shop);
+
+	if (null != machineShop) {
+	    if (hasStrategyItem(StrategyItem.AUTO_RESEARCH_ION_THRUSTERS)) {
+		if (machineShop.canUpgrade(UpgradeType.Ion_Thrusters)) {
+		    machineShop.upgrade(UpgradeType.Ion_Thrusters);
+		}
+	    }
+
+	    if (hasStrategyItem(StrategyItem.AUTO_RESEARCH_CHARON_BOOSTERS)) {
+		if (machineShop.canUpgrade(UpgradeType.Charon_Boosters)) {
+		    machineShop.upgrade(UpgradeType.Charon_Boosters);
+		}
+	    }
+
+	    if (hasStrategyItem(StrategyItem.AUTO_RESEARCH_SPIDER_MINES)) {
+		if (machineShop.canResearch(TechType.Spider_Mines)) {
+		    machineShop.research(TechType.Spider_Mines);
+		}
+	    }
+
+	    if (hasStrategyItem(StrategyItem.AUTO_RESEARCH_SIEGE_MODE)) {
+		if (machineShop.canResearch(TechType.Tank_Siege_Mode)) {
+		    machineShop.research(TechType.Tank_Siege_Mode);
 		}
 	    }
 	}
@@ -716,8 +829,9 @@ public class StrategyManager extends Manager {
 		    }
 		    // 적 클로킹 유닛 distance 거리 미만에 존재하는 아군 유닛이 5기 이상이면 스캔을 뿌린다.
 		    Set<Unit2> allianceUnitSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Terran_Marine, distance);
+		    Set<Unit2> mechanicUnitSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Mechanic_Unit, distance);
 		    Log.info("적 클로킹 유닛 발견: %s. 주변의 마린 수: %d, 거리: %d", clockedUnit, allianceUnitSet.size(), distance);
-		    if (5 <= allianceUnitSet.size()) {
+		    if (5 <= allianceUnitSet.size() || 5 <= mechanicUnitSet.size()) {
 			allianceUnitInfo.doScan(clockedUnit.getPosition());
 			lastScanFrameCount = gameStatus.getFrameCount();
 			break;
