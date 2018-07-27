@@ -388,8 +388,8 @@ public class StrategyManager extends Manager {
 	this.defenceTilePosition = defenceTilePosition;
     }
 
-    public boolean addStrategyItems(StrategyItem strategyIteme) {
-	return strategyItems.add(strategyIteme);
+    public boolean addStrategyItem(StrategyItem strategyItem) {
+	return strategyItems.add(strategyItem);
     }
 
     public boolean removeStrategyItems(StrategyItem strategyItem) {
