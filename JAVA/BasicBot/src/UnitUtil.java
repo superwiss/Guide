@@ -539,6 +539,7 @@ public class UnitUtil {
 	case "Terran_Goliath":
 	case "Terran_Marine":
 	case "Terran_Medic":
+	case "Terran_Vulture":
 	case "Terran_Siege_Tank_Siege_Mode":
 	case "Terran_Siege_Tank_Tank_Mode":
 	case "Terran_Battlecruiser":
