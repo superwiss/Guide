@@ -87,6 +87,10 @@ public class StrategyTwoFactory extends StrategyBase {
 	    }
 	} else if (supplyUsed < 15) {
 	    // 공격 유닛 인구수가 15 미만이라면 본진에서 대기한다.
+	    // 마린은 앞마당에 대기하자.
+	    for (Unit2 marine : allianceUnitInfo.getUnitSet(UnitKind.Terran_Marine)) {
+		ActionUtil.moveToPosition(allianceUnitInfo, marine, locationManager.getExtentionPosition().get(0));
+	    }
 	} else if (supplyUsed >= 15 && supplyUsed < 60) {
 	    // 공격 유닛 인구수가 15 ~ 30이면 본진 앞마당 입구로 나온다.
 	    strategyManager.setAttackTilePosition(locationManager.getFirstExtensionChokePoint());
