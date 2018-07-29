@@ -144,7 +144,7 @@ computer() {
     ; 저그 선택
     ; MouseClickDrag, LEFT, 500, 150, 500, 185
     ; 테란 선택
-    MouseClickDrag, LEFT, 500, 150, 500, 215
+    ; MouseClickDrag, LEFT, 500, 150, 500, 215
     ; 프로토스 선택
     ; MouseClickDrag, LEFT, 500, 150, 500, 250
 
@@ -165,7 +165,7 @@ computer() {
     ; 게임 속도를 빠르게 조절한다.
     ControlSend,,{Esc},ahk_class SWarClass
     Sleep, 100
-    ;ControlSend,,{Enter}0{Enter},ahk_class SWarClass
+    ControlSend,,{Enter}0{Enter},ahk_class SWarClass
 
     ; victory 화면이 나올 때까지 대기한다.
     ; draw.bmp, defeat.bmp, victory.bmp 활용 가능.

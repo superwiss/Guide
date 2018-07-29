@@ -245,6 +245,8 @@ public class BuildManager extends Manager {
 		    tilePositionList = locationManager.get3by2SizeBuildings();
 		} else if (UnitType.Terran_Bunker.equals(buildingType)) {
 		    tilePositionList = locationManager.getBaseEntranceBunker();
+		} else if (UnitType.Terran_Command_Center.equals(buildingType)) {
+		    tilePositionList = locationManager.getExtentionPosition();
 		}
 
 		if (null != tilePositionList) {

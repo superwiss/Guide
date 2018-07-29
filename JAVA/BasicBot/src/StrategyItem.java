@@ -15,6 +15,8 @@ public enum StrategyItem {
     AUTO_BUILD_SUPPLY, // 자동으로 서플라이 디팟을 건설한다.
     AUTO_TRAIN_VULTURE, // 자동으로 벌쳐를 생성한다.
     AUTO_BUILD_FACTORY, // 자동으로 팩토리를 늘린다.
+    AUTO_EXTENSION, // 자동으로 확장한다.
+    AUTO_REBALANCE_WORKER, // 자동으로 일꾼을 재분배 한다.
 
     ASSEMBLE_FIRST_CHOCKPOINT, // 아군 앞마당에 병력을 집결한다.
     ASSEMBLE_FOR_BLOCKING_ENEMY, // 적 입구를 조이면서 적이 공격해 오기를 대기한다.

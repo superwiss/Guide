@@ -213,7 +213,7 @@ public class GameStatus {
 	    case "Leviathan Brood":
 	    case "Sutur Brood":
 	    case "Tiamat Brood":
-	    case "Antia":
+	    case "Antiga":
 	    case "Atlas Wing":
 	    case "Cronus Wing":
 	    case "Delta Squadron":

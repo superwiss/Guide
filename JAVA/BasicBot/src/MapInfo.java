@@ -94,4 +94,7 @@ public interface MapInfo {
 
     // 조이기 상태에서 적을 기다리고 있을 위치를 리턴한다.
     abstract TilePosition getBlockingChokePoint();
+
+    // 확장 위치를 리턴한다.
+    abstract List<TilePosition> getExtentionPosition();
 }

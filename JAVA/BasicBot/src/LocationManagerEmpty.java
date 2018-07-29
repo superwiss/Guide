@@ -82,4 +82,11 @@ public class LocationManagerEmpty extends LocationManager {
     public TilePosition getBlockingChokePoint() {
 	return null;
     }
+
+    @Override
+    public List<TilePosition> getExtentionPosition() {
+	List<TilePosition> result = new ArrayList<>();
+
+	return result;
+    }
 }

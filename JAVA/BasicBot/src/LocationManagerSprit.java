@@ -600,4 +600,21 @@ public class LocationManagerSprit extends LocationManager {
 
 	return result;
     }
+
+    @Override
+    public List<TilePosition> getExtentionPosition() {
+	List<TilePosition> result = new ArrayList<>();
+
+	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+	    result.add(new TilePosition(88, 13));
+	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+	    result.add(new TilePosition(110, 88));
+	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+	    result.add(new TilePosition(36, 112));
+	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+	    result.add(new TilePosition(14, 38));
+	}
+
+	return result;
+    }
 }

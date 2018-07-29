@@ -68,6 +68,7 @@ public class StrategyManager extends Manager {
 	doAutoBuildSupply();
 	doAutoTrainVulture();
 	doAutoBuildFactory();
+	doAutoExtension();
 
 	strategy.onFrame();
     }
@@ -398,6 +399,29 @@ public class StrategyManager extends Manager {
 		    if (1 > buildFactoryRemainSize) {
 			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
 		    }
+		}
+	    }
+	}
+    }
+
+    // StrategyItem.AUTO_EXTENSION 구현부
+    // 여유가 되면 팩토리를 자동으로 추가한다. 이미 건설 중인 팩토리가 있다면, 건설하지 않는다. 즉 동시에 두 개의 팩토리가 지어지지는 않는다.
+    private void doAutoExtension() {
+	// 1초에 한 번만 실행한다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	if (!hasStrategyItem(StrategyItem.AUTO_EXTENSION)) {
+	    return;
+	}
+
+	// 돈과 가스가 남으면 팩토리를 지어본다.
+	if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Command_Center)) {
+	    if (allianceUnitInfo.checkResourceIfCanBuild(UnitType.Terran_Command_Center)) {
+		int buildFactoryRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center);
+		if (1 > buildFactoryRemainSize) {
+		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center));
 		}
 	    }
 	}
