@@ -251,10 +251,11 @@ public class BuildManager extends Manager {
 		    // 
 		    for (TilePosition tilePosition : tilePositionList) {
 
+			// 건설할 위치에 다른 건물이 이미 건설되어 있거나, 다른 유닛이 위치하고 있으면 skip 한다.
 			boolean alreadyBuilt = false;
-			Set<Unit2> buildingSet = allianceUnitInfo.getUnitSet(UnitKind.Building);
-			for (Unit2 building : buildingSet) {
-			    if (building.getTilePosition().equals(tilePosition)) {
+			Set<Unit2> unitSet = allianceUnitInfo.getUnitSet(UnitKind.ALL);
+			for (Unit2 unit : unitSet) {
+			    if (unit.getTilePosition().equals(tilePosition)) {
 				alreadyBuilt = true;
 				break;
 			    }
