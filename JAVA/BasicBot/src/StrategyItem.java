@@ -14,6 +14,7 @@ public enum StrategyItem {
     AUTO_DEFENCE_ALLIANCE_BASE, // 본진을 공격한 적 유닛을 자동으로 공격한다.
     AUTO_BUILD_SUPPLY, // 자동으로 서플라이 디팟을 건설한다.
     AUTO_TRAIN_VULTURE, // 자동으로 벌쳐를 생성한다.
+    AUTO_TRAIN_TANK, // 자동으로 탱크를 생성한다.
     AUTO_BUILD_FACTORY, // 자동으로 팩토리를 늘린다.
     AUTO_EXTENSION, // 자동으로 확장한다.
     AUTO_REBALANCE_WORKER, // 자동으로 일꾼을 재분배 한다.

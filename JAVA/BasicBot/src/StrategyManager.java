@@ -66,6 +66,7 @@ public class StrategyManager extends Manager {
 	doAttackUnitAutoTrain();
 	doDefenceBase();
 	doAutoBuildSupply();
+	doAutoTrainTank();
 	doAutoTrainVulture();
 	doAutoBuildFactory();
 	doAutoExtension();
@@ -359,6 +360,31 @@ public class StrategyManager extends Manager {
 		    }
 		}
 
+	    }
+	}
+    }
+
+    // StrategyItem.AUTO_TANK 구현부
+    // 탱크를 자동으로 생성해준다.
+    private void doAutoTrainTank() {
+	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_TANK)) {
+	    Set<Unit2> factorySet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory);
+	    for (Unit2 factory : factorySet) {
+		if (!factory.isCompleted()) {
+		    continue;
+		}
+		if (null == factory.getAddon()) {
+		    continue;
+		}
+		if (gameStatus.getGas() > 100) {
+		    if (0 == factory.getTrainingQueue().size()) {
+			int trainingRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.TRAINING, UnitType.Terran_Siege_Tank_Tank_Mode);
+			if (1 > trainingRemainSize) {
+			    Log.info("탱크 생산. 남은 훈련시간: %d, 팩토리: %s", factory.getRemainingTrainTime(), factory);
+			    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Siege_Tank_Tank_Mode));
+			}
+		    }
+		}
 	    }
 	}
     }
