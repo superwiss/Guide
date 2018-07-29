@@ -299,27 +299,10 @@ public class WorkerManager extends Manager {
 
 	/*
 	Log.info("autoRebalanceWorker: 부족한 일꾼 수=%d", lackWorkerCount);
-	boolean alreadySentWorker = false;
 	if (lackWorkerCount > 5) {
 	    // 부족한 일꾼 수가 5개 이상이라면, 확장을 하지 않고 일꾼을 뽑는데 힘쓴다.
 	    Log.info("autoRebalanceWorker: 확장을 하지 않고 일꾼을 뽑는다.");
 	    strategyManager.removeStrategyItem(StrategyItem.AUTO_EXTENSION);
-	} else if (lackWorkerCount >= 2 && lackWorkerCount <= 5) {
-	    // 부족한 일꾼이 2~5개 사이라면 다음 확장 지역에 미리 일꾼을 보내놓는다.
-	    for (TilePosition extensionTile : locationManager.getExtentionPosition()) {
-		if (true == alreadySentWorker) {
-		    break;
-		}
-		for (Unit2 commandCenter: allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-		    if (!commandCenter.getTilePosition().equals(extensionTile)) {
-			Unit2 idleWorker = getInterruptableWorker(extensionTile);
-			ActionUtil.moveToPosition(allianceUnitInfo, idleWorker, extensionTile);
-			alreadySentWorker = true;
-			Log.info("autoRebalanceWorker: 확장 준비를 한다: %s", extensionTile);
-			break;
-		    }
-		}
-	    }
 	} else {
 	    // 부족한 일꾼이 2개 이하라면 다음 확장을 시도한다.
 	    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() < 4) {
