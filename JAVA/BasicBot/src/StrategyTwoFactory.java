@@ -43,6 +43,13 @@ public class StrategyTwoFactory extends StrategyBase {
 	    strategyManager.removeStrategyItem(StrategyItem.AUTO_EXTENSION);
 	}
 
+	// 탱크가 3대 이상이면 그만 뽑는다.
+	if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Siege_Tank_Tank_Mode).size() >= 3) {
+	    strategyManager.removeStrategyItem(StrategyItem.AUTO_TRAIN_TANK);
+	} else {
+	    strategyManager.addStrategyItem(StrategyItem.AUTO_TRAIN_TANK);
+	}
+
 	// 공격 시점과 장소를 체크한다.
 	checkAttackTimingAndPosition();
     }
@@ -93,6 +100,15 @@ public class StrategyTwoFactory extends StrategyBase {
 
 	    // 적 입구를 조이는 시점에 커맨드 센터를 더 늘린다.
 	    strategyManager.addStrategyItem(StrategyItem.AUTO_EXTENSION);
+
+	    // 조이기 시점에 적이 5마리 이상 보이면 총 공격을 한다.
+	    if (enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit).size() > 5) {
+		TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+		strategyManager.setAttackTilePosition(attackTilePosition);
+		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+		Log.info("총 공격을 간다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
+	    }
 	} else if (supplyUsed >= 120) {
 	    // 공격 유닛 인구수가 100이 넘으면 총 공격을 한다.
 	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
