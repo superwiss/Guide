@@ -1,12 +1,11 @@
 import java.util.List;
 
-import bwapi.Game;
+import bwapi.Position;
+import bwapi.TilePosition;
 import bwapi.UnitType;
 
 // MagiBot을 빠르게 연습시키기 위해서, 유즈맵으로 미션을 만들어 MagiBot이 미션을 해결하는 방식으로 훈련한다.
 public class TrainingManager extends Manager {
-    private static Game game = MyBotModule.Broodwar;
-
     private TrainingData trainingData;
 
     private boolean isTrainingMode = true;
@@ -25,11 +24,17 @@ public class TrainingManager extends Manager {
     // 미션 성공 여부
     private boolean isSuccess = false;
 
+    private LocationManager locationManager;
+    private StrategyManager strategyManager;
+
     @Override
     public void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
 
-	String mapName = game.mapFileName();
+	this.locationManager = gameStatus.getLocationManager();
+	this.strategyManager = gameStatus.getStrategyManager();
+
+	String mapName = gameStatus.mapFileName();
 	TrainingData.TrainingDataBuilder builder = TrainingData.builder();
 	switch (mapName) {
 	case "Marine1_vs_Zergling1.scx":
@@ -60,6 +65,15 @@ public class TrainingManager extends Manager {
 	    // 저그 테스트용
 	    builder.addAllianceUnitType(UnitType.Terran_Marine).addEnemyUnitType(UnitType.Protoss_Zealot).frameLimitFrom(50).frameLimitTo(1000000).allianceKillCount(0)
 		    .enemyKillCount(1).scoreType(TrainingData.SCORE_TYPE.ALLIANCE_HP_AND_TIME);
+	    break;
+	case "Vulture2_vs_Hydralisk1.scx":
+	    // 벌쳐 5마리 vs 히드라 4마리: attack으로 싸우면 히드라가 이긴다. 컨트롤 해서 벌쳐가 이겨야 한다.
+	    builder.addAllianceUnitType(UnitType.Terran_Vulture).addEnemyUnitType(UnitType.Zerg_Hydralisk).frameLimitFrom(50).frameLimitTo(1000000).allianceKillCount(5)
+		    .enemyKillCount(4).scoreType(TrainingData.SCORE_TYPE.ALLIANCE_HP_AND_TIME);
+	    //locationManager.setEnemyStartLocation(new TilePosition(80, 65));
+	    strategyManager.setAttackTilePosition(new TilePosition(100, 65));
+	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    gameStatus.setScreen(new Position(2048, 2048));
 	    break;
 	default:
 	    isTrainingMode = false;
@@ -125,7 +139,7 @@ public class TrainingManager extends Manager {
 	}
 
 	List<UnitType> targetUnitTypeList;
-	if (game.self().isEnemy(unit.getPlayer())) {
+	if (UnitUtil.isEnemyUnit(unit)) {
 	    // 적 유닛이 죽었을 경우
 	    targetUnitTypeList = trainingData.getEnemyUnitList();
 	    if (true == isTargetUnitType(targetUnitTypeList, unit)) {
@@ -151,8 +165,8 @@ public class TrainingManager extends Manager {
 	Log.info("\t Remain enemy HP: %d", enemyUnitHp);
 	Log.info("\t Killed alliance units count: %d", allianceUnitKilledCount);
 	Log.info("\t Killed enemy units count: %d", enemyUnitKilledCount);
-	Util.writeTrainingResultToFile(game.mapFileName(), isSuccess, getScore(), currentFrameCount, allianceUnitHp, enemyUnitHp, allianceUnitKilledCount, enemyUnitKilledCount,
-		UnitSpecMarine.Instance());
+	Util.writeTrainingResultToFile(gameStatus.mapFileName(), isSuccess, getScore(), currentFrameCount, allianceUnitHp, enemyUnitHp, allianceUnitKilledCount,
+		enemyUnitKilledCount, UnitSpecMarine.Instance());
     }
 
     // 점수를 계산한다.
@@ -179,7 +193,7 @@ public class TrainingManager extends Manager {
 
     // 현재 상황을 업데이트 한다.
     private void updateInformation() {
-	currentFrameCount = game.getFrameCount();
+	currentFrameCount = gameStatus.getFrameCount();
 	calcHp();
     }
 
@@ -188,9 +202,9 @@ public class TrainingManager extends Manager {
 	allianceUnitHp = 0;
 	enemyUnitHp = 0;
 
-	List<Unit2> allUnits = Unit2.get(game.getAllUnits());
+	List<Unit2> allUnits = Unit2.get(gameStatus.getAllUnits());
 	for (Unit2 unit : allUnits) {
-	    if (game.self().isEnemy(unit.getPlayer())) {
+	    if (UnitUtil.isEnemyUnit(unit)) {
 		// Enemy Unit일 경우
 		if (true == isTargetUnitType(trainingData.getEnemyUnitList(), unit)) {
 		    enemyUnitHp += unit.getHitPoints();

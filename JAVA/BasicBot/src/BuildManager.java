@@ -175,11 +175,11 @@ public class BuildManager extends Manager {
 	    }
 	    break;
 	case SET_STRATEGY_ITEM:
-	    strategyManager.addStrategyItems(buildOrderItem.getStrategyItem());
+	    strategyManager.addStrategyItem(buildOrderItem.getStrategyItem());
 	    queue.poll();
 	    break;
 	case CLEAR_STRATEGY_ITEM:
-	    strategyManager.removeStrategyItems(buildOrderItem.getStrategyItem());
+	    strategyManager.removeStrategyItem(buildOrderItem.getStrategyItem());
 	    queue.poll();
 	    break;
 	case TRAINING:

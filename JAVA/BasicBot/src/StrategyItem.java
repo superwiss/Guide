@@ -16,6 +16,9 @@ public enum StrategyItem {
     AUTO_TRAIN_VULTURE, // 자동으로 벌쳐를 생성한다.
     AUTO_BUILD_FACTORY, // 자동으로 팩토리를 늘린다.
 
+    ASSEMBLE_FIRST_CHOCKPOINT, // 아군 앞마당에 병력을 집결한다.
+    ASSEMBLE_FOR_BLOCKING_ENEMY, // 적 입구를 조이면서 적이 공격해 오기를 대기한다.
+
     AGGRESSIVE_MOVE_ATTACK, // 공격 후 쿨 타임 차는 동안 Move로 적 방향으로 이동한다.
     SET_BARRACKS_RALLY // 자동으로 배럭의 랠리 포인트가 아군의 FirstChokePoint로 찍한다.
 }

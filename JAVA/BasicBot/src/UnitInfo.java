@@ -227,10 +227,17 @@ public class UnitInfo {
     public Unit2 getClosestUnitWithLastTilePosition(Set<Unit2> unitSet, Position position, Set<UnitType> excludeUnitType) {
 	Unit2 result = null;
 
+	Set<Unit2> droneBuildSet = new HashSet<>();
+
 	if (null != unitSet && null != position) {
 	    int minDistance = Integer.MAX_VALUE;
 	    for (Unit2 unit : unitSet) {
 		if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
+		    continue;
+		}
+		if (unit.getType().equals(UnitType.Zerg_Drone)) {
+		    // BWAPI에서 드론을 건물로 계산하는 경우가 있다. 드론은 건물 목록에서 빼준다.
+		    droneBuildSet.add(unit);
 		    continue;
 		}
 		TilePosition lastTilePosition = lastTilePositoin.get(unit);
@@ -244,6 +251,10 @@ public class UnitInfo {
 	    }
 	} else {
 	    Log.warn("Invalid Parameter: unitset: %s, position: %s", unitSet, position);
+	}
+	for (Unit2 droneBuilding : droneBuildSet) {
+	    removeUnitKind(UnitKind.Building, droneBuilding);
+	    removeUnitKind(UnitKind.MAIN_BUILDING, droneBuilding);
 	}
 
 	return result;
@@ -593,6 +604,16 @@ public class UnitInfo {
     // 건물을 생산할 수 있는 자원의 여유가 되는지 여부를 리턴한다.
     public boolean checkResourceIfCanBuild(UnitType unitType) {
 	return gameStatus.getMineral() > unitType.mineralPrice() && gameStatus.getGas() > unitType.gasPrice();
+    }
+
+    // 일꾼을 제외한 인구수를 구한다.
+    public int getSupplyUsedExceptWorker() {
+	int result = gameStatus.getSupplyUsed();
+
+	result -= getUnitSet(UnitKind.Worker).size() * 2;
+	result -= getUnitSet(UnitKind.Worker_Gather_Gas).size() * 2;
+
+	return result;
     }
 
 }

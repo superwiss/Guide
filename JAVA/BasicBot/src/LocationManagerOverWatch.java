@@ -367,4 +367,10 @@ public class LocationManagerOverWatch extends LocationManager {
 
 	return result;
     }
+
+    // 조이기 상태에서 적을 기다리고 있을 위치를 리턴한다.
+    @Override
+    public TilePosition getBlockingChokePoint() {
+	return null;
+    }
 }

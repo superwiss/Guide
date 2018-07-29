@@ -34,15 +34,22 @@ public class StrategyDefault extends StrategyBase {
 
     // 전체 공격을 처리한다.
     void doWholeAttack() {
+	TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+
+	if (strategyManager.containStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+	    return;
+	}
+
+	strategyManager.setAttackTilePosition(attackTilePosition);
+
 	// 모든 공격 가능한 유닛셋을 가져온다.
 	Set<Unit2> attackableUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
-	Log.debug("총 공격 조건 확인. 공격 위치: %s, 아군 공격 가능한 유닛 수: %d, 적 본진 위치: %s", strategyManager.getAttackTilePositon(), attackableUnitSet.size(),
-		locationManager.getEnemyStartLocation());
+	Log.debug("총 공격 조건 확인. 공격 위치: %s, 아군 공격 가능한 유닛 수: %d, 적 본진 위치: %s", attackTilePosition, attackableUnitSet.size(), locationManager.getEnemyStartLocation());
 
-	if (true == strategyManager.hasAttackTilePosition() || (attackableUnitSet.size() > 60 && null != locationManager.getEnemyStartLocation())) {
+	if (true == strategyManager.hasAttackTilePosition() || (attackableUnitSet.size() > 60)) {
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnitSet.size());
-	    TilePosition attackTilePosition = calcAttackPosition();
+	    //TilePosition attackTilePosition = calcAttackPosition();
 
 	    if (null != attackTilePosition) {
 		strategyManager.setAttackTilePosition(attackTilePosition);

@@ -5,7 +5,14 @@ import java.util.Set;
 import bwapi.TilePosition;
 
 public class EliminateManager extends Manager {
+    private StrategyManager strategyManager;
     private Queue<TilePosition> eliminateQueue = new LinkedList<>();
+
+    @Override
+    protected void onStart(GameStatus gameStatus) {
+	super.onStart(gameStatus);
+	this.strategyManager = gameStatus.getStrategyManager();
+    }
 
     @Override
     protected void onFrame() {
@@ -18,12 +25,17 @@ public class EliminateManager extends Manager {
 		return;
 	    }
 
-	    // 적 건물이 하나도 없으면 맵 전체를 탐색한다.
-	    if (0 == enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
-		// 적 건물이 없으므로 탐색 모드를 시작한다.
-		Log.info("Eliminate mode enable.");
-		search();
+	    if (strategyManager.containStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+		// 적 건물이 하나도 없으면 맵 전체를 탐색한다.
+		if (0 == enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
+		    Log.info("Eliminate mode working.");
+		    search();
+		} else {
+		    Log.info("Eliminate mode finish.");
+		    strategyManager.removeStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE);
+		}
 	    }
+
 	}
     }
 

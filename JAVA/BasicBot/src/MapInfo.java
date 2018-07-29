@@ -91,4 +91,7 @@ public interface MapInfo {
 
     // 언덕의 타일을 리턴한다.
     abstract Set<TilePosition> getHillTilePosition();
+
+    // 조이기 상태에서 적을 기다리고 있을 위치를 리턴한다.
+    abstract TilePosition getBlockingChokePoint();
 }

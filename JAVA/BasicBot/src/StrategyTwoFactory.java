@@ -1,12 +1,14 @@
 import java.util.Set;
 
 import bwapi.TechType;
+import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 
 public class StrategyTwoFactory extends StrategyBase {
 
     private StrategyManager strategyManager = null;
+    private LocationManager locationManager = null;
 
     public StrategyTwoFactory() {
 	strategyName = "TowFactory";
@@ -17,6 +19,7 @@ public class StrategyTwoFactory extends StrategyBase {
 	super.onStart(gameStatus);
 
 	strategyManager = gameStatus.getStrategyManager();
+	locationManager = gameStatus.getLocationManager();
     }
 
     @Override
@@ -25,7 +28,61 @@ public class StrategyTwoFactory extends StrategyBase {
 
 	// 팩토리는 3개까지만 지어준다.
 	if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() >= 3) {
-	    strategyManager.removeStrategyItems(StrategyItem.AUTO_BUILD_FACTORY);
+	    strategyManager.removeStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
+	}
+
+	// 공격 시점과 장소를 체크한다.
+	checkAttackTimingAndPosition();
+    }
+
+    private void checkAttackTimingAndPosition() {
+	if (!gameStatus.isMatchedInterval(1)) {
+	    // 1초에 한 번만 수행한다.
+	    return;
+	}
+
+	if (strategyManager.containStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+	    return;
+	}
+
+	if (strategyManager.containStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
+	    return;
+	}
+
+	// 일꾼을 제외한 인구수를 구한다.
+	int supplyUsed = allianceUnitInfo.getSupplyUsedExceptWorker();
+
+	if (strategyManager.containStrategyStatus(StrategyStatus.FULLY_ATTACK)) {
+	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+
+	    // 공격 위치 반경 1200 이내에 아군 유닛이 없다면.. 공격이 막힌 것으로 봐야한다.
+	    Set<Unit2> attackUnitSet = allianceUnitInfo.getUnitsInRange(attackTilePosition.toPosition(), UnitKind.Combat_Unit, 1200);
+	    if (attackUnitSet.isEmpty()) {
+		strategyManager.removeStrategyStatus(StrategyStatus.FULLY_ATTACK);
+		Log.info("총 공격이 실패했다. 병력을 모아서 다시 공격가자.");
+	    } else {
+		strategyManager.setAttackTilePosition(attackTilePosition);
+		Log.info("총 공격을 유지한다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
+	    }
+	} else if (supplyUsed < 30) {
+	    // 공격 유닛 인구수가 15 미만이라면 본진에서 대기한다.
+	} else if (supplyUsed >= 30 && supplyUsed < 60) {
+	    // 공격 유닛 인구수가 15 ~ 30이면 본진 앞마당 입구로 나온다.
+	    strategyManager.setAttackTilePosition(locationManager.getFirstExtensionChokePoint());
+	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    Log.info("본진 앞마당으로 내려온다. 인구수: %d. 위치: %s", supplyUsed, strategyManager.getAttackTilePositon());
+	} else if (supplyUsed >= 60 && supplyUsed < 200) {
+	    // 공격 유닛 인구수가 30 ~ 60이면 적 입구를 조인다.
+	    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
+	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    Log.info("적 본진 근처에서 조이기를 한다. 인구수: %d, 위치: %s", supplyUsed, strategyManager.getAttackTilePositon());
+	} else if (supplyUsed >= 200) {
+	    // 공격 유닛 인구수가 100이 넘으면 총 공격을 한다.
+	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+	    strategyManager.setAttackTilePosition(attackTilePosition);
+	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+	    Log.info("총 공격을 간다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
 	}
     }
 

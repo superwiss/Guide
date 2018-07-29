@@ -18,6 +18,14 @@ public class UnitUtil {
 	CLOSE, NEAR_IN, NEAR_OUT, FAR
     }
 
+    private static enum DamageType {
+	NORMAL, CONCUSSIVE, EXPLOSIVE
+    };
+
+    private static enum UnitSize {
+	SMALL, MEDIUM, LARGE
+    };
+
     private static Map<Integer, Integer> lastAttackFinishedFrame = new HashMap<>();
 
     private UnitUtil() {
@@ -384,6 +392,11 @@ public class UnitUtil {
 	return result;
     }
 
+    // 두 유닛간의 거리를 구한다.
+    public static int getDistance(Unit2 unit1, Unit2 unit2) {
+	return getDistance(unit1.getPosition(), unit2.getPosition());
+    }
+
     // 두 Position 간의 거리를 리턴한다.
     public static int getDistance(TilePosition p1, Position p2) {
 	return getDistance(p1.toPosition(), p2);
@@ -587,7 +600,8 @@ public class UnitUtil {
 
     // 건물 여부를 리턴
     private static void checkIfBuilding(final Set<UnitKind> unitKindSet, final UnitType unitType) {
-	if (unitType.isBuilding()) {
+	// BWAPI에서 드론을 건물로 체크하는 경우가 있는데, 이 경우에 대한 예외처리를 해준다. 드론은 건물이 아니다.
+	if (unitType.isBuilding() && !unitType.equals(UnitType.Zerg_Drone)) {
 	    unitKindSet.add(UnitKind.Building);
 	}
     }
@@ -634,5 +648,109 @@ public class UnitUtil {
     // unit이 unitKind 종류인지 여부를 리턴한다.
     public static boolean compareUnitKind(Unit2 unit, UnitKind unitKind) {
 	return getUnitKinds(unit).contains(unitKind);
+    }
+
+    // u1이 u2에 입히는 예상 공격력을 계산한다.
+    public static int getDamage(Unit2 u1, Unit2 u2) {
+	int result = 0;
+
+	int defaultDamage = u1.getType().groundWeapon().damageAmount();
+	UnitSize unitSize = getUnitSize(u2);
+
+	result = defaultDamage;
+
+	DamageType damageType = gameDamageType(u1, u2);
+
+	if (damageType.equals(DamageType.CONCUSSIVE)) {
+	    // 진동형: 소형 100%, 중형 50%, 대형 25% 들어간다.
+	    if (unitSize.equals(UnitSize.SMALL)) {
+		result = defaultDamage;
+	    } else if (unitSize.equals(UnitSize.MEDIUM)) {
+		result = (int) (defaultDamage * 0.5);
+	    } else {
+		result = (int) (defaultDamage * 0.25);
+	    }
+	} else if (damageType.equals(DamageType.EXPLOSIVE)) {
+	    // 폭발형: 대형 100%, 중형 75%, 소형 50% 들어간다.
+	    if (unitSize.equals(UnitSize.SMALL)) {
+		result = (int) (defaultDamage * 0.5);
+	    } else if (unitSize.equals(UnitSize.MEDIUM)) {
+		result = (int) (defaultDamage * 0.75);
+	    } else {
+		result = defaultDamage;
+	    }
+	} else {
+	    // 일반형: 유닛 크기와 상관 없이 100% 들어간다.
+	}
+
+	return result;
+    }
+
+    private static DamageType gameDamageType(Unit2 u1, Unit2 u2) {
+	DamageType result = DamageType.NORMAL;
+
+	String strUnitType1 = u1.getType().toString();
+	switch (strUnitType1) {
+	case "Terran_Firebat":
+	case "Terran_Ghost":
+	case "Terran_Vulture":
+	    result = DamageType.CONCUSSIVE;
+	    break;
+	case "Terran_Siege_Tank_Siege_Mode":
+	case "Terran_Siege_Tank_Tank_Mode":
+	    result = DamageType.EXPLOSIVE;
+	    break;
+	default:
+	    break;
+	}
+
+	if ((strUnitType1.equals("Terran_Goliath") || strUnitType1.equals("Terran_Wraith")) && u2.getType().isFlyer()) {
+	    result = DamageType.EXPLOSIVE;
+	}
+	return result;
+    }
+
+    // http://classic.battle.net/scc/GS/damage.shtml
+    private static UnitSize getUnitSize(Unit2 unit) {
+	UnitSize result = UnitSize.SMALL;
+
+	String strUnitType = unit.getType().toString();
+
+	switch (strUnitType) {
+	case "Terran_Vulture":
+	case "Zerg_Hydralisk":
+	case "Zerg_Defiler":
+	case "Zerg_Queen":
+	case "Zerg_Lurker":
+	case "Protoss_Corsair":
+	    result = UnitSize.MEDIUM;
+	    break;
+	case "Terran_Siege_Tank_Siege_Mode":
+	case "Terran_Siege_Tank_Tank_Mode":
+	case "Terran_Goliath":
+	case "Terran_Wraith":
+	case "Terran_Dropship":
+	case "Terran_Science_Vessel":
+	case "Terran_Battlecruiser":
+	case "Terran_Valkyrie":
+	case "Zerg_Ultralisk":
+	case "Zerg_Overlord":
+	case "Zerg_Guardian":
+	case "Zerg_Devourer":
+	case "Protoss_Dragoon":
+	case "Protoss_Archon":
+	case "Protoss_Reaver":
+	case "Protoss_Shuttle":
+	case "Protoss_Scout":
+	case "Protoss_Carrier":
+	case "Protoss_Arbiter":
+	case "Protoss_Dark_Archon":
+	    result = UnitSize.LARGE;
+	    break;
+	default:
+	    break;
+	}
+
+	return result;
     }
 }

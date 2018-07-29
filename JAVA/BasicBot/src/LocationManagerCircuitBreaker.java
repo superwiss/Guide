@@ -361,4 +361,22 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 
 	return result;
     }
+
+    // 조이기 상태에서 적을 기다리고 있을 위치를 리턴한다.
+    @Override
+    public TilePosition getBlockingChokePoint() {
+	TilePosition result = null;
+
+	if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
+	    result = new TilePosition(96, 32);
+	} else if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+	    result = new TilePosition(94, 97);
+	} else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+	    result = new TilePosition(32, 96);
+	} else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+	    result = new TilePosition(28, 33);
+	}
+
+	return result;
+    }
 }

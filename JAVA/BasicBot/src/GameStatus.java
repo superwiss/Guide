@@ -1,7 +1,12 @@
+import java.util.List;
+
 import bwapi.Color;
 import bwapi.Game;
+import bwapi.Player;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.TilePosition;
+import bwapi.Unit;
 
 public class GameStatus {
 
@@ -176,11 +181,94 @@ public class GameStatus {
     }
 
     public boolean isExplored(TilePosition position) {
-	return game.isExplored(position);
+	boolean result = false;
+
+	if (null != position) {
+	    result = game.isExplored(position);
+	}
+
+	return result;
     }
 
     public boolean isVisible(TilePosition tilePosition) {
 	return game.isVisible(tilePosition);
+    }
+
+    public String mapFileName() {
+	return game.mapFileName();
+    }
+
+    public boolean isComputer() {
+	boolean result = false;
+
+	for (Player player : game.getPlayers()) {
+	    String playerName = player.getName();
+	    Log.debug("PlayerName: %s", playerName);
+	    switch (playerName) {
+	    case "Barelrog Brood":
+	    case "Fenris Brood":
+	    case "Garm Brood":
+	    case "Grendal Brood":
+	    case "Jormungand Brood":
+	    case "Leviathan Brood":
+	    case "Sutur Brood":
+	    case "Tiamat Brood":
+	    case "Antia":
+	    case "Atlas Wing":
+	    case "Cronus Wing":
+	    case "Delta Squadron":
+	    case "Elite Guard":
+	    case "Epsilon Squadron":
+	    case "Kel-Morian Combine":
+	    case "Mar Sara":
+	    case "Akilae Tribe":
+	    case "Ara Tribe":
+	    case "Auriga Tribe":
+	    case "Furinax Tribe":
+	    case "Sargas Tribe":
+	    case "Shelak Tribe":
+	    case "Velari Tribe":
+	    case "Venatir Tribe":
+		result = true;
+		break;
+	    default:
+		break;
+	    }
+	}
+
+	return result;
+    }
+
+    public boolean isMatchPlayerByName(String name) {
+	boolean result = false;
+
+	for (Player player : game.getPlayers()) {
+	    String playerName = player.getName();
+	    Log.debug("PlayerName: %s", playerName);
+	    if (true == player.isEnemy(game.self()) && true == playerName.toLowerCase().contains(name.toLowerCase())) {
+		result = true;
+		break;
+	    }
+	}
+
+	return result;
+    }
+
+    public Race getEnemyRace() {
+	Race result = null;
+
+	for (Player player : game.getPlayers()) {
+	    Race playerRace = player.getRace();
+	    if (true == player.isEnemy(game.self())) {
+		result = playerRace;
+	    }
+	}
+
+	return result;
+    }
+
+    public List<Unit> getAllUnits() {
+	return game.getAllUnits();
     }
 
     public void setScreen(Position position) {

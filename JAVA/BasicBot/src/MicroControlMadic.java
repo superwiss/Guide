@@ -34,6 +34,9 @@ public class MicroControlMadic extends Manager {
     }
 
     private void followBionicUnit() {
+	if (strategyManager.containStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+	    return;
+	}
 	Position newPosition = null;
 	Set<Unit2> bionicSet = null;
 	if (true == strategyManager.hasAttackTilePosition()) {

@@ -97,7 +97,11 @@ public class ActionUtil {
     }
 
     public static void attackPosition(UnitInfo unitInfo, Unit2 unit, TilePosition tilePosition) {
-	attackPosition(unitInfo, unit, tilePosition.toPosition());
+	if (null != tilePosition) {
+	    attackPosition(unitInfo, unit, tilePosition.toPosition());
+	} else {
+	    Log.warn("ActionUtil.attackPosition: tilePostion is null");
+	}
     }
 
     public static boolean attackEnemyUnitForcibly(UnitInfo allianceUnitInfo, Unit2 allianceUnit, Unit2 enemyUnit) {
