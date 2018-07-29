@@ -1,12 +1,12 @@
 License.md - the original license of UAlbertaBot, which Steamhammer is a fork of
 LICENSE - license for FAP
-Steamhammer.txt - license for Steamhammer, ¿ì¸® º¿Àº SteamhammerÀ» ÂüÁ¶Çß½À´Ï´Ù.
+Steamhammer.txt - license for Steamhammer, ìš°ë¦¬ ë´‡ì€ Steamhammerì„ ì°¸ì¡°í–ˆìŠµë‹ˆë‹¤.
 
 ---------------
 
 MIT License
 
-Copyright (c) 2018, ¾Ë°í¸®Áò°æÁø´ëÈ¸TF (´ëÈ¸ÃâÀüÀÚ´Â º»ÀÎ ÀÌ¸§À» Ãß°¡ÇÏ¼¼¿ä)
+Copyright (c) 2018, ì•Œê³ ë¦¬ì¦˜ê²½ì§„ëŒ€íšŒTF (Team MagiBot)
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
