@@ -64,19 +64,19 @@ public class StrategyTwoFactory extends StrategyBase {
 		strategyManager.setAttackTilePosition(attackTilePosition);
 		Log.info("총 공격을 유지한다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
 	    }
-	} else if (supplyUsed < 30) {
+	} else if (supplyUsed < 15) {
 	    // 공격 유닛 인구수가 15 미만이라면 본진에서 대기한다.
-	} else if (supplyUsed >= 30 && supplyUsed < 60) {
+	} else if (supplyUsed >= 15 && supplyUsed < 60) {
 	    // 공격 유닛 인구수가 15 ~ 30이면 본진 앞마당 입구로 나온다.
 	    strategyManager.setAttackTilePosition(locationManager.getFirstExtensionChokePoint());
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
 	    Log.info("본진 앞마당으로 내려온다. 인구수: %d. 위치: %s", supplyUsed, strategyManager.getAttackTilePositon());
-	} else if (supplyUsed >= 60 && supplyUsed < 200) {
+	} else if (supplyUsed >= 60 && supplyUsed < 120) {
 	    // 공격 유닛 인구수가 30 ~ 60이면 적 입구를 조인다.
 	    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
 	    Log.info("적 본진 근처에서 조이기를 한다. 인구수: %d, 위치: %s", supplyUsed, strategyManager.getAttackTilePositon());
-	} else if (supplyUsed >= 200) {
+	} else if (supplyUsed >= 120) {
 	    // 공격 유닛 인구수가 100이 넘으면 총 공격을 한다.
 	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
 	    strategyManager.setAttackTilePosition(attackTilePosition);
