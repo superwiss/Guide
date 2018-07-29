@@ -62,61 +62,51 @@ public class LocationManagerSprit extends LocationManager {
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
 	    result.add(new TilePosition(98, 6));
+	    result.add(new TilePosition(99, 1)); //애드온 건물
+	    result.add(new TilePosition(105, 1)); //애드온 건물
+	    result.add(new TilePosition(111, 1)); //애드온 건물
 	    result.add(new TilePosition(107, 6));
 	    result.add(new TilePosition(107, 9));
 	    result.add(new TilePosition(111, 9));
 	    result.add(new TilePosition(111, 12));
 	    result.add(new TilePosition(111, 15));
-
-	    //애드온 건물
-	    result.add(new TilePosition(99, 1));
-	    result.add(new TilePosition(105, 1));
-	    result.add(new TilePosition(111, 1));
-
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
 	    result.add(new TilePosition(114, 101));
+	    result.add(new TilePosition(121, 101)); //애드온 건물
+	    result.add(new TilePosition(121, 104)); //애드온 건물
+	    result.add(new TilePosition(121, 107)); //애드온 건물
+	    result.add(new TilePosition(121, 110)); //애드온 건물
 	    result.add(new TilePosition(110, 104));
 	    result.add(new TilePosition(114, 104));
 	    result.add(new TilePosition(110, 107));
 	    result.add(new TilePosition(114, 107));
 	    result.add(new TilePosition(106, 107));
 	    result.add(new TilePosition(106, 104));
-
-	    //애드온 건물
-	    result.add(new TilePosition(121, 101));
-	    result.add(new TilePosition(121, 104));
-	    result.add(new TilePosition(121, 107));
-	    result.add(new TilePosition(121, 110));
-
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
 	    result.add(new TilePosition(22, 118));
+	    result.add(new TilePosition(7, 124)); //애드온 건물
+	    result.add(new TilePosition(13, 124)); //애드온 건물
+	    result.add(new TilePosition(19, 124)); //애드온 건물
+	    result.add(new TilePosition(25, 124)); //애드온 건물
 	    result.add(new TilePosition(14, 116));
 	    result.add(new TilePosition(18, 116));
 	    result.add(new TilePosition(14, 113));
 	    result.add(new TilePosition(18, 113));
 	    result.add(new TilePosition(18, 110));
-
-	    //애드온 건물
-	    result.add(new TilePosition(7, 124));
-	    result.add(new TilePosition(13, 124));
-	    result.add(new TilePosition(19, 124));
-	    result.add(new TilePosition(25, 124));
-
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
 	    result.add(new TilePosition(9, 25));
+	    result.add(new TilePosition(0, 14)); //애드온 건물
+	    result.add(new TilePosition(0, 17)); //애드온 건물
+	    result.add(new TilePosition(0, 20)); //애드온 건물
+	    result.add(new TilePosition(0, 23)); //애드온 건물
 	    result.add(new TilePosition(9, 20));
 	    result.add(new TilePosition(9, 17));
 	    result.add(new TilePosition(9, 14));
 	    result.add(new TilePosition(13, 17));
 	    result.add(new TilePosition(13, 14));
-	    //애드온 건물
-	    result.add(new TilePosition(0, 14));
-	    result.add(new TilePosition(0, 17));
-	    result.add(new TilePosition(0, 20));
-	    result.add(new TilePosition(0, 23));
 	}
 
 	return result;
@@ -607,12 +597,20 @@ public class LocationManagerSprit extends LocationManager {
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    result.add(new TilePosition(88, 13));
+	    result.add(new TilePosition(117, 52));
+	    result.add(new TilePosition(7, 72));
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    result.add(new TilePosition(110, 88));
+	    result.add(new TilePosition(117, 52));
+	    result.add(new TilePosition(7, 72));
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    result.add(new TilePosition(36, 112));
+	    result.add(new TilePosition(7, 72));
+	    result.add(new TilePosition(117, 52));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    result.add(new TilePosition(14, 38));
+	    result.add(new TilePosition(7, 72));
+	    result.add(new TilePosition(117, 52));
 	}
 
 	return result;
