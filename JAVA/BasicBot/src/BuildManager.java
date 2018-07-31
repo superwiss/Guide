@@ -230,7 +230,7 @@ public class BuildManager extends Manager {
 		UnitType buildingType = buildOrderItem.getTargetUnitType(); // 건설할 건물의 종류.
 		if (UnitType.Terran_Barracks.equals(buildingType)) {
 		    tilePositionList = locationManager.getEntranceBuilding();
-		} else if (UnitType.Terran_Factory.equals(buildingType)) {
+		} else if (UnitType.Terran_Factory.equals(buildingType) || UnitType.Terran_Starport.equals(buildingType) || UnitType.Terran_Science_Facility.equals(buildingType)) {
 		    tilePositionList = locationManager.getTrainingBuildings();
 		} else if (UnitType.Terran_Refinery.equals(buildingType)) {
 		    if (buildOrderItem.getTilePosition() != null) {
@@ -242,12 +242,18 @@ public class BuildManager extends Manager {
 		    tilePositionList = locationManager.get3by2SizeBuildings();
 		} else if (UnitType.Terran_Academy.equals(buildingType)) {
 		    tilePositionList = locationManager.get3by2SizeBuildings();
+		} else if (UnitType.Terran_Armory.equals(buildingType)) {
+		    tilePositionList = locationManager.get3by2SizeBuildings();
 		} else if (UnitType.Terran_Engineering_Bay.equals(buildingType)) {
-		    tilePositionList = locationManager.getEngineeringBay();
+		    tilePositionList = locationManager.getTrainingBuildings();
 		} else if (UnitType.Terran_Bunker.equals(buildingType)) {
 		    tilePositionList = locationManager.getBaseEntranceBunker();
 		} else if (UnitType.Terran_Command_Center.equals(buildingType)) {
-		    tilePositionList = locationManager.getTrainingBuildings();
+		    if (buildOrderItem.getTilePosition() != null) {
+			tilePositionList.add(buildOrderItem.getTilePosition());
+		    } else {
+			tilePositionList = locationManager.getTrainingBuildings();
+		    }
 		}
 
 		if (null != tilePositionList) {

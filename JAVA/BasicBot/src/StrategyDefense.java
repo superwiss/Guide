@@ -2,6 +2,7 @@ import java.util.Set;
 
 import bwapi.TilePosition;
 import bwapi.UnitType;
+import bwapi.UpgradeType;
 
 public class StrategyDefense extends StrategyBase {
 
@@ -41,11 +42,19 @@ public class StrategyDefense extends StrategyBase {
 	if (true == strategyManager.hasAttackTilePosition() || (attackableUnitSet.size() > 60 && null != locationManager.getEnemyStartLocation())) {
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnitSet.size());
 	    TilePosition attackTilePosition = calcAttackPosition();
+	    strategyManager.setPhase(5);
 
 	    if (null != attackTilePosition) {
 		strategyManager.setAttackTilePosition(attackTilePosition);
+
 		Log.info("총 공격! 공격할 위치: %s", attackTilePosition);
 		for (Unit2 attackableUnit : attackableUnitSet) {
+
+		    if (attackableUnit.getDistance(attackTilePosition.toPosition()) > 300) {
+			if (attackableUnit.canUnsiege()) {
+			    attackableUnit.unsiege();
+			}
+		    }
 		    ActionUtil.attackPosition(allianceUnitInfo, attackableUnit, attackTilePosition.toPosition());
 		}
 	    }
@@ -132,7 +141,7 @@ public class StrategyDefense extends StrategyBase {
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
-	
+
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
@@ -141,7 +150,6 @@ public class StrategyDefense extends StrategyBase {
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
@@ -153,19 +161,18 @@ public class StrategyDefense extends StrategyBase {
 	//20커맨드 18가스
 	//애드온
 
-	
-	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture));
-	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Siege_Tank_Tank_Mode));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-	
+
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Siege_Tank_Tank_Mode));
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center));
-//	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Bunker));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Siege_Tank_Tank_Mode));
+	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Siege_Tank_Tank_Mode));
+	//	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Bunker));
 
 	buildManager.add(new BuildOrderItem(BuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
     }
@@ -181,10 +188,10 @@ public class StrategyDefense extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_ASSIGN_GAS_SCV);
 	strategyItems.add(StrategyItem.SET_FACTORY_RALLY);
 	strategyItems.add(StrategyItem.BLOCK_ENTRANCE);
-	
-	strategyItems.add(StrategyItem.AUTO_RESEARCH_ION_THRUSTERS);
+
+	strategyItems.add(StrategyItem.AUTO_RESEARCH_SIEGE_MODE);
 	strategyItems.add(StrategyItem.AUTO_RESEARCH_CHARON_BOOSTERS);
-	
+
 	strategyItems.add(StrategyItem.AUTO_BUILD_TWO_ARMORY);
 	strategyItems.add(StrategyItem.AUTO_UPGRADE_MECHANIC_UNIT);
 
@@ -199,6 +206,8 @@ public class StrategyDefense extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_USING_SCAN);
 	strategyItems.add(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE);
 	strategyItems.add(StrategyItem.AUTO_LIFT_COMMAND_CENTER);
+
+	strategyItems.add(StrategyItem.ALLOW_PHASE);
 	//strategyItems.add(StrategyItem.AGGRESSIVE_MOVE_ATTACK);
     }
 

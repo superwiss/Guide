@@ -232,6 +232,7 @@ public class LocationManagerSprit extends LocationManager {
 	    result.add(new TilePosition(12, 105));
 	    result.add(new TilePosition(12, 107));
 	    result.add(new TilePosition(9, 107));
+	    result.add(new TilePosition(15, 107));
 
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 
@@ -405,28 +406,6 @@ public class LocationManagerSprit extends LocationManager {
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
 	    result = new TilePosition(7, 26);
-	}
-
-	return result;
-    }
-
-    // 엔지니어링 베이의 위치를 설정한다.
-    @Override
-    public List<TilePosition> initEngineeringBay() {
-	List<TilePosition> result = new ArrayList<>();
-
-	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
-	    // 1시
-	    result.add(new TilePosition(111, 6));
-	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
-	    // 5시
-	    result.add(new TilePosition(113, 117));
-	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
-	    // 7시
-	    result.add(new TilePosition(14, 110));
-	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
-	    // 11시
-	    result.add(new TilePosition(9, 14));
 	}
 
 	return result;
@@ -618,6 +597,12 @@ public class LocationManagerSprit extends LocationManager {
 
     @Override
     public List<TilePosition> getEnemyFirstExpansionLocation() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public TilePosition initSecondExtensionChokePoint() {
 	// TODO Auto-generated method stub
 	return null;
     }

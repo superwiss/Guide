@@ -39,10 +39,37 @@ public class MicroControlMarine extends Manager {
 	    if (strategyManager.hasStrategyItem(StrategyItem.AUTO_TRAIN_BIONIC_UNIT)) {
 		waitBionicUnit();
 	    }
+	}
 
+	if (gameStatus.isMatchedInterval(3)) {
+	    if (strategyManager.hasStrategyItem(StrategyItem.ALLOW_PHASE)) {
+		//페이즈에 따라 목표지점을 달리한다.
+		followPhase();
+	    }
 	}
 
 	aggressiveMoveAttack();
+    }
+
+    private void followPhase() {
+
+	Set<Unit2> marineSet = allianceUnitInfo.getUnitSet(UnitType.Terran_Marine);
+	for (Unit2 marine : marineSet) {
+	    if (!marine.exists()) {
+		Log.warn("[MicroControlMarine:checkIfUsingStimPack] 마린(%s)이 exist 하지 않습니다.", marine);
+	    } else {
+
+		if (strategyManager.getPhase() == 0) {
+		    marine.attack(locationManager.getBaseEntranceChokePoint().toPosition());
+		} else if (strategyManager.getPhase() == 1) {
+		    marine.attack(locationManager.getFirstExtensionChokePoint().toPosition());
+		} else if (strategyManager.getPhase() == 2) {
+		    marine.attack(locationManager.getSecondExtensionChokePoint().toPosition());
+		}
+
+	    }
+	}
+
     }
 
     // 스팀팩을 사용할지 여부를 판단하고, 필요할 경우 스팀팩을 사용한다.

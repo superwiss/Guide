@@ -349,11 +349,6 @@ public class LocationManagerCircuitBreaker extends LocationManager {
     }
 
     @Override
-    public List<TilePosition> initEngineeringBay() {
-	return new ArrayList<TilePosition>();
-    }
-
-    @Override
     public List<TilePosition> initFirstExpansionTurret() {
 	return new ArrayList<TilePosition>();
     }
@@ -397,6 +392,12 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 
     @Override
     public List<TilePosition> getEnemyFirstExpansionLocation() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public TilePosition initSecondExtensionChokePoint() {
 	// TODO Auto-generated method stub
 	return null;
     }

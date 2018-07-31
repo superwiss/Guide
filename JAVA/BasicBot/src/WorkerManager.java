@@ -133,6 +133,10 @@ public class WorkerManager extends Manager {
 			continue;
 		    }
 
+		    if (!commandCenter.isCompleted()) {
+			continue;
+		    }
+
 		    int result2 = checkMineralBalance(commandCenter, total_scv, total_mineral);
 		    if (result2 <= 1) {
 			enoughCommand = commandCenter;

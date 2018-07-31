@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,6 +10,7 @@ import bwapi.Unit;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
 import bwta.BWTA;
+import bwta.BaseLocation;
 
 public class StrategyManager extends Manager {
 
@@ -20,6 +22,7 @@ public class StrategyManager extends Manager {
     private static int repairCount = 3; // 벙커를 수리할 SCV 개수
     private int lastScanFrameCount = 0; // 마지막으로 스캔을 뿌린 시각
     private static int multiCount = 0;
+    private int phase = 0;
 
     @Override
     protected void onStart(GameStatus gameStatus) {
@@ -49,8 +52,112 @@ public class StrategyManager extends Manager {
 	doFactoryRally();
 	doRefineryJob();
 	doMachineShopJob();
+	doPhaseCheck();
+	doExpansion();
+	doScienceFacility();
 
 	strategy.onFrame();
+    }
+
+    private void doScienceFacility() {
+
+	if (allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 30) {
+
+	    BuildManager buildManager = gameStatus.getBuildManager();
+
+	    //사이언스 퍼실리티 건설
+	    Unit2 starport = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Starport);
+	    if (null == starport) {
+		if (hasStrategyItem(StrategyItem.AUTO_BUILD_TWO_ARMORY)) {
+		    if (gameStatus.getMineral() > 150 && gameStatus.getGas() > 100 && 0 == buildManager.getQueueSize() && buildManager.isInitialBuildFinished()) {
+			if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Starport).size() == 0) {
+			    // 첫번째 아머리는 바로 짓는다.
+			    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Starport));
+			}
+		    }
+		}
+	    }
+
+	    Unit2 scienceFacility = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Science_Facility);
+	    if (null == scienceFacility) {
+		if (hasStrategyItem(StrategyItem.AUTO_BUILD_TWO_ARMORY)) {
+		    if (gameStatus.getMineral() > 150 && gameStatus.getGas() > 150 && 0 == buildManager.getQueueSize() && buildManager.isInitialBuildFinished()) {
+			if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Science_Facility).size() == 0) {
+			    // 첫번째 아머리는 바로 짓는다.
+			    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Science_Facility));
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+    private void doExpansion() {
+
+	BuildManager buildManager = gameStatus.getBuildManager();
+
+	if (allianceUnitInfo.getConstructionCount(UnitType.Terran_Command_Center) > 0) {
+	    return;
+	}
+
+	if (buildManager.getQueueSize() > 0) {
+	    return;
+	}
+
+	int MaxCCcount = 3;
+	int CCcnt = 0;
+
+	for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
+
+	    if (commandCenter.isCompleted()) {
+
+		if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size() > 6) {
+		    CCcnt++;
+		}
+	    }
+	}
+
+	if (CCcnt >= MaxCCcount) {
+	    return;
+	}
+
+	int RealCCcnt = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size();
+
+	if (RealCCcnt >= 2) {
+	    if (gameStatus.getMineral() > 600 && allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 40) {
+		if (0 == buildManager.getQueueSize()) {
+		    System.out.println("확장 시도");
+		    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, getNextExpansionPoint()));
+		}
+	    }
+	}
+    }
+
+    private void doPhaseCheck() {
+
+	if (strategyItems.contains(StrategyItem.ALLOW_PHASE)) {
+
+	    int completeCommand = 0;
+	    for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
+		if (commandCenter.isCompleted()) {
+		    completeCommand++;
+		}
+	    }
+
+	    if (completeCommand == 1 && phase != 5) {
+		setPhase(0);
+	    } else if (completeCommand == 2 && phase != 5) {
+		setPhase(1);
+	    }
+
+	    //	    System.out.println("메카닉 유닛 수 " + allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size());
+
+	    if (allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 30 && phase != 5) {
+		setPhase(2);
+	    }
+
+	}
+
     }
 
     @Override
@@ -145,6 +252,9 @@ public class StrategyManager extends Manager {
 		//아군의 모든 커맨드 센터를 대상으로
 		for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
 
+		    if (!commandCenter.isCompleted()) {
+			continue;
+		    }
 		    //대상 커맨드 센터에 할당된 가스 일꾼이 3기 미만일 경우,
 		    System.out.println("할당된 가스 일꾼 " + allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Worker_Gather_Gas, 320).size());
 		    if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Worker_Gather_Gas, 320).size() < 3) {
@@ -206,13 +316,17 @@ public class StrategyManager extends Manager {
 	    //모든 커맨드 센터의 미네랄을 캐는 일꾼 숫자를 가져온다.
 	    int total_scv = 0;
 	    for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-		total_scv += allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Terran_SCV, 320).size();
+		if (commandCenter.isCompleted()) {
+		    total_scv += allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Terran_SCV, 320).size();
+		}
 	    }
 
 	    //모든 커맨드 센터 근처의 미네랄 덩이 수를 가져온다.
 	    int total_mineral = 0;
 	    for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-		total_mineral += allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size();
+		if (commandCenter.isCompleted()) {
+		    total_mineral += allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size();
+		}
 	    }
 
 	    System.out.println("토탈 scv " + total_scv);
@@ -221,44 +335,51 @@ public class StrategyManager extends Manager {
 	    //각 커맨드 센터의 일꾼 부족 현황을 가져온다.
 	    for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
 
-		if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size() == 0) {
-		    continue;
-		}
+		if (commandCenter.isCompleted()) {
 
-		int result = workerManager.checkMineralBalance(commandCenter, total_scv, total_mineral);
-
-		//부족한 커맨드 센터에 대해, 여유량 만큼 scv를 이동시킨다.
-		if (result < 0 && commandCenter.isCompleted() && !commandCenter.isLifted()) {
-
-		    //여유가 있는 커맨드 센터를 가져온다.
-		    Unit2 enoughCommand = null;
-		    for (Unit2 commandCenter2 : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-
-			if (allianceUnitInfo.findUnitSetNear(commandCenter2, UnitKind.Resource_Mineral_Field, 320).size() == 0) {
-			    continue;
-			}
-
-			int result2 = workerManager.checkMineralBalance(commandCenter2, total_scv, total_mineral);
-			if (result2 > 0) {
-			    enoughCommand = commandCenter;
-			}
+		    if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size() == 0) {
+			continue;
 		    }
 
-		    //여유가 있는 커맨드 센터의 scv를 가져온다.
-		    Set<Unit2> scvCandidate = null;
-		    if (enoughCommand == null) {
-			return;
-		    } else {
-			scvCandidate = workerManager.findMineralWorkerSetNear(enoughCommand, UnitKind.Terran_SCV, 320);
-		    }
+		    int result = workerManager.checkMineralBalance(commandCenter, total_scv, total_mineral);
 
-		    //부족한 숫자만큼 scv를 stop시켜 다른 커맨드 센터에 할당되게 한다.
-		    int seq = 0;
-		    for (Unit2 scv : scvCandidate) {
-			scv.stop();
-			seq++;
-			if (seq == Math.abs(result)) {
+		    //부족한 커맨드 센터에 대해, 여유량 만큼 scv를 이동시킨다.
+		    if (result < 0 && commandCenter.isCompleted() && !commandCenter.isLifted()) {
+
+			//여유가 있는 커맨드 센터를 가져온다.
+			Unit2 enoughCommand = null;
+			for (Unit2 commandCenter2 : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
+
+			    if (!commandCenter2.isCompleted()) {
+				continue;
+			    }
+
+			    if (allianceUnitInfo.findUnitSetNear(commandCenter2, UnitKind.Resource_Mineral_Field, 320).size() == 0) {
+				continue;
+			    }
+
+			    int result2 = workerManager.checkMineralBalance(commandCenter2, total_scv, total_mineral);
+			    if (result2 > 0) {
+				enoughCommand = commandCenter;
+			    }
+			}
+
+			//여유가 있는 커맨드 센터의 scv를 가져온다.
+			Set<Unit2> scvCandidate = null;
+			if (enoughCommand == null) {
 			    return;
+			} else {
+			    scvCandidate = workerManager.findMineralWorkerSetNear(enoughCommand, UnitKind.Terran_SCV, 320);
+			}
+
+			//부족한 숫자만큼 scv를 stop시켜 다른 커맨드 센터에 할당되게 한다.
+			int seq = 0;
+			for (Unit2 scv : scvCandidate) {
+			    scv.stop();
+			    seq++;
+			    if (seq == Math.abs(result)) {
+				return;
+			    }
 			}
 		    }
 		}
@@ -358,11 +479,11 @@ public class StrategyManager extends Manager {
 	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_MECHANIC_UNIT)) {
 	    BuildManager buildManager = gameStatus.getBuildManager();
 
-	    if (true == buildManager.isInitialBuildFinished() && 0 == buildManager.getQueueSize()) {
-		// 서플 여유가 10개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
-		if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 10 * 2) {
+	    if (true == buildManager.isInitialBuildFinished() && 1 >= buildManager.getQueueSize()) {
+		// 서플 여유가 6개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
+		if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 8 * 2 && gameStatus.getSupplyTotal() < 400) {
 		    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-		} else if (gameStatus.getMineral() > 200 && gameStatus.getGas() > 100 && 0 == buildManager.getQueueSize()) {
+		} else if (gameStatus.getMineral() > 200 && gameStatus.getGas() > 100 && 0 == buildManager.getQueueSize() && gameStatus.getFrameCount() > 10000) {
 
 		    if (4 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size()) {
 			// 팩토리가 4개 미만이고, BuildOrder Queue가 비어있으면 팩토리를 짓는다.
@@ -374,7 +495,6 @@ public class StrategyManager extends Manager {
 
 		if (gameStatus.getMineral() >= 75) {
 
-		    System.out.println("생산");
 		    Unit2 factory = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Factory, UnitType.Terran_Vulture);
 		    if (null != factory) {
 			Set<Unit2> tankSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Siege_Tank);
@@ -467,24 +587,28 @@ public class StrategyManager extends Manager {
 	//아머리 업그레이드
 	if (hasStrategyItem(StrategyItem.AUTO_UPGRADE_MECHANIC_UNIT)) {
 
-	    Unit2 armory = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Armory);
+	    Unit2 isArmory = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Armory);
 
-	    if (null != armory) {
+	    if (null != isArmory) {
 
-		// 공격력, 방어력 1레벨 업그레이드를 한다.
-		if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) == 0 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Weapons)) {
-		    armory.upgrade(UpgradeType.Terran_Vehicle_Weapons);
-		} else if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating) == 0 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Plating)) {
-		    armory.upgrade(UpgradeType.Terran_Vehicle_Plating);
-		}
+		for (Unit2 armory : allianceUnitInfo.getUnitSet(UnitKind.Terran_Armory)) {
 
-		// 메카닉 병력이 18마리 이상일 경우 계속해서 공격력 방어력 업그레이드를 한다.
-		int mechanicCount = allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size();
-		if (mechanicCount > 18 && null != allianceUnitInfo.getAnyUnit(UnitKind.Terran_Science_Facility)) {
-		    if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) < 3 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Weapons)) {
+		    // 공격력, 방어력 1레벨 업그레이드를 한다.
+		    if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) == 0 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Weapons)) {
 			armory.upgrade(UpgradeType.Terran_Vehicle_Weapons);
-		    } else if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating) < 3 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Plating)) {
+		    } else if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating) == 0 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Plating)) {
 			armory.upgrade(UpgradeType.Terran_Vehicle_Plating);
+		    }
+
+		    // 메카닉 병력이 18마리 이상일 경우 계속해서 공격력 방어력 업그레이드를 한다.
+		    int mechanicCount = allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size();
+		    if (mechanicCount > 18 && null != allianceUnitInfo.getAnyUnit(UnitKind.Terran_Science_Facility)) {
+			if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) < 3 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Weapons)) {
+			    armory.upgrade(UpgradeType.Terran_Vehicle_Weapons);
+			}
+			if (armory.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating) < 3 && armory.canUpgrade(UpgradeType.Terran_Vehicle_Plating)) {
+			    armory.upgrade(UpgradeType.Terran_Vehicle_Plating);
+			}
 		    }
 		}
 	    }
@@ -500,13 +624,20 @@ public class StrategyManager extends Manager {
 	Unit2 machineShop = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Machine_Shop);
 
 	if (null != machineShop) {
+
+	    if (hasStrategyItem(StrategyItem.AUTO_RESEARCH_SIEGE_MODE)) {
+		if (machineShop.canResearch(TechType.Tank_Siege_Mode)) {
+		    machineShop.research(TechType.Tank_Siege_Mode);
+		}
+	    }
+
 	    if (hasStrategyItem(StrategyItem.AUTO_RESEARCH_ION_THRUSTERS)) {
 		if (machineShop.canUpgrade(UpgradeType.Ion_Thrusters)) {
 		    machineShop.upgrade(UpgradeType.Ion_Thrusters);
 		}
 	    }
 
-	    if (hasStrategyItem(StrategyItem.AUTO_RESEARCH_CHARON_BOOSTERS)) {
+	    if (hasStrategyItem(StrategyItem.AUTO_RESEARCH_CHARON_BOOSTERS) && gameStatus.getFrameCount() > 10000) {
 		if (machineShop.canUpgrade(UpgradeType.Charon_Boosters)) {
 		    machineShop.upgrade(UpgradeType.Charon_Boosters);
 		}
@@ -518,11 +649,6 @@ public class StrategyManager extends Manager {
 		}
 	    }
 
-	    if (hasStrategyItem(StrategyItem.AUTO_RESEARCH_SIEGE_MODE)) {
-		if (machineShop.canResearch(TechType.Tank_Siege_Mode)) {
-		    machineShop.research(TechType.Tank_Siege_Mode);
-		}
-	    }
 	}
     }
 
@@ -534,6 +660,7 @@ public class StrategyManager extends Manager {
 	}
 
 	Unit2 factory = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Factory);
+
 	if (null != factory) {
 	    // Machine Shop Add on
 	    if (hasStrategyItem(StrategyItem.AUTO_ADDON_MACHINE_SHOP)) {
@@ -839,6 +966,42 @@ public class StrategyManager extends Manager {
 		}
 	    }
 	}
+
+	// 마나가 다 찼을때 무작위 지역에 스캔을 뿌린다.
+	//	boolean result = false;
+	//	LocationManager locationManager = gameStatus.getLocationManager();
+	//	double tempDistance;
+	//	double closestDistance = 1000000000;
+	//	TilePosition scanPosition = null;
+	//
+	//	Set<Unit2> comsatSet = allianceUnitInfo.getUnitSet(UnitType.Terran_Comsat_Station);
+	//	for (Unit2 comsat : comsatSet) {
+	//	    if (comsat.getEnergy() >= 150) {
+	//		if (comsat.canUseTechPosition(TechType.Scanner_Sweep)) {
+	//
+	//		    for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+	//
+	//			if (targetBaseLocation.getTilePosition().equals(locationManager.allianceBaseLocation))
+	//			    continue;
+	//
+	//			if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 100).size() > 0) {
+	//			    continue;
+	//			}
+	//
+	//			tempDistance = BWTA.getGroundDistance(locationManager.enemyStartLocation, targetBaseLocation.getTilePosition());
+	//			if (tempDistance < closestDistance && tempDistance > 0) {
+	//			    closestDistance = tempDistance;
+	//			    scanPosition = targetBaseLocation.getTilePosition();
+	//			}
+	//
+	//			comsat.useTech(TechType.Scanner_Sweep, scanPosition.toPosition());
+	//		    }
+	//
+	//		}
+	//
+	//	    }
+	//	}
+
     }
 
     // 본진 주변에 적 유닛이 있으면, 방어한다.
@@ -863,6 +1026,42 @@ public class StrategyManager extends Manager {
 		}
 	    }
 	}
+    }
+
+    // 다음 확장의 위치를 리턴한다.
+    public TilePosition getNextExpansionPoint() {
+
+	double tempDistance;
+	double closestDistance = 1000000000;
+	TilePosition nextExpansionLocation = null;
+	LocationManager locationManager = gameStatus.getLocationManager();
+
+	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+	    if (targetBaseLocation.getTilePosition().equals(locationManager.allianceBaseLocation))
+		continue;
+
+	    if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 100).size() > 0) {
+		continue;
+	    }
+
+	    if (enemyUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 100).size() > 0) {
+		continue;
+	    }
+
+	    if ((targetBaseLocation.getTilePosition().getX() > 60 && targetBaseLocation.getTilePosition().getX() < 70)
+		    && (targetBaseLocation.getTilePosition().getY() > 60 && targetBaseLocation.getTilePosition().getY() < 70)) {
+		continue;
+	    }
+
+	    tempDistance = BWTA.getGroundDistance(locationManager.allianceBaseLocation, targetBaseLocation.getTilePosition());
+	    if (tempDistance < closestDistance && tempDistance > 0) {
+		closestDistance = tempDistance;
+		nextExpansionLocation = targetBaseLocation.getTilePosition();
+	    }
+	}
+
+	return nextExpansionLocation;
+
     }
 
     // ///////////////////////////////////////////////////////////
@@ -895,6 +1094,14 @@ public class StrategyManager extends Manager {
 
     public TilePosition getAttackTilePositon() {
 	return attackTilePosition;
+    }
+
+    public int getPhase() {
+	return phase;
+    }
+
+    public void setPhase(int phase) {
+	this.phase = phase;
     }
 
     public void setAttackTilePosition(TilePosition attackTilePosition) {

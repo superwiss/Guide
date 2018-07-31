@@ -127,6 +127,16 @@ public class MagiUXManager extends Manager {
 	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 30, Color.Red);
 	MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "first ex choke point");
 
+	//확장 초크포인트 위치
+	tilePos = locationManager.getSecondExtensionChokePoint();
+	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 200, Color.Red);
+	MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "Second ex choke point");
+	
+//	//다음 확장 위치
+//	tilePos = strategyManager.getNextExpansionPoint();
+//	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 100, Color.Blue);
+//	MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "Second ex choke point");
+
 	//확장 터렛 건설 위치
 	tilePositionList = locationManager.getFirstExpansionTurret();
 	sequence = 0;
@@ -140,21 +150,6 @@ public class MagiUXManager extends Manager {
 	    int y2 = (y + UnitType.Terran_Missile_Turret.tileSize().getY()) * 32 - 8;
 	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Green, false);
 	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "ExTurret " + sequence);
-	}
-
-	//엔지니어링 베이 위치
-	tilePositionList = locationManager.getEngineeringBay();
-	sequence = 0;
-	for (TilePosition tilePosition : tilePositionList) {
-	    sequence++;
-	    int x = tilePosition.getX();
-	    int y = tilePosition.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Engineering_Bay.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Engineering_Bay.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Green, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Engineering  " + sequence);
 	}
 
 	//엔지니어링 베이 위치
@@ -228,61 +223,61 @@ public class MagiUXManager extends Manager {
 	//서킷브레이커 대각전 154.8
 	//서킷브레이커 세로전 109.0
 
-//		double tempDistance;
-//		double sourceDistance;
-//		double closestDistance = 1000000000;
-//		TilePosition sourceBaseLocation = locationManager.getFirstExpansionLocation().get(0);
-//		TilePosition enemyBaseLocation = locationManager.getEnemyStartLocation();
-//		BaseLocation base = null;
-//	
-//		for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
-//		    TilePosition tt = targetBaseLocation.getTilePosition();
-//	
-//		    if (tt.equals(locationManager.allianceBaseLocation))
-//			continue;
-//		    if (tt.equals(locationManager.getFirstExpansionLocation().get(0)))
-//			continue;
-//		    if (tt.equals(locationManager.enemyStartLocation))
-//			continue;
-//		    if (tt.equals(locationManager.getEnemyFirstExpansionLocation().get(0)))
-//			continue;
-//	
-//		    //건물이 이미 지어져 있는곳 패스
-//		    if (hasBuildingAroundBaseLocation(tt, 350) == true) {
-//			continue;
-//		    }
-//	
-//		    int x = tt.getX();
-//		    int y = tt.getY();
-//		    int x1 = x * 32 + 8;
-//		    int y1 = y * 32 + 8;
-//		    int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
-//		    int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
-//		    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Cyan, false);
-//		    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Expansionsss " + sequence);
-//	
-//		    System.out.println("확장 위치 정보 " + targetBaseLocation.getTilePosition().getX() + " : " + targetBaseLocation.getTilePosition().getY());
-//		    sourceDistance = sourceBaseLocation.getDistance(targetBaseLocation.getTilePosition());
-//		    System.out.println("내 확장으로부터의 거리" + sourceDistance);
-//		    tempDistance = sourceDistance - enemyBaseLocation.getDistance(targetBaseLocation.getTilePosition());
-//		    System.out.println("적 본진으로부터의 거리 " + enemyBaseLocation.getDistance(targetBaseLocation.getTilePosition()));
-//		    System.out.println("총점수 " + tempDistance);
-//	
-//		    if (tempDistance < closestDistance && sourceDistance > 0) {
-//			closestDistance = tempDistance;
-//			base = targetBaseLocation;
-//		    }
-//		}
-//	
-//		TilePosition wow = base.getTilePosition();
-//		int x = wow.getX();
-//		int y = wow.getY();
-//		int x1 = x * 32 + 8;
-//		int y1 = y * 32 + 8;
-//		int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
-//		int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
-//		MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Red, false);
-//		MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Expansionsss " + sequence);
+	//		double tempDistance;
+	//		double sourceDistance;
+	//		double closestDistance = 1000000000;
+	//		TilePosition sourceBaseLocation = locationManager.getFirstExpansionLocation().get(0);
+	//		TilePosition enemyBaseLocation = locationManager.getEnemyStartLocation();
+	//		BaseLocation base = null;
+	//	
+	//		for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+	//		    TilePosition tt = targetBaseLocation.getTilePosition();
+	//	
+	//		    if (tt.equals(locationManager.allianceBaseLocation))
+	//			continue;
+	//		    if (tt.equals(locationManager.getFirstExpansionLocation().get(0)))
+	//			continue;
+	//		    if (tt.equals(locationManager.enemyStartLocation))
+	//			continue;
+	//		    if (tt.equals(locationManager.getEnemyFirstExpansionLocation().get(0)))
+	//			continue;
+	//	
+	//		    //건물이 이미 지어져 있는곳 패스
+	//		    if (hasBuildingAroundBaseLocation(tt, 350) == true) {
+	//			continue;
+	//		    }
+	//	
+	//		    int x = tt.getX();
+	//		    int y = tt.getY();
+	//		    int x1 = x * 32 + 8;
+	//		    int y1 = y * 32 + 8;
+	//		    int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
+	//		    int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
+	//		    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Cyan, false);
+	//		    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Expansionsss " + sequence);
+	//	
+	//		    System.out.println("확장 위치 정보 " + targetBaseLocation.getTilePosition().getX() + " : " + targetBaseLocation.getTilePosition().getY());
+	//		    sourceDistance = sourceBaseLocation.getDistance(targetBaseLocation.getTilePosition());
+	//		    System.out.println("내 확장으로부터의 거리" + sourceDistance);
+	//		    tempDistance = sourceDistance - enemyBaseLocation.getDistance(targetBaseLocation.getTilePosition());
+	//		    System.out.println("적 본진으로부터의 거리 " + enemyBaseLocation.getDistance(targetBaseLocation.getTilePosition()));
+	//		    System.out.println("총점수 " + tempDistance);
+	//	
+	//		    if (tempDistance < closestDistance && sourceDistance > 0) {
+	//			closestDistance = tempDistance;
+	//			base = targetBaseLocation;
+	//		    }
+	//		}
+	//	
+	//		TilePosition wow = base.getTilePosition();
+	//		int x = wow.getX();
+	//		int y = wow.getY();
+	//		int x1 = x * 32 + 8;
+	//		int y1 = y * 32 + 8;
+	//		int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
+	//		int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
+	//		MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Red, false);
+	//		MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Expansionsss " + sequence);
 
     }
 

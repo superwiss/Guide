@@ -22,11 +22,11 @@ public abstract class LocationManager extends Manager implements MapInfo {
     protected List<TilePosition> baseRefineries = null; // 본진 가스를 짓기 위한 위치
     protected List<TilePosition> baseTurrets = null; // 본진에 위치한 터렛의 위치
     protected List<TilePosition> firstExpansionTurrets = null; // 본진에 위치한 터렛의 위치
-    protected List<TilePosition> engineeringBay = null; // 엔지니어링 베이 타일의 위치
     protected List<TilePosition> entranceBuilding = null; // 엔지니어링 베이 타일의 위치
     protected List<TilePosition> secondEntranceBuilding = null; // 엔지니어링 베이 타일의 위치
     private TilePosition baseEntranceChokePoint = null; // 본진 입구 방어를 위한 위치
     private TilePosition firstExtensionChokePoint = null; // 앞마당 입구 방어를 위한 위치
+    private TilePosition secondExtensionChokePoint = null; // 두번째 확장 입구 방어를 위한 위치
     private List<TilePosition> baseTankPoint = null; // 본진 탱크 배치를 위한 위치
 
     public LocationManager() {
@@ -45,14 +45,17 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	    init(gameStatus.getAllianceUnitInfo().getAnyUnit(UnitKind.Terran_Command_Center));
 	}
 
-	//	size3by2Buildings = init3by2SizeBuildings();
-	//	baseEntranceBunkers = initBaseEntranceBunker();
-	//	entranceBuilding = initEntranceBuildings();
-	//	secondEntranceBuilding = initSecondEntranceBuildings();
-	//	firstExtensionChokePoint = initFirstExtensionChokePoint();
-	//	trainingBuildings = initTrainingBuildings();
-	//	baseEntranceChokePoint = initBaseEntranceChokePoint();
-	//	baseTankPoint = initBaseTankPoint();
+//	size3by2Buildings = init3by2SizeBuildings();
+//	baseEntranceBunkers = initBaseEntranceBunker();
+//	entranceBuilding = initEntranceBuildings();
+//	secondEntranceBuilding = initSecondEntranceBuildings();
+//	firstExtensionChokePoint = initFirstExtensionChokePoint();
+//	secondExtensionChokePoint = initSecondExtensionChokePoint();
+//	trainingBuildings = initTrainingBuildings();
+//	baseEntranceChokePoint = initBaseEntranceChokePoint();
+//	baseTankPoint = initBaseTankPoint();
+//	baseTurrets = initBaseTurret();
+	
     }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
@@ -68,9 +71,9 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	baseRefineries = initBaseRefinery();
 	baseTurrets = initBaseTurret();
 	firstExpansionTurrets = initFirstExpansionTurret();
-	engineeringBay = initEngineeringBay();
 	baseEntranceChokePoint = initBaseEntranceChokePoint();
 	firstExtensionChokePoint = initFirstExtensionChokePoint();
+	secondExtensionChokePoint = initSecondExtensionChokePoint();
 	entranceBuilding = initEntranceBuildings();
 	secondEntranceBuilding = initSecondEntranceBuildings();
 	baseTankPoint = initBaseTankPoint();
@@ -153,12 +156,6 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	return firstExpansionTurrets;
     }
 
-    // 엔지니어링 베이의 위치를 리턴한다.
-    @Override
-    public List<TilePosition> getEngineeringBay() {
-	return engineeringBay;
-    }
-
     // 본진 입구 방어를 위한 위치를 리턴한다.
     @Override
     public TilePosition getBaseEntranceChokePoint() {
@@ -169,6 +166,12 @@ public abstract class LocationManager extends Manager implements MapInfo {
     @Override
     public TilePosition getFirstExtensionChokePoint() {
 	return firstExtensionChokePoint;
+    }
+    
+    // 두번째 확장 입구 방어를 위한 위치를 리턴한다.
+    @Override
+    public TilePosition getSecondExtensionChokePoint() {
+	return secondExtensionChokePoint;
     }
 
     // 앞마당 입구 방어를 위한 위치를 리턴한다.
@@ -191,7 +194,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
     public List<TilePosition> getFirstExpansionLocation() {
 	return allianceFirstExpansionLocation;
     }
-    
+
     @Override
     public List<TilePosition> getEnemyFirstExpansionLocation() {
 	return enemyFirstExpansionLocation;

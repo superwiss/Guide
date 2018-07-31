@@ -30,6 +30,8 @@ public enum StrategyItem {
 
     AGGRESSIVE_MOVE_ATTACK, // 공격 후 쿨 타임 차는 동안 Move로 적 방향으로 이동한다.
     SET_BARRACKS_RALLY, // 자동으로 배럭의 랠리 포인트가 아군의 FirstChokePoint로 찍한다.
-    SET_FACTORY_RALLY
+    SET_FACTORY_RALLY,
+    
+    ALLOW_PHASE
 }
 

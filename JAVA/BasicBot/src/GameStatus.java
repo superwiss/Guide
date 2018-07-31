@@ -2,6 +2,7 @@ import bwapi.Color;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
+import bwapi.UpgradeType;
 
 public class GameStatus {
 
@@ -147,9 +148,17 @@ public class GameStatus {
     public int getMineral() {
 	return game.self().minerals();
     }
-    
+
     public int getGas() {
 	return game.self().gas();
+    }
+
+    public int getUpgradeLevel(UpgradeType upgradeType) {
+	return game.self().getUpgradeLevel(upgradeType);
+    }
+
+    public int getSupplyTotal() {
+	return game.self().supplyTotal();
     }
 
     public int getGatheredMinerals() {
