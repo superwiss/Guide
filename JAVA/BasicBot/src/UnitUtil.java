@@ -503,6 +503,7 @@ public class UnitUtil {
 	checkIfMainBuilding(unitKindSet, strUnitType);
 	checkIfSiegeTank(unitKindSet, strUnitType);
 	checkIfMechanicUnit(unitKindSet, strUnitType);
+	checkIfAntiAirUnit(unitKindSet, strUnitType);
 	checkIfCombatUnit(unitKindSet, strUnitType);
 	checkIfBionicUnit(unitKindSet, unitType);
 	checkIfBuilding(unitKindSet, unitType);
@@ -558,6 +559,20 @@ public class UnitUtil {
 	case "Terran_Siege_Tank_Siege_Mode":
 	case "Terran_Siege_Tank_Tank_Mode":
 	    unitKindSet.add(UnitKind.Terran_Siege_Tank);
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    private static void checkIfAntiAirUnit(Set<UnitKind> unitKindSet, String strUnitType) {
+	switch (strUnitType) {
+	case "Terran_Marine":
+	case "Terran_Ghost":
+	case "Terran_Goliath":
+	case "Terran_Wraith":
+	case "Terran_Battlecruiser":
+	    unitKindSet.add(UnitKind.AntiAir_Unit);
 	    break;
 	default:
 	    break;

@@ -36,7 +36,7 @@ public class MicroControlTank extends Manager {
 	    }
 	}
 
-	if (gameStatus.isMatchedInterval(3)) {
+	if (gameStatus.isMatchedInterval(1)) {
 	    if (strategyManager.hasStrategyItem(StrategyItem.ALLOW_PHASE)) {
 		//페이즈에 따라 목표지점을 달리한다.
 		followPhase();
@@ -82,9 +82,6 @@ public class MicroControlTank extends Manager {
 	    }
 
 	    int distanceToTarget = tank.getDistance(target);
-
-	    System.out.println(target.getType().toString());
-	    System.out.println(distanceToTarget);
 
 	    if (distanceToTarget <= SIEGE_MODE_MAX_RANGE + 5) {
 		needSiege = true;
@@ -145,8 +142,23 @@ public class MicroControlTank extends Manager {
 		} else if (strategyManager.getPhase() == 1) {
 
 		    TilePosition tankPosition2 = locationManager.getFirstExtensionChokePoint();
+		    TilePosition baseTankPosition = locationManager.getBaseTankPoint().get(0);
 
-		    Set<Unit2> tankSet3 = allianceUnitInfo.findUnitSetNearTile(tankPosition2, UnitKind.Terran_Siege_Tank, 200);
+		    if (tank.getDistance(tankPosition2.toPosition()) > 500) {
+			if (tank.getDistance(baseTankPosition.toPosition()) < 80) {
+
+			} else {
+			    if (tank.canUnsiege()) {
+				tank.unsiege();
+			    }
+			}
+		    }
+
+		    if (tankPosition2 != null) {
+			tank.attack(tankPosition2.toPosition());
+		    }
+
+		    Set<Unit2> tankSet3 = allianceUnitInfo.findUnitSetNearTile(tankPosition2, UnitKind.Terran_Siege_Tank, 450);
 		    for (Unit2 tank3 : tankSet3) {
 			if (!tank3.isSieged() && tank3.canSiege()) {
 			    tank3.siege();
@@ -155,28 +167,48 @@ public class MicroControlTank extends Manager {
 
 		} else if (strategyManager.getPhase() == 2) {
 
-		    TilePosition tankPosition = locationManager.getSecondExtensionChokePoint();
+		    TilePosition tankPosition = locationManager.getTwoPhaseChokePoint();
 
-		    if (tank.getDistance(tankPosition.toPosition()) > 300) {
-			if (tank.canUnsiege()) {
-			    tank.unsiege();
+		    if (tankPosition != null) {
+			if (tank.getDistance(tankPosition.toPosition()) > 230) {
+			    if (tank.canUnsiege()) {
+				tank.unsiege();
+			    }
+			}
+
+			tank.attack(tankPosition.toPosition());
+
+			Set<Unit2> tankSet3 = allianceUnitInfo.findUnitSetNearTile(tankPosition, UnitKind.Terran_Siege_Tank, 230);
+			for (Unit2 tank3 : tankSet3) {
+			    if (!tank3.isSieged() && tank3.canSiege()) {
+				tank3.siege();
+			    }
 			}
 		    }
 
-		    tank.attack(tankPosition.toPosition());
+		} else if (strategyManager.getPhase() == 3) {
 
-		    Set<Unit2> tankSet3 = allianceUnitInfo.findUnitSetNearTile(tankPosition, UnitKind.Terran_Siege_Tank, 220);
-		    for (Unit2 tank3 : tankSet3) {
-			if (!tank3.isSieged() && tank3.canSiege()) {
-			    tank3.siege();
+		    TilePosition tankPosition = locationManager.getThreePhaseChokePointForSiege();
+		    if (tankPosition != null) {
+
+			if (tank.getDistance(tankPosition.toPosition()) > 600) {
+			    if (tank.canUnsiege()) {
+				tank.unsiege();
+			    }
+			}
+
+			tank.attack(tankPosition.toPosition());
+
+			Set<Unit2> tankSet3 = allianceUnitInfo.findUnitSetNearTile(tankPosition, UnitKind.Terran_Siege_Tank, 600);
+			for (Unit2 tank3 : tankSet3) {
+			    if (!tank3.isSieged() && tank3.canSiege()) {
+				tank3.siege();
+			    }
 			}
 		    }
-
 		}
-
 	    }
 	}
-
     }
 
     // 선두 메카닉 유닛 400 주변에 메카닉 유닛이 20마리 미만이라면, 모든 유닛이 적군으로의 진군을 일단 멈추고 선두 유닛쪽에 모인다.

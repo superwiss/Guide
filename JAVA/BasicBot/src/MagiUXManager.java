@@ -14,12 +14,16 @@ import bwta.BaseLocation;
 public class MagiUXManager extends Manager {
     private StrategyManager strategyManager = null;
     private UnitInfo allianceUnitInfo = null;
+    private LocationManager locationManager = null;
+
+    private final char white = '';
+    private final char teal = '';
 
     @Override
     protected void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
-
 	strategyManager = gameStatus.getStrategyManager();
+	locationManager = gameStatus.getLocationManager();
 	allianceUnitInfo = gameStatus.getAllianceUnitInfo();
     }
 
@@ -38,84 +42,42 @@ public class MagiUXManager extends Manager {
 	drawPositionAtMousePoint();
 	//drawMapGrid();
 
-	LocationManager locationManager = gameStatus.getLocationManager();
-
-	List<TilePosition> tilePositionList = null; // 건물을 지을 위치
-	//배럭스 & 팩토리 건설 위치
+	//배럭 & 팩토리 건설 위치
+	List<TilePosition> tilePositionList = null;
 	tilePositionList = locationManager.getTrainingBuildings();
-	int sequence = 0;
-	for (TilePosition tilePosition : tilePositionList) {
-	    sequence++;
-	    int x = tilePosition.getX();
-	    int y = tilePosition.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Barracks.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Barracks.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Green, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Barracks");
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 13, "Factory  " + sequence);
-	}
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Barracks, "Barracks");
 
 	//서플라이 건설 위치
 	tilePositionList = locationManager.get3by2SizeBuildings();
-	sequence = 0;
-	for (TilePosition tilePosition : tilePositionList) {
-	    sequence++;
-	    int x = tilePosition.getX();
-	    int y = tilePosition.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Supply_Depot.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Supply_Depot.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Green, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Supply  " + sequence);
-	}
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Supply_Depot, "Supply");
 
 	//입구 벙커 건설 위치
 	tilePositionList = locationManager.getBaseEntranceBunker();
-	sequence = 0;
-	for (TilePosition tilePosition : tilePositionList) {
-	    sequence++;
-	    int x = tilePosition.getX();
-	    int y = tilePosition.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Bunker.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Bunker.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Green, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Bunker  " + sequence);
-	}
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Bunker, "Bunker");
 
 	//터렛 건설 위치
 	tilePositionList = locationManager.getBaseTurret();
-	sequence = 0;
-	for (TilePosition tilePosition : tilePositionList) {
-	    sequence++;
-	    int x = tilePosition.getX();
-	    int y = tilePosition.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Missile_Turret.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Missile_Turret.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Green, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Turret " + sequence);
-	}
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "Turret");
 
-	//가스 건설 위치
-	tilePositionList = locationManager.getBaseRefinery();
-	sequence = 0;
-	for (TilePosition tilePosition : tilePositionList) {
-	    sequence++;
-	    int x = tilePosition.getX();
-	    int y = tilePosition.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Refinery.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Refinery.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Green, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Refinery  " + sequence);
-	}
+	//확장 터렛 건설 위치
+	tilePositionList = locationManager.getFirstExpansionTurret();
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "ExTurret");
+
+	//확장 기지 위치
+	tilePositionList = locationManager.getFirstExpansionLocation();
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Command_Center, "First Expansion Location");
+
+	//입구막기용 배럭 위치
+	tilePositionList = locationManager.getEntranceBuilding();
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Barracks, "Block Building");
+
+	//확장 배럭 위치
+	tilePositionList = locationManager.getSecondEntranceBuilding();
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Barracks, "Second Block Building");
+
+	//탱크 위치
+	tilePositionList = locationManager.getBaseTankPoint();
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "Tank");
 
 	//베이스 초크포인트 위치
 	TilePosition tilePos = locationManager.getBaseEntranceChokePoint();
@@ -124,161 +86,57 @@ public class MagiUXManager extends Manager {
 
 	//확장 초크포인트 위치
 	tilePos = locationManager.getFirstExtensionChokePoint();
-	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 30, Color.Red);
+	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 450, Color.Red);
 	MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "first ex choke point");
 
 	//확장 초크포인트 위치
 	tilePos = locationManager.getSecondExtensionChokePoint();
 	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 200, Color.Red);
 	MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "Second ex choke point");
-	
-//	//다음 확장 위치
-//	tilePos = strategyManager.getNextExpansionPoint();
-//	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 100, Color.Blue);
-//	MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "Second ex choke point");
 
-	//확장 터렛 건설 위치
-	tilePositionList = locationManager.getFirstExpansionTurret();
-	sequence = 0;
+	//확장 초크포인트 위치
+	tilePos = locationManager.getTwoPhaseChokePoint();
+	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 200, Color.Blue);
+	MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "2 phase choke point");
+
+	if (locationManager.getEnemyStartLocation() != null) {
+	    
+	    tilePos = locationManager.getThreePhaseChokePointForSiege();
+	    MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 600, Color.Blue);
+	    MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "3 phase Tank point");
+
+	    tilePos = locationManager.getThreePhaseChokePointForMech();
+	    MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 200, Color.Purple);
+	    MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "3 phase Mech point");
+
+	}
+
+	//현재 확장의 상황을 표시합니다.
+	drawCurrentMultiInfoOnScreen(40, 60);
+
+    }
+
+    public void drawCurrentMultiInfoOnScreen(int x, int y) {
+	MyBotModule.Broodwar.drawTextScreen(x, y, white + " <Current Strategy>");
+	MyBotModule.Broodwar.drawTextScreen(x, y + 10, teal + "MultiCount = " + strategyManager.multiCount);
+	MyBotModule.Broodwar.drawTextScreen(x, y + 20, teal + "Mechanic Count = " + allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size());
+	MyBotModule.Broodwar.drawTextScreen(x, y + 30, teal + "Phase = " + strategyManager.getPhase());
+    }
+
+    private void drawBuildingBoxMap(List<TilePosition> tilePositionList, UnitType unitType, String name) {
+
+	int sequence = 0;
 	for (TilePosition tilePosition : tilePositionList) {
 	    sequence++;
 	    int x = tilePosition.getX();
 	    int y = tilePosition.getY();
 	    int x1 = x * 32 + 8;
 	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Missile_Turret.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Missile_Turret.tileSize().getY()) * 32 - 8;
+	    int x2 = (x + unitType.tileSize().getX()) * 32 - 8;
+	    int y2 = (y + unitType.tileSize().getY()) * 32 - 8;
 	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Green, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "ExTurret " + sequence);
+	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, name + " " + sequence);
 	}
-
-	//엔지니어링 베이 위치
-	tilePositionList = locationManager.getFirstExpansionLocation();
-	for (TilePosition tilePosition : tilePositionList) {
-	    int x = tilePosition.getX();
-	    int y = tilePosition.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Blue, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "First Expansion Location");
-	}
-
-	//배럭 위치
-	tilePositionList = locationManager.getEntranceBuilding();
-	for (TilePosition tilePosition : tilePositionList) {
-	    int x = tilePosition.getX();
-	    int y = tilePosition.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Barracks.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Barracks.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Red, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Entrance Building");
-	}
-
-	//배럭 위치
-	tilePositionList = locationManager.getSecondEntranceBuilding();
-	for (TilePosition tilePosition : tilePositionList) {
-	    int x = tilePosition.getX();
-	    int y = tilePosition.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Barracks.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Barracks.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Red, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Second Entrance Building");
-	}
-
-	//확장 터렛 건설 위치
-	tilePositionList = locationManager.getBaseTankPoint();
-	sequence = 0;
-	for (TilePosition tilePosition : tilePositionList) {
-	    sequence++;
-	    int x = tilePosition.getX();
-	    int y = tilePosition.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Missile_Turret.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Missile_Turret.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Red, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Tank " + sequence);
-	}
-
-	for (BaseLocation targetBaseLocation : BWTA.getStartLocations()) {
-	    TilePosition tt = targetBaseLocation.getTilePosition();
-	    int x = tt.getX();
-	    int y = tt.getY();
-	    int x1 = x * 32 + 8;
-	    int y1 = y * 32 + 8;
-	    int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
-	    int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
-	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Purple, false);
-	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Expansion " + sequence);
-	}
-
-	//	System.out.println("적 본진으로부터의 거리 " + locationManager.getEnemyStartLocation().getDistance(locationManager.getAllianceBaseLocation()));
-	//서킷브레이커 가로전 110.0
-	//서킷브레이커 대각전 154.8
-	//서킷브레이커 세로전 109.0
-
-	//		double tempDistance;
-	//		double sourceDistance;
-	//		double closestDistance = 1000000000;
-	//		TilePosition sourceBaseLocation = locationManager.getFirstExpansionLocation().get(0);
-	//		TilePosition enemyBaseLocation = locationManager.getEnemyStartLocation();
-	//		BaseLocation base = null;
-	//	
-	//		for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
-	//		    TilePosition tt = targetBaseLocation.getTilePosition();
-	//	
-	//		    if (tt.equals(locationManager.allianceBaseLocation))
-	//			continue;
-	//		    if (tt.equals(locationManager.getFirstExpansionLocation().get(0)))
-	//			continue;
-	//		    if (tt.equals(locationManager.enemyStartLocation))
-	//			continue;
-	//		    if (tt.equals(locationManager.getEnemyFirstExpansionLocation().get(0)))
-	//			continue;
-	//	
-	//		    //건물이 이미 지어져 있는곳 패스
-	//		    if (hasBuildingAroundBaseLocation(tt, 350) == true) {
-	//			continue;
-	//		    }
-	//	
-	//		    int x = tt.getX();
-	//		    int y = tt.getY();
-	//		    int x1 = x * 32 + 8;
-	//		    int y1 = y * 32 + 8;
-	//		    int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
-	//		    int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
-	//		    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Cyan, false);
-	//		    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Expansionsss " + sequence);
-	//	
-	//		    System.out.println("확장 위치 정보 " + targetBaseLocation.getTilePosition().getX() + " : " + targetBaseLocation.getTilePosition().getY());
-	//		    sourceDistance = sourceBaseLocation.getDistance(targetBaseLocation.getTilePosition());
-	//		    System.out.println("내 확장으로부터의 거리" + sourceDistance);
-	//		    tempDistance = sourceDistance - enemyBaseLocation.getDistance(targetBaseLocation.getTilePosition());
-	//		    System.out.println("적 본진으로부터의 거리 " + enemyBaseLocation.getDistance(targetBaseLocation.getTilePosition()));
-	//		    System.out.println("총점수 " + tempDistance);
-	//	
-	//		    if (tempDistance < closestDistance && sourceDistance > 0) {
-	//			closestDistance = tempDistance;
-	//			base = targetBaseLocation;
-	//		    }
-	//		}
-	//	
-	//		TilePosition wow = base.getTilePosition();
-	//		int x = wow.getX();
-	//		int y = wow.getY();
-	//		int x1 = x * 32 + 8;
-	//		int y1 = y * 32 + 8;
-	//		int x2 = (x + UnitType.Terran_Command_Center.tileSize().getX()) * 32 - 8;
-	//		int y2 = (y + UnitType.Terran_Command_Center.tileSize().getY()) * 32 - 8;
-	//		MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Red, false);
-	//		MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Expansionsss " + sequence);
-
     }
 
     /// 해당 BaseLocation 에 player의 건물이 존재하는지 리턴합니다

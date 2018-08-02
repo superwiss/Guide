@@ -125,10 +125,10 @@ public class WorkerManager extends Manager {
 		}
 		total_scv = total_scv - total_gas_scv;
 
-		//부족한 있는 커맨드 센터를 가져온다.
-		Unit2 enoughCommand = null;
+		//부족한 커맨드 센터를 가져온다.
+		Unit2 shortageCommand = null;
 		for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-
+		    
 		    if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 300).size() == 0) {
 			continue;
 		    }
@@ -136,20 +136,20 @@ public class WorkerManager extends Manager {
 		    if (!commandCenter.isCompleted()) {
 			continue;
 		    }
-
+		    
 		    int result2 = checkMineralBalance(commandCenter, total_scv, total_mineral);
 		    if (result2 <= 1) {
-			enoughCommand = commandCenter;
+			shortageCommand = commandCenter;
 		    }
 		}
 
-		if (null != enoughCommand) {
-		    if (!commandCenterWorksListMap.containsKey(enoughCommand)) {
-			commandCenterWorksListMap.put(enoughCommand, new LinkedList<>());
+		if (null != shortageCommand) {
+		    if (!commandCenterWorksListMap.containsKey(shortageCommand)) {
+			commandCenterWorksListMap.put(shortageCommand, new LinkedList<>());
 		    }
-		    List<Unit2> workerList = commandCenterWorksListMap.get(enoughCommand);
+		    List<Unit2> workerList = commandCenterWorksListMap.get(shortageCommand);
 		    workerList.add(worker);
-		    commandCenterWorksListMap.put(enoughCommand, workerList);
+		    commandCenterWorksListMap.put(shortageCommand, workerList);
 		} else {
 		    Log.warn("커맨드 센터가 없습니다. 일꾼 ID: %s", worker);
 		}
@@ -184,6 +184,8 @@ public class WorkerManager extends Manager {
 	Set<Unit2> scvUnitSet = allianceUnitInfo.findUnitSetNear(baseUnit, wantFind, findRange);
 	Set<Unit2> findUnitSet = new HashSet<>();
 	WorkerManager workerManager = gameStatus.getWorkerManager();
+	
+	System.out.println(scvUnitSet.size());
 
 	for (Unit2 scv : scvUnitSet) {
 	    if (workerManager.isinterruptableWorker(scv)) {
@@ -191,6 +193,7 @@ public class WorkerManager extends Manager {
 	    }
 	}
 
+	System.out.println(findUnitSet.size());
 	return findUnitSet;
     }
 

@@ -402,6 +402,36 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	return null;
     }
 
+    @Override
+    public List<TilePosition> initEnemyBaseSearchSequence() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public TilePosition initTwoPhaseChokePoint() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public TilePosition initThreePhaseChokePointForSiege() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public TilePosition initThreePhaseChokePointForMech() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public TilePosition getThreePhaseChokePointForMech() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
 
 //    @Override
 //    public TilePosition initFirstExpansionLocaion() {

@@ -57,6 +57,38 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 	return result;
     }
 
+    // 정찰할 위치(순서)를 설정한다.
+    @Override
+    public List<TilePosition> initEnemyBaseSearchSequence() {
+	if (enemyStartLocation != null) {
+	    List<TilePosition> result = new ArrayList<>();
+	    if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
+		result.add(new TilePosition(104, 0));
+		result.add(new TilePosition(125, 1));
+		result.add(new TilePosition(125, 24));
+		result.add(new TilePosition(105, 18));
+	    } else if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+		result.add(new TilePosition(125, 104));
+		result.add(new TilePosition(125, 124));
+		result.add(new TilePosition(102, 124));
+		result.add(new TilePosition(104, 103));
+	    } else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+		result.add(new TilePosition(20, 124));
+		result.add(new TilePosition(1, 124));
+		result.add(new TilePosition(0, 102));
+		result.add(new TilePosition(20, 105));
+	    } else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+		result.add(new TilePosition(1, 20));
+		result.add(new TilePosition(1, 1));
+		result.add(new TilePosition(20, 1));
+		result.add(new TilePosition(20, 20));
+	    }
+	    return result;
+	} else {
+	    return null;
+	}
+    }
+
     // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치를 지정한다. Add on 건물 위치까지 고려해야 한다.
     @Override
     public List<TilePosition> initTrainingBuildings() {
@@ -67,7 +99,7 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 	    result.add(new TilePosition(111, 1));
 	    result.add(new TilePosition(105, 1));
 	    result.add(new TilePosition(99, 1));
-	    
+
 	    result.add(new TilePosition(107, 6));
 	    result.add(new TilePosition(107, 9));
 	    result.add(new TilePosition(111, 9));
@@ -76,12 +108,12 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    
+
 	    result.add(new TilePosition(121, 107));
 	    result.add(new TilePosition(121, 104));
-	    result.add(new TilePosition(121, 101));
+	    result.add(new TilePosition(121, 99));
 	    result.add(new TilePosition(121, 110));
-	    
+
 	    result.add(new TilePosition(110, 104));
 	    result.add(new TilePosition(114, 104));
 	    result.add(new TilePosition(110, 107));
@@ -412,13 +444,13 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 	    result = new TilePosition(104, 8);
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result = new TilePosition(119, 103);
+	    result = new TilePosition(120, 103);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
 	    result = new TilePosition(22, 120);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result = new TilePosition(7, 26);
+	    result = new TilePosition(7, 25);
 	}
 
 	return result;
@@ -453,28 +485,49 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result = new TilePosition(93, 19);
+	    result = new TilePosition(90, 31);
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result = new TilePosition(107, 92);
+	    result = new TilePosition(96, 90);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result = new TilePosition(35, 109);
+	    result = new TilePosition(36, 96);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result = new TilePosition(22, 36);
+	    result = new TilePosition(32, 40);
 	}
 
 	return result;
     }
-    
+
     @Override
     public TilePosition initSecondExtensionChokePoint() {
 	TilePosition result = null;
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result = new TilePosition(90, 29);
+	    result = new TilePosition(91, 19);
+	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+	    // 5시
+	    result = new TilePosition(106, 91);
+	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+	    // 7시
+	    result = new TilePosition(36, 107);
+	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+	    // 11시
+	    result = new TilePosition(22, 38);
+	}
+
+	return result;
+    }
+
+    @Override
+    public TilePosition initTwoPhaseChokePoint() {
+	TilePosition result = null;
+
+	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+	    // 1시
+	    result = new TilePosition(89, 30);
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
 	    result = new TilePosition(95, 87);
@@ -483,7 +536,107 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 	    result = new TilePosition(39, 98);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result = new TilePosition(33, 41);
+	    result = new TilePosition(32, 41);
+	}
+
+	return result;
+    }
+
+    @Override
+    public TilePosition initThreePhaseChokePointForSiege() {
+	TilePosition result = null;
+
+	if (enemyStartLocation != null) {
+	    if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+
+		if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+		    result = new TilePosition(99, 93); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+		    result = new TilePosition(40, 108); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+		    result = new TilePosition(27, 40); //ok
+		}
+
+	    } else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+		//작업중
+		if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
+		    result = new TilePosition(88, 21); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+		    result = new TilePosition(32, 98); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+		    result = new TilePosition(31, 33); //ok
+		}
+
+	    } else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+
+		if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
+		    result = new TilePosition(90, 24); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+		    result = new TilePosition(94, 85); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+		    result = new TilePosition(37, 36); //ok
+		}
+
+	    } else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+
+		if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
+		    result = new TilePosition(90, 32); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+		    result = new TilePosition(94, 93); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+		    result = new TilePosition(41, 106); //ok
+		}
+	    }
+	}
+
+	return result;
+    }
+
+    @Override
+    public TilePosition getThreePhaseChokePointForMech() {
+	TilePosition result = null;
+
+	if (enemyStartLocation != null) {
+	    if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+
+		if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+		    result = new TilePosition(90, 78); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+		    result = new TilePosition(46, 92); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+		    result = new TilePosition(42, 46); //ok
+		}
+
+	    } else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+		//작업중
+		if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
+		    result = new TilePosition(84, 36); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+		    result = new TilePosition(47, 92); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+		    result = new TilePosition(40, 46); //ok
+		}
+
+	    } else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+
+		if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
+		    result = new TilePosition(81, 36); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+		    result = new TilePosition(78, 83); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+		    result = new TilePosition(39, 51); //ok
+		}
+
+	    } else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+		//작업중
+		if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
+		    result = new TilePosition(77, 38); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+		    result = new TilePosition(86, 79); //ok
+		} else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+		    result = new TilePosition(44, 89); //ok
+		}
+	    }
 	}
 
 	return result;
@@ -669,6 +822,12 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
     @Override
     public List<TilePosition> getEnemyFirstExpansionLocation() {
 	return enemyFirstExpansionLocation;
+    }
+
+    @Override
+    public TilePosition initThreePhaseChokePointForMech() {
+	// TODO Auto-generated method stub
+	return null;
     }
 
 }

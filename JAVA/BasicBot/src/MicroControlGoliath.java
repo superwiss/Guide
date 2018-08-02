@@ -1,13 +1,18 @@
+import java.util.HashSet;
 import java.util.Set;
 
 import bwapi.Position;
 import bwapi.TilePosition;
+import bwapi.UnitType;
 
 public class MicroControlGoliath extends Manager {
+    private final Set<UnitType> goliathUnitTypeSet = new HashSet<>();
+
     private StrategyManager strategyManager = null;
     private LocationManager locationManager = null;
 
     public MicroControlGoliath() {
+	goliathUnitTypeSet.add(UnitType.Terran_Goliath);
     }
 
     @Override
@@ -24,7 +29,7 @@ public class MicroControlGoliath extends Manager {
 	if (gameStatus.isMatchedInterval(2)) {
 	    // 선두 유닛이 너무 앞서가면, 뒤따로 오는 유닛을 기다린다.
 	    if (strategyManager.hasStrategyItem(StrategyItem.AUTO_TRAIN_MECHANIC_UNIT)) {
-		waitMechanicUnit();
+		//		waitMechanicUnit();
 	    }
 	}
 
@@ -34,6 +39,11 @@ public class MicroControlGoliath extends Manager {
 		followPhase();
 	    }
 	}
+
+	if (gameStatus.isMatchedInterval(1)) {
+	    //	    followMechanicUnit();
+	}
+
 	aggressiveMoveAttack();
     }
 
@@ -45,19 +55,19 @@ public class MicroControlGoliath extends Manager {
 	    if (!goliath.exists()) {
 		Log.warn("[MicroControlMarine:checkIfUsingStimPack] 골리앗(%s)이 exist 하지 않습니다.", goliath);
 	    } else {
-
+		Position attackPosition = null;
 		if (strategyManager.getPhase() == 0) {
-
-		    goliath.attack(locationManager.getBaseEntranceChokePoint().toPosition());
-
+		    attackPosition = locationManager.getBaseEntranceChokePoint().toPosition();
 		} else if (strategyManager.getPhase() == 1) {
-
-		    goliath.attack(locationManager.getFirstExtensionChokePoint().toPosition());
-
+		    attackPosition = locationManager.getSecondExtensionChokePoint().toPosition();
 		} else if (strategyManager.getPhase() == 2) {
+		    attackPosition = locationManager.getTwoPhaseChokePoint().toPosition();
+		} else if (strategyManager.getPhase() == 3) {
+		    attackPosition = locationManager.getThreePhaseChokePointForMech().toPosition();
+		}
 
-		    goliath.attack(locationManager.getSecondExtensionChokePoint().toPosition());
-
+		if (attackPosition != null) {
+		    ActionUtil.attackPosition(allianceUnitInfo, goliath, attackPosition);
 		}
 	    }
 	}
@@ -126,6 +136,41 @@ public class MicroControlGoliath extends Manager {
 			ActionUtil.attackPosition(allianceUnitInfo, unit, attackPosition);
 		    } else {
 			ActionUtil.moveToPosition(allianceUnitInfo, unit, attackPosition);
+		    }
+		}
+	    }
+	}
+    }
+
+    private void followMechanicUnit() {
+	Position newPosition = null;
+	Set<Unit2> tankSet = null;
+	if (true == strategyManager.hasAttackTilePosition()) {
+	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
+	    tankSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Siege_Tank);
+	    //공격 목표 지점에서 가장 가까운 선두 탱크를 가져온다
+	    Unit2 headTankUnit = allianceUnitInfo.getClosestUnit(tankSet, attackPosition, goliathUnitTypeSet);
+	    if (null == headTankUnit) {
+		Log.warn("선두 탱크 유닛이 존재하지 않아서 골리앗을 컨트롤 할 수 없습니다.");
+		return;
+	    } else if (headTankUnit.getPosition().equals(attackPosition)) {
+		// 선두 바이오닉 유닛이 이미 공격 지점에 위치하고 있다면 매딕도 그 지점으로 이동한다.
+		newPosition = attackPosition;
+	    } else if (null != headTankUnit) {
+		// 선두 바이오닉 유닛으로부터 공격 목표 지점 방향으로 +100 position 거리의 위치를 구한다.
+		newPosition = UnitUtil.getPositionAsDistance(headTankUnit.getPosition(), attackPosition, 100);
+	    }
+
+	    if (null == newPosition) {
+		Log.warn("메딕이 이동할 수 있는 거리를 계산하지 못했습니다. 바이오닉 유닛 개수=%d, 바이오닉 선두 위치=%s, 바이오닉 공격 대상 위치=%s, 메딕 이동 위치: null", tankSet.size(),
+			null != headTankUnit ? headTankUnit.getTilePosition() : "null", attackPosition);
+		// TODO 메딕 계속 이동할까? 아니면 제자리에 있을까? 일단은 제자리에 대기...
+	    } else {
+		Set<Unit2> medicSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Medic);
+		for (Unit2 medic : medicSet) {
+		    boolean updated = ActionUtil.attackPosition(allianceUnitInfo, medic, newPosition);
+		    if (updated) {
+			Log.debug("메딕(%s)을 %s 위치로 이동한다.", medic, newPosition);
 		    }
 		}
 	    }

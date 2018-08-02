@@ -16,6 +16,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
     protected List<TilePosition> enemyFirstExpansionLocation = null; // 적군 확장 위치
     protected List<TilePosition> baseLocations = null; // 맵 전체의 스타팅 포인트 위치들.
     private List<TilePosition> searchSequence = null; // 정찰할 위치(순서)
+    protected List<TilePosition> searchEnemyBaseSequence = null; // 정찰할 위치(순서)
     protected List<TilePosition> trainingBuildings = null; // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치
     protected List<TilePosition> baseEntranceBunkers = null; // 본진 입구 벙커를 지을 위치
     protected List<TilePosition> size3by2Buildings = null; // 3*2 사이즈 건물을 짓기 위한 위치들 (서플라이 디팟, 아마데미 등)
@@ -27,6 +28,10 @@ public abstract class LocationManager extends Manager implements MapInfo {
     private TilePosition baseEntranceChokePoint = null; // 본진 입구 방어를 위한 위치
     private TilePosition firstExtensionChokePoint = null; // 앞마당 입구 방어를 위한 위치
     private TilePosition secondExtensionChokePoint = null; // 두번째 확장 입구 방어를 위한 위치
+    private TilePosition twoPhaseChokePoint = null;
+    private TilePosition threePhaseChokePointForSiege = null;
+    private TilePosition threePhaseChokePointForMech = null;
+
     private List<TilePosition> baseTankPoint = null; // 본진 탱크 배치를 위한 위치
 
     public LocationManager() {
@@ -51,11 +56,14 @@ public abstract class LocationManager extends Manager implements MapInfo {
 //	secondEntranceBuilding = initSecondEntranceBuildings();
 //	firstExtensionChokePoint = initFirstExtensionChokePoint();
 //	secondExtensionChokePoint = initSecondExtensionChokePoint();
+//	twoPhaseChokePoint = initTwoPhaseChokePoint();
+//	threePhaseChokePointForSiege = initThreePhaseChokePointForSiege();
+//	threePhaseChokePointForMech = initThreePhaseChokePointForMech();
 //	trainingBuildings = initTrainingBuildings();
 //	baseEntranceChokePoint = initBaseEntranceChokePoint();
 //	baseTankPoint = initBaseTankPoint();
 //	baseTurrets = initBaseTurret();
-	
+
     }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
@@ -74,6 +82,9 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	baseEntranceChokePoint = initBaseEntranceChokePoint();
 	firstExtensionChokePoint = initFirstExtensionChokePoint();
 	secondExtensionChokePoint = initSecondExtensionChokePoint();
+	twoPhaseChokePoint = initTwoPhaseChokePoint();
+	threePhaseChokePointForSiege = initThreePhaseChokePointForSiege();
+	threePhaseChokePointForMech = initThreePhaseChokePointForMech();
 	entranceBuilding = initEntranceBuildings();
 	secondEntranceBuilding = initSecondEntranceBuildings();
 	baseTankPoint = initBaseTankPoint();
@@ -108,6 +119,11 @@ public abstract class LocationManager extends Manager implements MapInfo {
     @Override
     public List<TilePosition> getSearchSequence() {
 	return searchSequence;
+    }
+
+    @Override
+    public List<TilePosition> getEnemyBaseSearchSequence() {
+	return searchEnemyBaseSequence;
     }
 
     // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치를 리턴한다.
@@ -167,13 +183,28 @@ public abstract class LocationManager extends Manager implements MapInfo {
     public TilePosition getFirstExtensionChokePoint() {
 	return firstExtensionChokePoint;
     }
-    
+
     // 두번째 확장 입구 방어를 위한 위치를 리턴한다.
     @Override
     public TilePosition getSecondExtensionChokePoint() {
 	return secondExtensionChokePoint;
     }
 
+    @Override
+    public TilePosition getTwoPhaseChokePoint() {
+	return twoPhaseChokePoint;
+    }
+
+    @Override
+    public TilePosition getThreePhaseChokePointForSiege() {
+	return threePhaseChokePointForSiege;
+    }
+    
+    @Override
+    public TilePosition getThreePhaseChokePointForMech() {
+	return threePhaseChokePointForMech;
+    }
+    
     // 앞마당 입구 방어를 위한 위치를 리턴한다.
     @Override
     public List<TilePosition> getBaseTankPoint() {
@@ -239,4 +270,49 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	result.add(firstEnemyExpansionLocation);
 	enemyFirstExpansionLocation = result;
     }
+
+    public void initEnemyBaseSearch() {
+	searchEnemyBaseSequence = initEnemyBaseSearchSequence();
+	threePhaseChokePointForSiege = initThreePhaseChokePointForSiege();
+	threePhaseChokePointForMech = initThreePhaseChokePointForMech();
+    }
+
+    // 다음 확장의 위치를 리턴한다.
+    public TilePosition getNextExpansionPoint() {
+
+	double tempDistance;
+	double closestDistance = 999999;
+	TilePosition nextExpansionLocation = null;
+
+	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+	    //아군 본진의 경우 제외한다.
+	    if (targetBaseLocation.getTilePosition().equals(allianceBaseLocation))
+		continue;
+	    //이미 아군의 커맨드 센터가 지어져 있을 경우 제외한다.
+	    if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 100).size() > 0) {
+		continue;
+	    }
+
+	    //이미 적군의 생산기지 지어져 있을 경우 제외한다.
+	    if (enemyUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.MAIN_BUILDING, 100).size() > 0) {
+		continue;
+	    }
+
+	    //중앙의 멀티는 가져가지 않는다?
+	    if ((targetBaseLocation.getTilePosition().getX() > 60 && targetBaseLocation.getTilePosition().getX() < 70)
+		    && (targetBaseLocation.getTilePosition().getY() > 60 && targetBaseLocation.getTilePosition().getY() < 70)) {
+		continue;
+	    }
+
+	    //아군 기지에서 가장 가까운 확장부터 하나씩 가져간다
+	    //TODO 아군스타팅 포인트, 적군 스타팅 포인트에 따라 확장 점수를 부여하여, 가장 중요도가 높은 확장부터 가져간다?
+	    tempDistance = BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
+	    if (tempDistance < closestDistance && tempDistance > 0) {
+		closestDistance = tempDistance;
+		nextExpansionLocation = targetBaseLocation.getTilePosition();
+	    }
+	}
+	return nextExpansionLocation;
+    }
+
 }

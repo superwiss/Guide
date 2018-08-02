@@ -1,3 +1,4 @@
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
@@ -44,6 +45,8 @@ public class ScoutManager extends Manager {
 		if (null == locationManager.getEnemyStartLocation()) {
 		    // 다음 지점으로 이동한다.
 		    onFrame();
+		} else {
+		    searchQueue.clear();
 		}
 	    } else {
 		// 정찰을 계속한다.
@@ -199,6 +202,9 @@ public class ScoutManager extends Manager {
 	Log.info("적 본진을 찾았습니다. 적 본진의 Tile Position=%s", tilePosition);
 	locationManager.setEnemyStartLocation(tilePosition);
 	locationManager.initEnemyFirstExpansionLocaion();
+	locationManager.initEnemyBaseSearch();
+	locationManager.initThreePhaseChokePointForSiege();
+	locationManager.initThreePhaseChokePointForMech();
 	searchQueue.clear();
     }
 

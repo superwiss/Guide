@@ -24,7 +24,7 @@ public class MicroControlVulture extends Manager {
 	if (gameStatus.isMatchedInterval(2)) {
 	    // 선두 유닛이 너무 앞서가면, 뒤따로 오는 유닛을 기다린다.
 	    if (strategyManager.hasStrategyItem(StrategyItem.AUTO_TRAIN_MECHANIC_UNIT)) {
-		waitMechanicUnit();
+		//		waitMechanicUnit();
 	    }
 	}
 
@@ -45,19 +45,18 @@ public class MicroControlVulture extends Manager {
 	    if (!vulture.exists()) {
 		Log.warn("[MicroControlMarine:checkIfUsingStimPack] 벌쳐(%s)가 exist 하지 않습니다.", vulture);
 	    } else {
-
+		Position attackPosition = null;
 		if (strategyManager.getPhase() == 0) {
-
-		    vulture.attack(locationManager.getBaseEntranceChokePoint().toPosition());
-
+		    attackPosition = locationManager.getBaseEntranceChokePoint().toPosition();
 		} else if (strategyManager.getPhase() == 1) {
-
-		    vulture.attack(locationManager.getFirstExtensionChokePoint().toPosition());
-
+		    attackPosition = locationManager.getSecondExtensionChokePoint().toPosition();
 		} else if (strategyManager.getPhase() == 2) {
-
-		    vulture.attack(locationManager.getSecondExtensionChokePoint().toPosition());
-
+		    attackPosition = locationManager.getTwoPhaseChokePoint().toPosition();
+		} else if (strategyManager.getPhase() == 3) {
+		    attackPosition = locationManager.getThreePhaseChokePointForMech().toPosition();
+		}
+		if (attackPosition != null) {
+		    ActionUtil.attackPosition(allianceUnitInfo, vulture, attackPosition);
 		}
 	    }
 	}

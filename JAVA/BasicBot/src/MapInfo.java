@@ -37,9 +37,15 @@ public interface MapInfo {
 
     // 정찰할 위치(순서)를 리턴한다.
     abstract List<TilePosition> getSearchSequence();
+    
+    // 적기지 가장자리의 정찰할 위치를 리턴한다.
+    abstract List<TilePosition> getEnemyBaseSearchSequence();
 
     // 정찰할 위치(순서)를 설정한다.
     abstract List<TilePosition> initSearchSequence();
+    
+    // 적기지 가장자리의 정찰 위치를 설정한다.
+    abstract List<TilePosition> initEnemyBaseSearchSequence();
 
     // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치를 지정한다. Add on 건물 위치까지 고려해야 한다.
     abstract List<TilePosition> initTrainingBuildings();
@@ -105,12 +111,24 @@ public interface MapInfo {
     // 두번째 확장  방어를 위한 위치를 설정한다.
     abstract TilePosition initSecondExtensionChokePoint();
     
+    abstract TilePosition initTwoPhaseChokePoint();
+    
+    abstract TilePosition initThreePhaseChokePointForSiege();
+    
+    abstract TilePosition initThreePhaseChokePointForMech();
+    
     // 앞마당 입구 방어를 위한 위치를 리턴한다.
     abstract TilePosition getFirstExtensionChokePoint();
     
     // 앞마당 입구 방어를 위한 위치를 리턴한다.
     abstract TilePosition getSecondExtensionChokePoint();
-
+    
+    abstract TilePosition getTwoPhaseChokePoint();
+    
+    abstract TilePosition getThreePhaseChokePointForSiege();
+    
+    abstract TilePosition getThreePhaseChokePointForMech();
+    
     // 언덕의 타일을 리턴한다.
     abstract Set<TilePosition> getHillTilePosition();
 }

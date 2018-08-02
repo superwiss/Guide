@@ -215,6 +215,19 @@ public class UnitInfo {
 	}
     }
 
+    public void releaseGasUnit(Unit2 unit) {
+	if (null != unit) {
+	    // 유닛을 SCOUT 타입에서 원래 타입으로 원복한다.
+	    Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
+	    for (UnitKind unitKind : unitKinds) {
+		unitKindMap.get(unitKind).add(unit);
+	    }
+	    unitKindMap.get(UnitKind.Worker_Gather_Gas).remove(unit);
+	} else {
+	    Log.trace("유닛이 죽어버렸음..");
+	}
+    }
+
     // 메모리에 저장된 unitSet 중에서 position에 제일 가까운 unit을 리턴한다.
     public Unit2 getClosestUnitWithLastTilePosition(Set<Unit2> unitSet, Position position) {
 	return getClosestUnitWithLastTilePosition(unitSet, position, null);
@@ -278,6 +291,17 @@ public class UnitInfo {
 	}
 
 	return result;
+    }
+
+    //완성된 유닛셋만 리턴한다
+    public Set<Unit2> getCompletedUnitSet(UnitKind unitKind) {
+	Set<Unit2> completedUnitSet = new HashSet<>();
+	for (Unit2 unit : getUnitSet(unitKind)) {
+	    if (unit.isCompleted()) {
+		completedUnitSet.add(unit);
+	    }
+	}
+	return completedUnitSet;
     }
 
     // unitSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. 유닛 타입이 excludeUnitType일 경우는 제외한다.
@@ -567,7 +591,7 @@ public class UnitInfo {
 
 	return result;
     }
-    
+
     //대상 유닛 근처에 있는 유닛 하나를 리턴한다.
     public Unit2 findOneUnitNear(Unit2 baseUnit, UnitKind wantFind, int findRange) {
 
@@ -580,24 +604,24 @@ public class UnitInfo {
 
 	return findUnit;
     }
-    
+
     //대상 유닛 근처에 있는 유닛셋 전체를 리턴한다.
     public Set<Unit2> findUnitSetNearTile(TilePosition basePosition, UnitKind wantFind, int findRange) {
 
 	Set<Unit2> targetUnitSet = new HashSet<>(getUnitSet(wantFind));
 	Set<Unit2> nearUnitSet = new HashSet<>();
 
-	for (Unit2 targetUnit : targetUnitSet) {
-	    if (targetUnit.getDistance(basePosition.toPosition()) < findRange) {
-		nearUnitSet.add(targetUnit);
+	if (targetUnitSet != null) {
+	    for (Unit2 targetUnit : targetUnitSet) {
+		if (targetUnit.getDistance(basePosition.toPosition()) < findRange) {
+		    nearUnitSet.add(targetUnit);
+		}
 	    }
 	}
-
+	
 	return nearUnitSet;
     }
 
-
-    
     //대상 유닛 근처에 있는 유닛셋 전체를 리턴한다.
     public Set<Unit2> findUnitSetNear(Unit2 baseUnit, UnitKind wantFind, int findRange) {
 
@@ -612,7 +636,7 @@ public class UnitInfo {
 
 	return nearUnitSet;
     }
-    
+
     public int getMineralNearCommandCenter(Unit2 commandCenter) {
 	int mineralCount = 0;
 	Set<Unit2> mineralSet = new HashSet<>(getUnitSet(UnitKind.Resource_Mineral_Field));
@@ -623,5 +647,5 @@ public class UnitInfo {
 	}
 	return mineralCount;
     }
-    
+
 }
