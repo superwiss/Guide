@@ -20,6 +20,7 @@ public class StrategyManager extends Manager {
     private Unit2 headAllianceUnit = null; // 아군의 공격 선두 유닛
     private static int repairCount = 3; // 벙커를 수리할 SCV 개수
     private int lastScanFrameCount = 0; // 마지막으로 스캔을 뿌린 시각
+    private boolean skipMicroControl = false;
 
     @Override
     protected void onStart(GameStatus gameStatus) {
@@ -60,6 +61,7 @@ public class StrategyManager extends Manager {
     public void onFrame() {
 	super.onFrame();
 
+	checkIfSkipMicroControl();
 	checkIfuseScan();
 	doBunkerJob();
 	doAcademyJob();
@@ -155,10 +157,22 @@ public class StrategyManager extends Manager {
 
 	if (null == result) {
 	    // 공격 지점이 없으면, 탐색 모드로 전환한다.
-	    addStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE);
+	    if (!hasStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+		Log.info("Enalbe SEARCH_FOR_ELIMINATE mode");
+		addStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE);
+	    }
 	}
 
 	return result;
+    }
+
+    // 마이크로 컨트롤 중단 여부를 체크한다.
+    private void checkIfSkipMicroControl() {
+	if (hasStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+	    skipMicroControl = true;
+	} else {
+	    skipMicroControl = false;
+	}
     }
 
     // ///////////////////////////////////////////////////////////
@@ -492,7 +506,7 @@ public class StrategyManager extends Manager {
 	this.strategyItems = strategyItems;
     }
 
-    public boolean containStrategyStatus(StrategyStatus strategyStatus) {
+    public boolean hasStrategyStatus(StrategyStatus strategyStatus) {
 	return this.strategyStatus.contains(strategyStatus);
     }
 
@@ -540,5 +554,13 @@ public class StrategyManager extends Manager {
 
     public boolean removeStrategyItem(StrategyItem strategyItem) {
 	return strategyItems.remove(strategyItem);
+    }
+
+    public boolean isSkipMicroControl() {
+	return skipMicroControl;
+    }
+
+    public void setSkipMicroControl(boolean skipMicroControl) {
+	this.skipMicroControl = skipMicroControl;
     }
 }

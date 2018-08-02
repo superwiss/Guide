@@ -24,15 +24,14 @@ public class MicroControlSiegeTank extends Manager {
     @Override
     protected void onFrame() {
 	super.onFrame();
+	if (strategyManager.isSkipMicroControl()) {
+	    return;
+	}
 	fullyAttack();
     }
 
     private void fullyAttack() {
-	if (!strategyManager.containStrategyStatus(StrategyStatus.ATTACK)) {
-	    return;
-	}
-
-	if (strategyManager.containStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+	if (!strategyManager.hasStrategyStatus(StrategyStatus.ATTACK)) {
 	    return;
 	}
 

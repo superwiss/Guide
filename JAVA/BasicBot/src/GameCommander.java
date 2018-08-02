@@ -57,7 +57,7 @@ public class GameCommander implements EventDispatcher {
 
 	ActionUtil.setGame(gameStatus.getGame());
 
-	gameStatus.sendText("MagiBot 2018.07.30.00");
+	gameStatus.sendText("MagiBot 2018.08.02.00");
 
 	try {
 	    EventData eventData = new EventData(EventData.ON_START, gameStatus);

@@ -25,10 +25,10 @@ public class EliminateManager extends Manager {
 		return;
 	    }
 
-	    if (strategyManager.containStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+	    if (strategyManager.hasStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
 		// 적 건물이 하나도 없으면 맵 전체를 탐색한다.
 		if (0 == enemyUnitInfo.getUnitSet(UnitKind.Building).size()) {
-		    Log.info("Eliminate mode working.");
+		    Log.info("Eliminate mode working. EnemyBase: %s", gameStatus.getLocationManager().getEnemyStartLocation());
 		    search();
 		} else {
 		    Log.info("Eliminate mode finish.");

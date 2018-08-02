@@ -49,11 +49,11 @@ public class MicroControlVulture extends Manager {
     }
 
     private void fullyAttack() {
-	if (!strategyManager.containStrategyStatus(StrategyStatus.ATTACK)) {
+	if (!strategyManager.hasStrategyStatus(StrategyStatus.ATTACK)) {
 	    return;
 	}
 
-	if (strategyManager.containStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
+	if (strategyManager.hasStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
 	    return;
 	}
 

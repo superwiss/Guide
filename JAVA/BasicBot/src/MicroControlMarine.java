@@ -32,6 +32,10 @@ public class MicroControlMarine extends Manager {
     protected void onFrame() {
 	super.onFrame();
 
+	if (strategyManager.isSkipMicroControl()) {
+	    return;
+	}
+
 	if (gameStatus.isMatchedInterval(1)) {
 	    checkIfUsingStimPack();
 	}
@@ -47,9 +51,6 @@ public class MicroControlMarine extends Manager {
 
     // 스팀팩을 사용할지 여부를 판단하고, 필요할 경우 스팀팩을 사용한다.
     private void checkIfUsingStimPack() {
-	if (strategyManager.containStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
-	    return;
-	}
 	Set<Unit2> marineSet = allianceUnitInfo.getUnitSet(UnitType.Terran_Marine);
 	for (Unit2 marine : marineSet) {
 	    if (!marine.exists()) {
@@ -79,9 +80,6 @@ public class MicroControlMarine extends Manager {
 
     // 선두 바이오닉 유닛 400 주변에 마린이 20마리 미만이라면, 모든 유닛이 적군으로의 진군을 일단 멈추고 선두 유닛쪽에 모인다.
     private void waitBionicUnit() {
-	if (strategyManager.containStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
-	    return;
-	}
 	//공격을 갈 지점이 있을 경우에만 컨트롤을 한다.
 	if (true == strategyManager.hasAttackTilePosition()) {
 	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
@@ -127,10 +125,6 @@ public class MicroControlMarine extends Manager {
 	    return;
 	}
 
-	if (strategyManager.containStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
-	    return;
-	}
-
 	if (false == strategyManager.hasAttackTilePosition()) {
 	    return;
 	}
@@ -154,11 +148,11 @@ public class MicroControlMarine extends Manager {
     }
 
     private void fullyAttack() {
-	if (!strategyManager.containStrategyStatus(StrategyStatus.ATTACK)) {
+	if (!strategyManager.hasStrategyStatus(StrategyStatus.ATTACK)) {
 	    return;
 	}
 
-	if (strategyManager.containStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
+	if (strategyManager.hasStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
 	    return;
 	}
 

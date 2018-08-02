@@ -30,6 +30,10 @@ public class StrategyTwoFactory extends StrategyBase {
 	    return;
 	}
 
+	if (strategyManager.isSkipMicroControl()) {
+	    return;
+	}
+
 	// 팩토리는 여유가 있을 때마다 하나씩 늘려준다.
 	// 팩토리는 확장 이후에 늘려준다.
 	if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() >= 2) {
@@ -66,18 +70,14 @@ public class StrategyTwoFactory extends StrategyBase {
 	    return;
 	}
 
-	if (strategyManager.containStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
-	    return;
-	}
-
-	if (strategyManager.containStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
+	if (strategyManager.hasStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
 	    return;
 	}
 
 	// 일꾼을 제외한 인구수를 구한다.
 	int supplyUsed = allianceUnitInfo.getSupplyUsedExceptWorker();
 
-	if (strategyManager.containStrategyStatus(StrategyStatus.FULLY_ATTACK)) {
+	if (strategyManager.hasStrategyStatus(StrategyStatus.FULLY_ATTACK)) {
 	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
 
 	    // 공격 위치 반경 1200 이내에 아군 유닛이 없다면.. 공격이 막힌 것으로 봐야한다.
