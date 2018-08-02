@@ -371,13 +371,16 @@ public class UnitInfo {
 	// 훈련하기
 	if (null != trainableBuilding) {
 	    if (trainableBuilding.canTrain(targetUnitType)) {
-		int beforeQueueSize = trainableBuilding.getTrainingQueue().size();
-		trainableBuilding.train(targetUnitType);
-		int afterQueueSize = trainableBuilding.getTrainingQueue().size();
-		if (afterQueueSize > beforeQueueSize) {
-		    result = true;
+		if (trainableBuilding.getTrainingQueue().size() <= 1) {
+		    int beforeQueueSize = trainableBuilding.getTrainingQueue().size();
+		    trainableBuilding.train(targetUnitType);
+		    int afterQueueSize = trainableBuilding.getTrainingQueue().size();
+		    if (afterQueueSize > beforeQueueSize) {
+			result = true;
+		    }
+		} else {
+		    Log.debug("빌드 큐가 꽉 차서, 유닛을 훈련할 수 없습니다. 건물=%s, 트레이닝큐=%d, 유닛=%d", trainableBuilding, trainableBuilding.getTrainingQueue().size(), targetUnitType);
 		}
-
 	    }
 	}
 

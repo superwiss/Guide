@@ -13,6 +13,8 @@ public class GameStatus {
     // bwapi가 제공하는 게임 정보
     private Game game;
 
+    private MagiConfig config = new MagiConfig();
+
     // 아군의 유닛 정보
     private UnitInfo allianceUnitInfo = new UnitInfo(this);
 
@@ -48,6 +50,14 @@ public class GameStatus {
 
     public UnitInfo getEnemyUnitInfo() {
 	return enemyUnitInfo;
+    }
+
+    public MagiConfig getConfig() {
+	return config;
+    }
+
+    public void setConfig(MagiConfig config) {
+	this.config = config;
     }
 
     // 현재 프레임이 sec의 배수에 해당하는지 여부를 리턴한다.
@@ -304,7 +314,15 @@ public class GameStatus {
 
     public void drawLineMap(int x1, int y1, int x2, int y2, Color color) {
 	game.drawLineMap(x1, y1, x2, y2, color);
+    }
 
+    public void drawLineMap(Unit2 unit1, TilePosition tilePosition, Color color) {
+	if (null == unit1 || null == tilePosition) {
+	    return;
+	}
+	Position p1 = unit1.getPosition();
+	Position p2 = tilePosition.toPosition();
+	drawLineMap(p1.getX(), p1.getY(), p2.getX(), p2.getY(), color);
     }
 
     public void sendText(String string) {
@@ -319,4 +337,5 @@ public class GameStatus {
 
 	return result;
     }
+
 }

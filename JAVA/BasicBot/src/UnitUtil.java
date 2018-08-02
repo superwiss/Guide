@@ -753,4 +753,44 @@ public class UnitUtil {
 
 	return result;
     }
+
+    // 둘 중 tilePosition에 더 가까운 유닛을 리턴한다.
+    public static Unit2 getCloseUnit(Unit2 unit1, Unit2 unit2, TilePosition tilePosition) {
+	return getCloseUnit(unit1, unit2, tilePosition, 0, Integer.MAX_VALUE);
+    }
+
+    // 둘 중 tilePosition에 더 가까운 유닛을 리턴한다. tilePosition과 각 유닛간의 거리 차이가 minDiff 이하라면, unit2가 더 가깝더라도 unit1을 리턴한다.
+    // 예를 들어, tilePosition과 unit1의 거리는 100, unit2의 거리는 90이고, minDiff가 16이라면, 비록 unit2가 tilePosition과 더 가깝지만 거리 차이가 10이라서 16이하이므로 unit1을 리턴한다.
+    public static Unit2 getCloseUnit(Unit2 unit1, Unit2 unit2, TilePosition tilePosition, int minDiff) {
+	return getCloseUnit(unit1, unit2, tilePosition, minDiff, Integer.MAX_VALUE);
+    }
+
+    // 둘 중 tilePosition에 더 가까운 유닛을 리턴한다. tilePosition과 각 유닛간의 거리 차이가 minDiff 이하라면, unit2가 더 가깝더라도 unit1을 리턴한다. 타일과의 거리가 maxDistance 이상이라면, 무조건 unit1을 리턴한다.
+    // ex 1) tilePosition과 unit1의 거리는 100, unit2의 거리는 90이고, minDiff가 16이라면, 비록 unit2가 tilePosition과 더 가깝지만 거리 차이가 10이라서 16이하이므로 unit1을 리턴한다.
+    // ex 2) tilePosition과 unit1의 거리는 1000, unit2의 거리는 1090이고, maxDistance가 1000이라면, 비록 unit2가 tilePosition과 더 가깝지만 거리가 1000 이상이라서 unit1을 리턴한다.
+    public static Unit2 getCloseUnit(Unit2 unit1, Unit2 unit2, TilePosition tilePosition, int minDiff, int maxDistance) {
+	Unit2 result = null;
+
+	if (null != unit1 && null == unit2) {
+	    result = unit1;
+	} else if (null == unit1 && null != unit2) {
+	    result = unit2;
+	} else {
+	    int distanceUnit1 = getDistance(unit1, tilePosition);
+	    int distanceUnit2 = getDistance(unit2, tilePosition);
+	    if (distanceUnit1 <= distanceUnit2) {
+		result = unit1;
+	    } else {
+		result = unit2;
+	    }
+	    if (result.equals(unit2) && (distanceUnit1 - distanceUnit2) <= minDiff) {
+		result = unit1;
+	    }
+	    if (distanceUnit1 >= maxDistance || distanceUnit1 >= maxDistance) {
+		result = unit1;
+	    }
+	}
+
+	return result;
+    }
 }

@@ -4,6 +4,7 @@ public enum UnitKind {
     ALL, // 모든 유닛
 
     Worker, // SCV, Probe, Drone
+    Worker_Construct, // 건설용 일꾼
 
     Worker_Gather_Gas, // 가스를 캐는 일꾼
 

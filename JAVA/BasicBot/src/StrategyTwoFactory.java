@@ -33,8 +33,8 @@ public class StrategyTwoFactory extends StrategyBase {
 	// 팩토리는 여유가 있을 때마다 하나씩 늘려준다.
 	// 팩토리는 확장 이후에 늘려준다.
 	if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() >= 2) {
-	    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < locationManager.getTrainingBuildings().size() - 2) {
-		if (gameStatus.getMineral() >= 500) {
+	    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < locationManager.getTrainingBuildings().size() - 0) {
+		if (gameStatus.getMineral() >= 300) {
 		    strategyManager.addStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
 		} else {
 		    strategyManager.removeStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);

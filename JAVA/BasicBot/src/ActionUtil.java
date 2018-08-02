@@ -4,6 +4,7 @@ import java.util.Set;
 import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
+import bwapi.UnitType;
 
 // 유닛의 Command(Action)에 대한 유틸리티
 public class ActionUtil {
@@ -187,6 +188,18 @@ public class ActionUtil {
 	return result;
     }
 
+    public static boolean build(UnitInfo unitInfo, Unit2 unit, UnitType unitType, TilePosition tilePosition) {
+	boolean result = false;
+
+	ActionDetail currnetCommand = getActionDetail("BUILD", unit, unitType, tilePosition.toPosition());
+	if (isAcceptedAction(currnetCommand, unit, unitInfo)) {
+	    unit.build(unitType, tilePosition);
+	    result = true;
+	}
+
+	return result;
+    }
+
     public static void updateStatus(UnitInfo allianceUnitInfo, Unit2 allianceUnit, UnitStatus unitStatus) {
 	UnitStatus lastUnitStatus = allianceUnitInfo.getLastStatus(allianceUnit);
 	if (!unitStatus.equals(lastUnitStatus)) {
@@ -196,26 +209,30 @@ public class ActionUtil {
 
     // 유닛의 명령을 String으로 표현한다. (Position이 없는 타입의 명령어)
     private static ActionDetail getActionDetail(String command, Unit2 allianceUnit, Unit2 enemyUnit) {
-	return getActionDetail(command, allianceUnit, enemyUnit, null, 0);
+	return new ActionDetail(command, allianceUnit, enemyUnit, null, null, game.getFrameCount(), 0);
     }
 
     // 유닛의 명령을 String으로 표현한다. (Destination Unit이 없는 타입의 명령어)
-    private static ActionDetail getActionDetail(String command, Unit2 allianceUnit, Position position) {
-	return getActionDetail(command, allianceUnit, null, position, 0);
+    private static ActionDetail getActionDetail(String command, Unit2 unit, Position position) {
+	return new ActionDetail(command, unit, null, null, position, game.getFrameCount(), 0);
     }
 
     // 유닛의 명령을 String으로 표현한다. (Destination Unit, Position이 없는 타입의 명령어)
-    private static ActionDetail getActionDetail(String command, Unit2 allianceUnit) {
-	return getActionDetail(command, allianceUnit, null, null, 0);
+    private static ActionDetail getActionDetail(String command, Unit2 unit) {
+	return new ActionDetail(command, unit, null, null, null, game.getFrameCount(), 0);
     }
 
-    private static ActionDetail getActionDetail(String command, Unit2 allianceUnit, Position position, int margin) {
-	return getActionDetail(command, allianceUnit, null, position, margin);
+    private static ActionDetail getActionDetail(String command, Unit2 unit, Position position, int margin) {
+	return new ActionDetail(command, unit, null, null, position, game.getFrameCount(), 0);
+    }
+
+    private static ActionDetail getActionDetail(String command, Unit2 unit, UnitType unitType, Position position) {
+	return new ActionDetail(command, unit, null, unitType, position, game.getFrameCount(), 0);
     }
 
     // 유닛의 명령을 ActionDetail 개체로 변환한다.
-    private static ActionDetail getActionDetail(String command, Unit2 srcUnit, Unit2 destUnit, Position position, int margin) {
-	return new ActionDetail(command, srcUnit, destUnit, position, game.getFrameCount(), margin);
+    private static ActionDetail getActionDetail(String command, Unit2 srcUnit, Unit2 destUnit, UnitType unitType, Position position, int margin) {
+	return new ActionDetail(command, srcUnit, destUnit, unitType, position, game.getFrameCount(), margin);
     }
 
     // 유닛의 액션을 수행할지 말지 결정한다. 이전과 동일한 액션이 들어오면 skip할 수 있도록 false를 리턴한다.

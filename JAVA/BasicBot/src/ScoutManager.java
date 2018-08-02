@@ -201,6 +201,8 @@ public class ScoutManager extends Manager {
 	searchQueue.clear();
     }
 
+    // 최초(상대의 위치를 파악하는게 가장 핵심인) 정찰을 수행한다.
+    // 정찰을 시작하면 true, 정찰을 시작할 수 없으면 false를 리턴한다.
     public boolean doFirstSearch() {
 	boolean result = true;
 	LocationManager locationManager = gameStatus.getLocationManager();

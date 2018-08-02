@@ -93,7 +93,7 @@ public class BuildOrderItem {
 
     @Override
     public String toString() {
-	return "MagiBuildItem[Order=" + order.toString() + ", targetUnitType=" + targetUnitType + ", worker=" + worker + ", inProgress=" + inProgress + ", tilePosition=" + tilePosition
-		+ ", upgradeType=" + upgradeType + ", techType=" + techType + ", strategyItem=" + strategyItem + "]";
+	return "MagiBuildItem[Order=" + order.toString() + ", targetUnitType=" + targetUnitType + ", worker=" + worker + ", inProgress=" + inProgress + ", tilePosition="
+		+ tilePosition + ", upgradeType=" + upgradeType + ", techType=" + techType + ", strategyItem=" + strategyItem + "]";
     }
 }
