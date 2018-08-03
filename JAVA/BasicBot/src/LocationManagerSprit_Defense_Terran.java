@@ -520,7 +520,7 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 	    result = new TilePosition(36, 107);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result = new TilePosition(22, 38);
+	    result = new TilePosition(22, 36);
 	}
 
 	return result;

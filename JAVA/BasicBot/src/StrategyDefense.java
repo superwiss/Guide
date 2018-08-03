@@ -57,7 +57,7 @@ public class StrategyDefense extends StrategyBase {
 
 	    // 공격 위치 반경 1200 이내에 아군 유닛이 없다면.. 공격이 막힌 것으로 봐야한다.
 	    if (null != attackTilePosition) {
-		Set<Unit2> attackUnitSet = allianceUnitInfo.getUnitsInRange(attackTilePosition.toPosition(), UnitKind.Combat_Unit, 1200);
+		Set<Unit2> attackUnitSet = allianceUnitInfo.getUnitsInRange(attackTilePosition.toPosition(), UnitKind.Combat_Unit, 1500);
 		if (attackUnitSet.isEmpty() || supplyUsed < 20) {
 		    strategyManager.removeStrategyStatus(StrategyStatus.FULLY_ATTACK);
 		    strategyManager.removeStrategyStatus(StrategyStatus.ATTACK);

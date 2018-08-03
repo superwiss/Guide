@@ -62,7 +62,7 @@ public class MicroControlVulture extends Manager {
 		} else if (strategyManager.getPhase() == 3) {
 		    attackPosition = locationManager.getThreePhaseChokePointForMech().toPosition();
 		}
-		if (attackPosition != null) {
+		if (attackPosition != null && !strategyManager.hasStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
 		    if (vulture.getDistance(attackPosition) > 500) {
 			ActionUtil.moveToPosition(allianceUnitInfo, vulture, attackPosition);
 		    } else {

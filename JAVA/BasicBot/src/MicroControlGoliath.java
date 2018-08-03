@@ -72,7 +72,7 @@ public class MicroControlGoliath extends Manager {
 		    attackPosition = locationManager.getThreePhaseChokePointForMech().toPosition();
 		}
 
-		if (attackPosition != null) {
+		if (attackPosition != null && !strategyManager.hasStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
 		    strategyManager.setAttackTilePosition(attackPosition.toTilePosition());
 		    if (goliath.getDistance(attackPosition) > 500) {
 			ActionUtil.moveToPosition(allianceUnitInfo, goliath, attackPosition);

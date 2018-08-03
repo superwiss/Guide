@@ -1191,15 +1191,26 @@ public class StrategyManager extends Manager {
 	    }
 	}
 
-	for (BaseLocation targetBaseLocation : BWTA.getStartLocations()) {
-	    //시작지역이 발견되지 않으면 스캔을 뿌려본다.
-	    TilePosition startPoint = targetBaseLocation.getTilePosition();
-	    if (!gameStatus.isExplored(startPoint)) {
-		allianceUnitInfo.doScan(startPoint.toPosition());
+	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+	    //확장지역이 발견되지 않으면 스캔을 뿌려본다.
+	    TilePosition baseLocation = targetBaseLocation.getTilePosition();
+	    if (!gameStatus.isExplored(baseLocation)) {
+
+		Unit2 targetComsat = null;
+		Set<Unit2> comsatSet = allianceUnitInfo.getUnitSet(UnitType.Terran_Comsat_Station);
+		for (Unit2 comsat : comsatSet) {
+		    if (comsat.getEnergy() == 200) {
+			targetComsat = comsat;
+		    }
+		}
+
+		Log.debug("target comsat: %s", targetComsat);
+		if (null != targetComsat && targetComsat.canUseTechPosition(TechType.Scanner_Sweep)) {
+		    Log.info("스캔 뿌림: %s", baseLocation);
+		    targetComsat.useTech(TechType.Scanner_Sweep, baseLocation.toPosition());
+		}
 	    }
-
 	}
-
     }
 
     // 공격갈 위치를 계산한다.
