@@ -220,7 +220,7 @@ public class UnitInfo {
 
     public void releaseGasUnit(Unit2 unit) {
 	if (null != unit) {
-	    // 유닛을 SCOUT 타입에서 원래 타입으로 원복한다.
+	    // 유닛을 Gas 타입에서 원래 타입으로 원복한다.
 	    Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
 	    for (UnitKind unitKind : unitKinds) {
 		unitKindMap.get(unitKind).add(unit);
@@ -698,7 +698,5 @@ public class UnitInfo {
 
 	return result;
     }
-
-
 
 }

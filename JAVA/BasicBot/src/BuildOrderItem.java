@@ -95,7 +95,7 @@ public class BuildOrderItem {
     public void setInProgress(boolean inProgress) {
 	this.inProgress = inProgress;
     }
-    
+
     public TechType getTechType() {
 	return techType;
     }

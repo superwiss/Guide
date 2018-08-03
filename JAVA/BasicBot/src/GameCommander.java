@@ -86,6 +86,9 @@ public class GameCommander implements EventDispatcher {
 	    // 투혼
 	    locationManager = new LocationManagerSprit_Defense_Terran();
 	    locationManager.setMapName("Sprit");
+	} else {
+	    locationManager = new LocationManagerEmpty();
+	    locationManager.setMapName("Empty");
 	}
 	gameStatus.setLocationManager(locationManager);
 	eventHandlers.addFirst(locationManager);
@@ -98,7 +101,7 @@ public class GameCommander implements EventDispatcher {
 
     /// 경기 진행 중 매 프레임마다 발생하는 이벤트를 처리합니다
     public void onFrame() {
-	//	Log.info("\nonFrame() started");
+	Log.info("\nonFrame() started");
 
 	if (MyBotModule.Broodwar.isPaused() || MyBotModule.Broodwar.self() == null || MyBotModule.Broodwar.self().isDefeated() || MyBotModule.Broodwar.self().leftGame()
 		|| MyBotModule.Broodwar.enemy() == null || MyBotModule.Broodwar.enemy().isDefeated() || MyBotModule.Broodwar.enemy().leftGame()) {
@@ -193,7 +196,7 @@ public class GameCommander implements EventDispatcher {
     /// 아군 유닛이 Create 되었을 때 라든가, 적군 유닛이 Discover 되었을 때 발생합니다
     public void onUnitDiscover(bwapi.Unit rawUnit) {
 	Unit2 unit = Unit2.get(rawUnit);
-	//	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
+	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
 
 	if (true == UnitUtil.isAllianceUnit(unit)) {
 	    gameStatus.getAllianceUnitInfo().add(unit);
@@ -221,13 +224,13 @@ public class GameCommander implements EventDispatcher {
     /// 유닛이 Destroy 될 때 발생합니다
     public void onUnitEvade(bwapi.Unit rawUnit) {
 	Unit2 unit = Unit2.get(rawUnit);
-	//	Log.info("onUnitEvade(%s)", UnitUtil.toString(unit));
+	Log.info("onUnitEvade(%s)", UnitUtil.toString(unit));
 
 	try {
 	    EventData eventData = new EventData(EventData.ON_UNIT_EVADE, unit);
 	    executeEventHandler(eventData);
 	} catch (Exception e) {
-	    //	    Log.error("onUnitEvade() Exception: %s", e.toString());
+	    Log.error("onUnitEvade() Exception: %s", e.toString());
 	    e.printStackTrace();
 	    throw e;
 	}
@@ -237,14 +240,14 @@ public class GameCommander implements EventDispatcher {
     /// 아군 유닛이 Create 되었을 때 라든가, 적군 유닛이 Discover 되었을 때 발생합니다
     public void onUnitShow(bwapi.Unit rawUnit) {
 	Unit2 unit = Unit2.get(rawUnit);
-	//	Log.info("onUnitShow(%s)", UnitUtil.toString(unit));
+	Log.info("onUnitShow(%s)", UnitUtil.toString(unit));
     }
 
     /// 유닛(건물/지상유닛/공중유닛)이 Hide 될 때 발생하는 이벤트를 처리합니다<br>
     /// 보이던 유닛이 Hide 될 때 발생합니다
     public void onUnitHide(bwapi.Unit rawUnit) {
 	Unit2 unit = Unit2.get(rawUnit);
-	//	Log.info("onUnitHide(%s)", UnitUtil.toString(unit));
+	Log.info("onUnitHide(%s)", UnitUtil.toString(unit));
     }
 
     /// 핵미사일 발사가 감지되었을 때 발생하는 이벤트를 처리합니다

@@ -37,15 +37,9 @@ public interface MapInfo {
 
     // 정찰할 위치(순서)를 리턴한다.
     abstract List<TilePosition> getSearchSequence();
-    
-    // 적기지 가장자리의 정찰할 위치를 리턴한다.
-    abstract List<TilePosition> getEnemyBaseSearchSequence();
 
     // 정찰할 위치(순서)를 설정한다.
     abstract List<TilePosition> initSearchSequence();
-    
-    // 적기지 가장자리의 정찰 위치를 설정한다.
-    abstract List<TilePosition> initEnemyBaseSearchSequence();
 
     // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치를 지정한다. Add on 건물 위치까지 고려해야 한다.
     abstract List<TilePosition> initTrainingBuildings();

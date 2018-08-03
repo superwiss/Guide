@@ -22,6 +22,7 @@ public class MagiUXManager extends Manager {
     @Override
     protected void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
+
 	strategyManager = gameStatus.getStrategyManager();
 	locationManager = gameStatus.getLocationManager();
 	allianceUnitInfo = gameStatus.getAllianceUnitInfo();

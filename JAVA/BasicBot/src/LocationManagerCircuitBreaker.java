@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import bwapi.TilePosition;
-import bwta.BWTA;
-import bwta.BaseLocation;
-import bwta.Chokepoint;
 
 // 서킷 브레이커 맵
 public class LocationManagerCircuitBreaker extends LocationManager {
@@ -398,12 +395,6 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 
     @Override
     public TilePosition initSecondExtensionChokePoint() {
-	// TODO Auto-generated method stub
-	return null;
-    }
-
-    @Override
-    public List<TilePosition> initEnemyBaseSearchSequence() {
 	// TODO Auto-generated method stub
 	return null;
     }

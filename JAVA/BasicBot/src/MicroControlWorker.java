@@ -40,7 +40,7 @@ public class MicroControlWorker extends Manager {
 	Unit2 closestEnemyWorker = enemyUnitInfo.getClosestUnit(enemyWorkerSet, allianceBaseTilePosition.toPosition());
 	if (null != closestEnemyWorker) {
 	    int distance = closestEnemyWorker.getDistance(allianceBaseTilePosition.toPosition());
-//	    Log.debug("적군 일꾼이(%d) 발견되었다. 거리: %d", closestEnemyWorker.getID(), distance);
+	    Log.debug("적군 일꾼이(%d) 발견되었다. 거리: %d", closestEnemyWorker.getID(), distance);
 
 	    if (null != enemyWorkerKiller) {
 		// 적 일꾼을 추적하는 아군 일꾼이 있는 상태

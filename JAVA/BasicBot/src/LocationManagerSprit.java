@@ -608,12 +608,6 @@ public class LocationManagerSprit extends LocationManager {
     }
 
     @Override
-    public List<TilePosition> initEnemyBaseSearchSequence() {
-	// TODO Auto-generated method stub
-	return null;
-    }
-
-    @Override
     public TilePosition initTwoPhaseChokePoint() {
 	// TODO Auto-generated method stub
 	return null;

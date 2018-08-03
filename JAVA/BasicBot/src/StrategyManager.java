@@ -96,6 +96,12 @@ public class StrategyManager extends Manager {
 	buildBunker();
 	//doFactoryRally();
 
+	//doAutoTrainTank();
+	//doAutoTrainVulture();
+	//doAutoBuildFactory();
+	//doAutoExtension();
+	doAutoBuildSupply();
+
 	strategy.onFrame();
     }
 
@@ -124,7 +130,7 @@ public class StrategyManager extends Manager {
 			if (0 == buildManager.getQueueSize()) {
 			    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Bunker)) {
 				TilePosition goodPosition = needBuildPlace(targetBaseLocation.getTilePosition());
-				buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Bunker, goodPosition));
+				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Bunker, goodPosition));
 			    }
 			}
 		    }
@@ -237,7 +243,7 @@ public class StrategyManager extends Manager {
 		if (hasStrategyItem(StrategyItem.AUTO_BUILD_TWO_ARMORY)) {
 		    if (gameStatus.getMineral() > 150 && gameStatus.getGas() > 100 && 0 == buildManager.getQueueSize() && buildManager.isInitialBuildFinished()) {
 			if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Starport).size() == 0) {
-			    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Starport));
+			    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Starport));
 			}
 		    }
 		}
@@ -259,7 +265,7 @@ public class StrategyManager extends Manager {
 			if (gameStatus.getMineral() > 150 && gameStatus.getGas() > 150 && 0 == buildManager.getQueueSize() && buildManager.isInitialBuildFinished()) {
 			    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Science_Facility).size() == 0) {
 				// 첫번째 아머리는 바로 짓는다.
-				buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Science_Facility));
+				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Science_Facility));
 			    }
 			}
 		    }
@@ -397,7 +403,7 @@ public class StrategyManager extends Manager {
 			//미네랄 일꾼이 3기 이상이고, 리파이너리가 지어져 있으면 미네랄 일꾼을 가스에 할당한다.
 			//			System.out.println("현재 미네랄 일꾼 " + workerManager.findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size());
 			if (workerManager.findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size() >= 3 && refinery.isCompleted()) {
-			    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS, refinery));
+			    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS, refinery));
 			} else {
 			    //미네랄 일꾼이 부족하거나 리파이너리가 건설 중이다.
 			    //			    System.out.println("미네랄 일꾼이 부족하다 or 건설중이다.");
@@ -411,7 +417,7 @@ public class StrategyManager extends Manager {
 			    //가져온 베스핀 가스 위치에 리파이너리를 건설한다.
 			    Unit2 vespene = allianceUnitInfo.findOneUnitNear(commandCenter, UnitKind.Resource_Vespene_Geyser, 320);
 			    if (vespene != null) {
-				buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery, vespene.getTilePosition()));
+				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery, vespene.getTilePosition()));
 			    } else {
 				//				System.out.println("여긴 베스핀이 없어");
 				continue;
@@ -495,13 +501,13 @@ public class StrategyManager extends Manager {
 		//메카닉 유닛이 여유가 있을 경우 확장을 가져간다.
 		if (gameStatus.getMineral() > 400 && allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 25) {
 		    if (0 == buildManager.getQueueSize()) {
-			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, locationManager.getNextExpansionPoint()));
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, locationManager.getNextExpansionPoint()));
 		    }
 		}
 		//미네랄이 과도하게 남을 경우 확장을 시도한다?
 		if (gameStatus.getMineral() > 2000) {
 		    if (0 == buildManager.getQueueSize()) {
-			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, locationManager.getNextExpansionPoint()));
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, locationManager.getNextExpansionPoint()));
 		    }
 		}
 	    }
@@ -620,11 +626,11 @@ public class StrategyManager extends Manager {
 	    if (0 == buildManager.getQueueSize() && true == buildManager.isInitialBuildFinished()) {
 		// 서플 여유가 4개 이하면 서플을 짓는다. (최대 1개를 동시에 지을 수 있음)
 		if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 4 * 2) {
-		    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 		} else if (gameStatus.getMineral() > 200 && null != allianceUnitInfo.getAnyUnit(UnitKind.Terran_Academy)
 			&& 5 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Barracks).size() && 0 == buildManager.getQueueSize()) {
 		    // 아카데미가 존재하고, 배럭이 5개 미만이고, BuildOrder Queue가 비어있으면 세 번째 배럭을 짓는다.
-		    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
+		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
 		} else if (gameStatus.getMineral() >= 50) {
 		    Unit2 barracks = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
 		    if (null != barracks) {
@@ -650,14 +656,14 @@ public class StrategyManager extends Manager {
 		// 서플 여유가 8개 이하면 서플을 짓는다. (최대 2개를 동시에 지을 수 있음) 
 		// TODO 최적화 필요
 		if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 8 * 2 && gameStatus.getSupplyTotal() < 400) {
-		    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+//		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 		} else if (gameStatus.getMineral() > 200 && gameStatus.getGas() > 100 && 0 == buildManager.getQueueSize() && gameStatus.getFrameCount() > 10000) {
 		    if (4 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size()) {
 			// 팩토리가 4개 미만이고, BuildOrder Queue가 비어있으면 팩토리를 짓는다.
-			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
 		    } else if (6 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() && multiCount > 2) {
 			//팩토리가 3개 지어지고 난 후 부터는 멀티가 있을 때 팩토리를 건설한다.
-			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
 		    }
 		}
 
@@ -782,7 +788,7 @@ public class StrategyManager extends Manager {
 	} else {
 	    //아카데미가 지어져 있지 않을 경우 12000프레임 후에 건설한다.
 	    if (gameStatus.getMineral() > 150 && buildManager.getQueueSize() == 0) {
-		buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
+		buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
 	    }
 	}
     }
@@ -802,10 +808,10 @@ public class StrategyManager extends Manager {
 		if (gameStatus.getMineral() > 100 && gameStatus.getGas() > 50 && 0 == buildManager.getQueueSize() && buildManager.isInitialBuildFinished()) {
 		    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Armory).size() == 0) {
 			// 첫번째 아머리는 바로 짓는다.
-			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Armory));
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Armory));
 		    } else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Armory).size() < 2 && allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 24) {
 			//두번째 아머리는 어느정도 메카닉 유닛이 갖춰졌을 때 짓는다
-			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Armory));
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Armory));
 		    }
 		}
 	    }
@@ -1170,7 +1176,7 @@ public class StrategyManager extends Manager {
 	    }
 	    // 적 클로킹 유닛을 찾는다.
 	    Set<Unit2> clockedUnitSet = enemyUnitInfo.getUnitSet(UnitKind.Clocked);
-	    //	    Log.trace("Clocked Unit Size: %d", clockedUnitSet.size());
+	    Log.trace("Clocked Unit Size: %d", clockedUnitSet.size());
 	    for (Unit2 clockedUnit : clockedUnitSet) {
 		if (null != clockedUnit && clockedUnit.exists()) {
 		    int distance = 300;
@@ -1299,6 +1305,110 @@ public class StrategyManager extends Manager {
 
 	    }
 	}
+    }
+
+    //    // StrategyItem.AUTO_TANK 구현부
+    //    // 탱크를 자동으로 생성해준다.
+    //    private void doAutoTrainTank() {
+    //	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_TANK)) {
+    //	    Set<Unit2> factorySet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory);
+    //	    for (Unit2 factory : factorySet) {
+    //		if (!factory.isCompleted()) {
+    //		    continue;
+    //		}
+    //		if (null == factory.getAddon()) {
+    //		    continue;
+    //		}
+    //		if (gameStatus.getGas() > 100) {
+    //		    if (0 == factory.getTrainingQueue().size()) {
+    //			int trainingRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.TRAINING, UnitType.Terran_Siege_Tank_Tank_Mode);
+    //			if (1 > trainingRemainSize) {
+    //			    Log.info("탱크 생산. 남은 훈련시간: %d, 팩토리: %s", factory.getRemainingTrainTime(), factory);
+    //			    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Siege_Tank_Tank_Mode));
+    //			}
+    //		    }
+    //		}
+    //	    }
+    //	}
+    //    }
+    //
+    //    // StrategyItem.AUTO_TRAIN_VULTURE 구현부
+    //    // 벌쳐를 자동으로 생성해준다.
+    //    private void doAutoTrainVulture() {
+    //	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_VULTURE)) {
+    //	    Set<Unit2> factorySet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory);
+    //	    for (Unit2 factory : factorySet) {
+    //		if (!factory.isCompleted()) {
+    //		    continue;
+    //		}
+    //		if (0 == factory.getTrainingQueue().size()) {
+    //		    int trainingRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture);
+    //		    if (1 > trainingRemainSize) {
+    //			Log.info("벌쳐 생산. 남은 훈련시간: %d, 팩토리: %s", factory.getRemainingTrainTime(), factory);
+    //			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture));
+    //		    }
+    //		}
+    //	    }
+    //	}
+    //    }
+    //
+    //    // StrategyItem.AUTO_BUILD_FACTORY 구현부
+    //    // 여유가 되면 팩토리를 자동으로 추가한다. 이미 건설 중인 팩토리가 있다면, 건설하지 않는다. 즉 동시에 두 개의 팩토리가 지어지지는 않는다.
+    //    private void doAutoBuildFactory() {
+    //	// 1초에 한 번만 실행한다.
+    //	if (!gameStatus.isMatchedInterval(1)) {
+    //	    return;
+    //	}
+    //
+    //	// 돈과 가스가 남으면 팩토리를 지어본다.
+    //	if (hasStrategyItem(StrategyItem.AUTO_BUILD_FACTORY)) {
+    //	    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Factory)) {
+    //		if (allianceUnitInfo.checkResourceIfCanBuild(UnitType.Terran_Factory)) {
+    //		    int buildFactoryRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory);
+    //		    if (1 > buildFactoryRemainSize) {
+    //			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
+    //		    }
+    //		}
+    //	    }
+    //	}
+    //    }
+    //
+    //    // StrategyItem.AUTO_EXTENSION 구현부
+    //    // 여유가 되면 팩토리를 자동으로 추가한다. 이미 건설 중인 팩토리가 있다면, 건설하지 않는다. 즉 동시에 두 개의 팩토리가 지어지지는 않는다.
+    //    private void doAutoExtension() {
+    //	// 1초에 한 번만 실행한다.
+    //	if (!gameStatus.isMatchedInterval(1)) {
+    //	    return;
+    //	}
+    //
+    //	if (!hasStrategyItem(StrategyItem.AUTO_EXTENSION)) {
+    //	    return;
+    //	}
+    //
+    //	// 돈과 가스가 남으면 팩토리를 지어본다.
+    //	if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Command_Center)) {
+    //	    if (allianceUnitInfo.checkResourceIfCanBuild(UnitType.Terran_Command_Center)) {
+    //		int buildFactoryRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center);
+    //		if (1 > buildFactoryRemainSize) {
+    //		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center));
+    //		}
+    //	    }
+    //	}
+    //    }
+    //
+    // StrategyItem.AUTO_BUILD_SUPPLY 구현부
+    // 빌드 오더 큐에 들어있는 유닛을 보고, 서플라이 디팟을 짓는 최적 타이밍을 계산한다.
+    private void doAutoBuildSupply() {
+	// 1초에 한 번만 실행한다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+	if (!hasStrategyItem(StrategyItem.AUTO_BUILD_SUPPLY)) {
+	    return;
+	}
+
+	// 서플라이를 짓기 위해서 빌드 오더 큐 재배열.
+	buildManager.rearrangeForSupply();
     }
 
     // ///////////////////////////////////////////////////////////

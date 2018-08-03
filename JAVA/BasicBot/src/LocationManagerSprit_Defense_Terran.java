@@ -57,37 +57,6 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 	return result;
     }
 
-    // 정찰할 위치(순서)를 설정한다.
-    @Override
-    public List<TilePosition> initEnemyBaseSearchSequence() {
-	if (enemyStartLocation != null) {
-	    List<TilePosition> result = new ArrayList<>();
-	    if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
-		result.add(new TilePosition(104, 0));
-		result.add(new TilePosition(125, 1));
-		result.add(new TilePosition(125, 24));
-		result.add(new TilePosition(105, 18));
-	    } else if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
-		result.add(new TilePosition(125, 104));
-		result.add(new TilePosition(125, 124));
-		result.add(new TilePosition(102, 124));
-		result.add(new TilePosition(104, 103));
-	    } else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
-		result.add(new TilePosition(20, 124));
-		result.add(new TilePosition(1, 124));
-		result.add(new TilePosition(0, 102));
-		result.add(new TilePosition(20, 105));
-	    } else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
-		result.add(new TilePosition(1, 20));
-		result.add(new TilePosition(1, 1));
-		result.add(new TilePosition(20, 1));
-		result.add(new TilePosition(20, 20));
-	    }
-	    return result;
-	} else {
-	    return null;
-	}
-    }
 
     // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치를 지정한다. Add on 건물 위치까지 고려해야 한다.
     @Override

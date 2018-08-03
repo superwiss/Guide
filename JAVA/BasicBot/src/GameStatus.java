@@ -198,6 +198,7 @@ public class GameStatus {
 	return game.self().supplyUsed();
     }
 
+    // 여유가 있는 서플라이 용량. (게임 상에는 8이라고 표시되지만, BWAPI에서는 2를 곱한 16으로 계산된다.)
     public int getSupplyRemain() {
 	return game.self().supplyTotal() - game.self().supplyUsed();
     }

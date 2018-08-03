@@ -16,22 +16,20 @@ public abstract class LocationManager extends Manager implements MapInfo {
     protected List<TilePosition> enemyFirstExpansionLocation = null; // 적군 확장 위치
     protected List<TilePosition> baseLocations = null; // 맵 전체의 스타팅 포인트 위치들.
     private List<TilePosition> searchSequence = null; // 정찰할 위치(순서)
-    protected List<TilePosition> searchEnemyBaseSequence = null; // 정찰할 위치(순서)
     protected List<TilePosition> trainingBuildings = null; // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치
     protected List<TilePosition> baseEntranceBunkers = null; // 본진 입구 벙커를 지을 위치
     protected List<TilePosition> size3by2Buildings = null; // 3*2 사이즈 건물을 짓기 위한 위치들 (서플라이 디팟, 아마데미 등)
     protected List<TilePosition> baseRefineries = null; // 본진 가스를 짓기 위한 위치
     protected List<TilePosition> baseTurrets = null; // 본진에 위치한 터렛의 위치
     protected List<TilePosition> firstExpansionTurrets = null; // 본진에 위치한 터렛의 위치
-    protected List<TilePosition> entranceBuilding = null; // 엔지니어링 베이 타일의 위치
-    protected List<TilePosition> secondEntranceBuilding = null; // 엔지니어링 베이 타일의 위치
+    protected List<TilePosition> entranceBuilding = null; // 본진 입구막기용 배럭의 위치
+    protected List<TilePosition> secondEntranceBuilding = null; // 확장 입구막기용 배럭의 위치
     private TilePosition baseEntranceChokePoint = null; // 본진 입구 방어를 위한 위치
     private TilePosition firstExtensionChokePoint = null; // 앞마당 입구 방어를 위한 위치
     private TilePosition secondExtensionChokePoint = null; // 두번째 확장 입구 방어를 위한 위치
     private TilePosition twoPhaseChokePoint = null;
     private TilePosition threePhaseChokePointForSiege = null;
     private TilePosition threePhaseChokePointForMech = null;
-
     private List<TilePosition> baseTankPoint = null; // 본진 탱크 배치를 위한 위치
 
     public LocationManager() {
@@ -49,21 +47,6 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	if (1 == gameStatus.getFrameCount()) {
 	    init(gameStatus.getAllianceUnitInfo().getAnyUnit(UnitKind.Terran_Command_Center));
 	}
-
-	//		size3by2Buildings = init3by2SizeBuildings();
-	//		baseEntranceBunkers = initBaseEntranceBunker();
-	//		entranceBuilding = initEntranceBuildings();
-	//		secondEntranceBuilding = initSecondEntranceBuildings();
-	//		firstExtensionChokePoint = initFirstExtensionChokePoint();
-	//		secondExtensionChokePoint = initSecondExtensionChokePoint();
-	//		twoPhaseChokePoint = initTwoPhaseChokePoint();
-	//		threePhaseChokePointForSiege = initThreePhaseChokePointForSiege();
-	//		threePhaseChokePointForMech = initThreePhaseChokePointForMech();
-	//		trainingBuildings = initTrainingBuildings();
-	//		baseEntranceChokePoint = initBaseEntranceChokePoint();
-	//		baseTankPoint = initBaseTankPoint();
-	//		baseTurrets = initBaseTurret();
-
     }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.
@@ -119,11 +102,6 @@ public abstract class LocationManager extends Manager implements MapInfo {
     @Override
     public List<TilePosition> getSearchSequence() {
 	return searchSequence;
-    }
-
-    @Override
-    public List<TilePosition> getEnemyBaseSearchSequence() {
-	return searchEnemyBaseSequence;
     }
 
     // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치를 리턴한다.
@@ -272,7 +250,6 @@ public abstract class LocationManager extends Manager implements MapInfo {
     }
 
     public void initEnemyBaseSearch() {
-	searchEnemyBaseSequence = initEnemyBaseSearchSequence();
 	threePhaseChokePointForSiege = initThreePhaseChokePointForSiege();
 	threePhaseChokePointForMech = initThreePhaseChokePointForMech();
     }
@@ -311,31 +288,18 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	    //아군 기지로부터의 거리 
 	    //주변에 적 전투 유닛들이 있을 경우 
 	    //적 본진과의 거리
-
 	    int baseDistance = (int) BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
 	    int enemyUnitCount = enemyUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Combat_Unit, 100).size();
 	    int enemyBaseDistance = (int) targetBaseLocation.getDistance(enemyStartLocation.toPosition());
 
 	    tempExpansionPoint = (10000 - baseDistance) + enemyUnitCount * 1000 + enemyBaseDistance;
-	    System.out.println("확장점수 계산 " + tempExpansionPoint);
-	    System.out.println(targetBaseLocation.getX() / 32 + " " + targetBaseLocation.getY() / 32);
-	    System.out.println("아군기지 거리 " + (10000 - baseDistance));
-	    System.out.println("적숫자 " + enemyUnitCount * 100);
-	    System.out.println("적기지 거리" + enemyBaseDistance);
 
 	    if (tempExpansionPoint > expansionPoint) {
 		expansionPoint = tempExpansionPoint;
 		nextExpansionLocation = targetBaseLocation.getTilePosition();
 
 	    }
-
-	    //	    tempDistance = BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
-	    //	    if (tempDistance < closestDistance && tempDistance > 0) {
-	    //		closestDistance = tempDistance;
-	    //		nextExpansionLocation = targetBaseLocation.getTilePosition();
-	    //	    }
 	}
-	System.out.println("베스트 확장 포인트" + nextExpansionLocation.getX() + " " + nextExpansionLocation.getY());
 	return nextExpansionLocation;
     }
 

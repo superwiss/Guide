@@ -11,15 +11,14 @@ import bwapi.Position;
 import bwapi.TilePosition;
 
 public class MicroControlVulture extends Manager {
-    private StrategyManager strategyManager = null;
-    private LocationManager locationManager = null;
 
-    public MicroControlVulture() {
-    }
+    private StrategyManager strategyManager;
+    private LocationManager locationManager;
 
     @Override
     protected void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
+
 	strategyManager = gameStatus.getStrategyManager();
 	locationManager = gameStatus.getLocationManager();
     }
@@ -176,6 +175,19 @@ public class MicroControlVulture extends Manager {
 			break;
 		    }
 		}
+	    }
+	}
+
+	for (Unit2 unit : allianceUnitInfo.getUnitSet(UnitKind.Terran_Vulture)) {
+	    TilePosition attackTilePositon = strategyManager.getAttackTilePositon();
+	    // 총 공격 지점이 visible 상태라면... 점령한 것으로 판단하고, 공격을 너무 자주하지 않고 1초에 1번만 공격한다.
+	    if (gameStatus.isVisible(attackTilePositon)) {
+		if (false == gameStatus.isMatchedInterval(1)) {
+		    break;
+		}
+	    }
+	    if (!attackFinishSet.contains(unit)) {
+		ActionUtil.attackPosition(allianceUnitInfo, unit, attackTilePositon);
 	    }
 	}
     }
