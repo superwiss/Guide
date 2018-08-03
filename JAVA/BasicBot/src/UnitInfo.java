@@ -31,8 +31,11 @@ public class UnitInfo {
     // 유닛의 마지막 위치
     private Map<Unit2, TilePosition> lastTilePositoin = new HashMap<>();
 
+    private GameStatus gameStatus;
+
     // 생성자
-    public UnitInfo() {
+    public UnitInfo(GameStatus gameStatus) {
+	this.gameStatus = gameStatus;
 	// unitFilter를 초기화 한다.
 	for (UnitKind unitKind : UnitKind.values()) {
 	    Set<Unit2> set = new HashSet<>();
@@ -237,10 +240,17 @@ public class UnitInfo {
     public Unit2 getClosestUnitWithLastTilePosition(Set<Unit2> unitSet, Position position, Set<UnitType> excludeUnitType) {
 	Unit2 result = null;
 
+	Set<Unit2> droneBuildSet = new HashSet<>();
+
 	if (null != unitSet && null != position) {
 	    int minDistance = Integer.MAX_VALUE;
 	    for (Unit2 unit : unitSet) {
 		if (null != excludeUnitType && excludeUnitType.contains(unit.getType())) {
+		    continue;
+		}
+		if (unit.getType().equals(UnitType.Zerg_Drone)) {
+		    // BWAPI에서 드론을 건물로 계산하는 경우가 있다. 드론은 건물 목록에서 빼준다.
+		    droneBuildSet.add(unit);
 		    continue;
 		}
 		TilePosition lastTilePosition = lastTilePositoin.get(unit);
@@ -254,6 +264,10 @@ public class UnitInfo {
 	    }
 	} else {
 	    Log.warn("Invalid Parameter: unitset: %s, position: %s", unitSet, position);
+	}
+	for (Unit2 droneBuilding : droneBuildSet) {
+	    removeUnitKind(UnitKind.Building, droneBuilding);
+	    removeUnitKind(UnitKind.MAIN_BUILDING, droneBuilding);
 	}
 
 	return result;
@@ -381,13 +395,16 @@ public class UnitInfo {
 	// 훈련하기
 	if (null != trainableBuilding) {
 	    if (trainableBuilding.canTrain(targetUnitType)) {
-		int beforeQueueSize = trainableBuilding.getTrainingQueue().size();
-		trainableBuilding.train(targetUnitType);
-		int afterQueueSize = trainableBuilding.getTrainingQueue().size();
-		if (afterQueueSize > beforeQueueSize) {
-		    result = true;
+		if (trainableBuilding.getTrainingQueue().size() <= 1) {
+		    int beforeQueueSize = trainableBuilding.getTrainingQueue().size();
+		    trainableBuilding.train(targetUnitType);
+		    int afterQueueSize = trainableBuilding.getTrainingQueue().size();
+		    if (afterQueueSize > beforeQueueSize) {
+			result = true;
+		    }
+		} else {
+		    Log.debug("빌드 큐가 꽉 차서, 유닛을 훈련할 수 없습니다. 건물=%s, 트레이닝큐=%d, 유닛=%d", trainableBuilding, trainableBuilding.getTrainingQueue().size(), targetUnitType);
 		}
-
 	    }
 	}
 
@@ -647,5 +664,41 @@ public class UnitInfo {
 	}
 	return mineralCount;
     }
+	
+	// 예약 생산되어서, 훈련 대기 중인 유닛의 서플라이 양을 리턴한다.
+    public int getReservedSupply() {
+	int result = 0;
+
+	Set<Unit2> buildingSet = getUnitSet(UnitKind.Building_Trainable);
+	for (Unit2 building : buildingSet) {
+	    List<UnitType> trainingQueue = building.getTrainingQueue();
+	    if (trainingQueue.size() > 1) {
+		for (UnitType unitType : trainingQueue) {
+		    Log.debug("건물(%s)에서 유닛(%s)가 예약 생산 대기 중...", building, unitType);
+		    result += unitType.supplyRequired();
+		}
+		result -= trainingQueue.get(0).supplyRequired();
+	    }
+	}
+
+	return result;
+    }
+
+    // 건물을 생산할 수 있는 자원의 여유가 되는지 여부를 리턴한다.
+    public boolean checkResourceIfCanBuild(UnitType unitType) {
+	return gameStatus.getMineral() > unitType.mineralPrice() && gameStatus.getGas() > unitType.gasPrice();
+    }
+
+    // 일꾼을 제외한 인구수를 구한다.
+    public int getSupplyUsedExceptWorker() {
+	int result = gameStatus.getSupplyUsed();
+
+	result -= getUnitSet(UnitKind.Worker).size() * 2;
+	result -= getUnitSet(UnitKind.Worker_Gather_Gas).size() * 2;
+
+	return result;
+    }
+
+
 
 }

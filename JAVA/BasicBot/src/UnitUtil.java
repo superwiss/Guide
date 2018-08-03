@@ -18,6 +18,14 @@ public class UnitUtil {
 	CLOSE, NEAR_IN, NEAR_OUT, FAR
     }
 
+    private static enum DamageType {
+	NORMAL, CONCUSSIVE, EXPLOSIVE
+    };
+
+    private static enum UnitSize {
+	SMALL, MEDIUM, LARGE
+    };
+
     private static Map<Integer, Integer> lastAttackFinishedFrame = new HashMap<>();
 
     private UnitUtil() {
@@ -67,30 +75,10 @@ public class UnitUtil {
 	    } else if (strUnitType.equals("Resource_Vespene_Geyser")) {
 		result.add(UnitKind.Resource_Vespene_Geyser);
 	    }
-
-	    // 애드온 건물 여부를 확인
-	    if (unit.getType().isAddon()) {
-		result.add(UnitKind.Addon);
-	    }
-
-	    checkIfClockingUnit(result, strUnitType);
-
 	}
 
 	return result;
 
-    }
-
-    private static void checkIfClockingUnit(Set<UnitKind> result, String strUnitType) {
-	switch (strUnitType) {
-	case "Protoss_Dark_Templar":
-	case "Zerg_Lurker":
-	case "Terran_Wraith":
-	    result.add(UnitKind.Clocked);
-	    break;
-	default:
-	    break;
-	}
     }
 
     // 유닛의 타입을 판별해서 스펙을 리턴한다.
@@ -404,6 +392,11 @@ public class UnitUtil {
 	return result;
     }
 
+    // 두 유닛간의 거리를 구한다.
+    public static int getDistance(Unit2 unit1, Unit2 unit2) {
+	return getDistance(unit1.getPosition(), unit2.getPosition());
+    }
+
     // 두 Position 간의 거리를 리턴한다.
     public static int getDistance(TilePosition p1, Position p2) {
 	return getDistance(p1.toPosition(), p2);
@@ -500,13 +493,15 @@ public class UnitUtil {
 	String strUnitType = unitType.toString();
 
 	checkIfWorker(unitKindSet, strUnitType);
-	checkIfMainBuilding(unitKindSet, strUnitType);
+	checkIfMainBuilding(unitKindSet, unitType);
 	checkIfSiegeTank(unitKindSet, strUnitType);
 	checkIfMechanicUnit(unitKindSet, strUnitType);
 	checkIfAntiAirUnit(unitKindSet, strUnitType);
+	checkIfAntiVesselUnit(unitKindSet, strUnitType);
 	checkIfCombatUnit(unitKindSet, strUnitType);
 	checkIfBionicUnit(unitKindSet, unitType);
 	checkIfBuilding(unitKindSet, unitType);
+	checkIfClockingUnit(unitKindSet, strUnitType);
 
 	unitKindSet.add(UnitKind.ALL);
     }
@@ -525,17 +520,31 @@ public class UnitUtil {
     }
 
     // Command Center, Nexus, Hatchery 류의 메인 빌딩 여부 반환.
-    private static void checkIfMainBuilding(final Set<UnitKind> unitKindSet, final String strUnitType) {
-	switch (strUnitType) {
+    // UnitKind.MAIN_BUILDING : 건물 여부 판단.
+    // UnitKind.Addon : 애드온 건물 여부 판단.
+    // UnitKind.Building_Trainable : 유닛을 훈련 가능한 건물 여부 판단.
+    private static void checkIfMainBuilding(final Set<UnitKind> unitKindSet, final UnitType unitType) {
+	switch (unitType.toString()) {
 	case "Terran_Command_Center":
 	case "Protoss_Nexus":
 	case "Zerg_Hatchery":
 	case "Zerg_Lair":
 	case "Zerg_Hive":
 	    unitKindSet.add(UnitKind.MAIN_BUILDING);
+	    unitKindSet.add(UnitKind.Building_Trainable);
+	    break;
+	case "Terran_Barracks":
+	case "Terran_Factory":
+	case "Terran_Starport":
+	    unitKindSet.add(UnitKind.Building_Trainable);
 	    break;
 	default:
 	    break;
+	}
+
+	// 애드온 건물 여부를 확인
+	if (unitType.isAddon()) {
+	    unitKindSet.add(UnitKind.Addon);
 	}
     }
 
@@ -578,6 +587,35 @@ public class UnitUtil {
 	    break;
 	}
     }
+    
+    private static void checkIfAntiVesselUnit(Set<UnitKind> unitKindSet, String strUnitType) {
+	
+	switch (strUnitType) {
+	case "Terran_Marine":
+	case "Terran_Ghost":
+	case "Terran_Goliath":
+	case "Terran_Wraith":
+	case "Terran_Valkyrie":
+	case "Terran_Battlecruiser":
+	case "Terran_Missile_Turret":
+	case "Terran_Bunker":
+	    
+	case "Zerg_Hydralisk":
+	case "Zerg_Mutalisk":
+	case "Zerg_Scourge":
+	case "Zerg_Spore_Colony":
+	    
+	case "Protoss_Dragoon":
+	case "Protoss_Corsair":
+	case "Protoss_Scout":
+	case "Protoss_Photon_Cannon":
+	    
+	    unitKindSet.add(UnitKind.AntiVessel_Unit);
+	    break;
+	default:
+	    break;
+	}
+    }
 
     // 공격 유닛 타입 여부를 리턴.
     private static void checkIfCombatUnit(final Set<UnitKind> unitKindSet, final String strUnitType) {
@@ -585,9 +623,9 @@ public class UnitUtil {
 	case "Terran_Firebat":
 	case "Terran_Ghost":
 	case "Terran_Goliath":
-	case "Terran_Vulture":
 	case "Terran_Marine":
 	case "Terran_Medic":
+	case "Terran_Vulture":
 	case "Terran_Siege_Tank_Siege_Mode":
 	case "Terran_Siege_Tank_Tank_Mode":
 	case "Terran_Battlecruiser":
@@ -635,8 +673,22 @@ public class UnitUtil {
 
     // 건물 여부를 리턴
     private static void checkIfBuilding(final Set<UnitKind> unitKindSet, final UnitType unitType) {
-	if (unitType.isBuilding()) {
+	// BWAPI에서 드론을 건물로 체크하는 경우가 있는데, 이 경우에 대한 예외처리를 해준다. 드론은 건물이 아니다.
+	if (unitType.isBuilding() && !unitType.equals(UnitType.Zerg_Drone)) {
 	    unitKindSet.add(UnitKind.Building);
+	}
+    }
+
+    private static void checkIfClockingUnit(final Set<UnitKind> unitKindSet, final String strUnitType) {
+	switch (strUnitType) {
+	case "Protoss_Dark_Templar":
+	case "Zerg_Lurker":
+	case "Terran_Wraith":
+	case "Protoss_Observer":
+	    unitKindSet.add(UnitKind.Clocked);
+	    break;
+	default:
+	    break;
 	}
     }
 
@@ -671,4 +723,147 @@ public class UnitUtil {
 	return getUnitKinds(unit).contains(unitKind);
     }
 
+    // u1이 u2에 입히는 예상 공격력을 계산한다.
+    public static int getDamage(Unit2 u1, Unit2 u2) {
+	int result = 0;
+
+	int defaultDamage = u1.getType().groundWeapon().damageAmount();
+	UnitSize unitSize = getUnitSize(u2);
+
+	result = defaultDamage;
+
+	DamageType damageType = gameDamageType(u1, u2);
+
+	if (damageType.equals(DamageType.CONCUSSIVE)) {
+	    // 진동형: 소형 100%, 중형 50%, 대형 25% 들어간다.
+	    if (unitSize.equals(UnitSize.SMALL)) {
+		result = defaultDamage;
+	    } else if (unitSize.equals(UnitSize.MEDIUM)) {
+		result = (int) (defaultDamage * 0.5);
+	    } else {
+		result = (int) (defaultDamage * 0.25);
+	    }
+	} else if (damageType.equals(DamageType.EXPLOSIVE)) {
+	    // 폭발형: 대형 100%, 중형 75%, 소형 50% 들어간다.
+	    if (unitSize.equals(UnitSize.SMALL)) {
+		result = (int) (defaultDamage * 0.5);
+	    } else if (unitSize.equals(UnitSize.MEDIUM)) {
+		result = (int) (defaultDamage * 0.75);
+	    } else {
+		result = defaultDamage;
+	    }
+	} else {
+	    // 일반형: 유닛 크기와 상관 없이 100% 들어간다.
+	}
+
+	return result;
+    }
+
+    private static DamageType gameDamageType(Unit2 u1, Unit2 u2) {
+	DamageType result = DamageType.NORMAL;
+
+	String strUnitType1 = u1.getType().toString();
+	switch (strUnitType1) {
+	case "Terran_Firebat":
+	case "Terran_Ghost":
+	case "Terran_Vulture":
+	    result = DamageType.CONCUSSIVE;
+	    break;
+	case "Terran_Siege_Tank_Siege_Mode":
+	case "Terran_Siege_Tank_Tank_Mode":
+	    result = DamageType.EXPLOSIVE;
+	    break;
+	default:
+	    break;
+	}
+
+	if ((strUnitType1.equals("Terran_Goliath") || strUnitType1.equals("Terran_Wraith")) && u2.getType().isFlyer()) {
+	    result = DamageType.EXPLOSIVE;
+	}
+	return result;
+    }
+
+    // http://classic.battle.net/scc/GS/damage.shtml
+    private static UnitSize getUnitSize(Unit2 unit) {
+	UnitSize result = UnitSize.SMALL;
+
+	String strUnitType = unit.getType().toString();
+
+	switch (strUnitType) {
+	case "Terran_Vulture":
+	case "Zerg_Hydralisk":
+	case "Zerg_Defiler":
+	case "Zerg_Queen":
+	case "Zerg_Lurker":
+	case "Protoss_Corsair":
+	    result = UnitSize.MEDIUM;
+	    break;
+	case "Terran_Siege_Tank_Siege_Mode":
+	case "Terran_Siege_Tank_Tank_Mode":
+	case "Terran_Goliath":
+	case "Terran_Wraith":
+	case "Terran_Dropship":
+	case "Terran_Science_Vessel":
+	case "Terran_Battlecruiser":
+	case "Terran_Valkyrie":
+	case "Zerg_Ultralisk":
+	case "Zerg_Overlord":
+	case "Zerg_Guardian":
+	case "Zerg_Devourer":
+	case "Protoss_Dragoon":
+	case "Protoss_Archon":
+	case "Protoss_Reaver":
+	case "Protoss_Shuttle":
+	case "Protoss_Scout":
+	case "Protoss_Carrier":
+	case "Protoss_Arbiter":
+	case "Protoss_Dark_Archon":
+	    result = UnitSize.LARGE;
+	    break;
+	default:
+	    break;
+	}
+
+	return result;
+    }
+
+    // 둘 중 tilePosition에 더 가까운 유닛을 리턴한다.
+    public static Unit2 getCloseUnit(Unit2 unit1, Unit2 unit2, TilePosition tilePosition) {
+	return getCloseUnit(unit1, unit2, tilePosition, 0, Integer.MAX_VALUE);
+    }
+
+    // 둘 중 tilePosition에 더 가까운 유닛을 리턴한다. tilePosition과 각 유닛간의 거리 차이가 minDiff 이하라면, unit2가 더 가깝더라도 unit1을 리턴한다.
+    // 예를 들어, tilePosition과 unit1의 거리는 100, unit2의 거리는 90이고, minDiff가 16이라면, 비록 unit2가 tilePosition과 더 가깝지만 거리 차이가 10이라서 16이하이므로 unit1을 리턴한다.
+    public static Unit2 getCloseUnit(Unit2 unit1, Unit2 unit2, TilePosition tilePosition, int minDiff) {
+	return getCloseUnit(unit1, unit2, tilePosition, minDiff, Integer.MAX_VALUE);
+    }
+
+    // 둘 중 tilePosition에 더 가까운 유닛을 리턴한다. tilePosition과 각 유닛간의 거리 차이가 minDiff 이하라면, unit2가 더 가깝더라도 unit1을 리턴한다. 타일과의 거리가 maxDistance 이상이라면, 무조건 unit1을 리턴한다.
+    // ex 1) tilePosition과 unit1의 거리는 100, unit2의 거리는 90이고, minDiff가 16이라면, 비록 unit2가 tilePosition과 더 가깝지만 거리 차이가 10이라서 16이하이므로 unit1을 리턴한다.
+    // ex 2) tilePosition과 unit1의 거리는 1000, unit2의 거리는 1090이고, maxDistance가 1000이라면, 비록 unit2가 tilePosition과 더 가깝지만 거리가 1000 이상이라서 unit1을 리턴한다.
+    public static Unit2 getCloseUnit(Unit2 unit1, Unit2 unit2, TilePosition tilePosition, int minDiff, int maxDistance) {
+	Unit2 result = null;
+
+	if (null != unit1 && null == unit2) {
+	    result = unit1;
+	} else if (null == unit1 && null != unit2) {
+	    result = unit2;
+	} else {
+	    int distanceUnit1 = getDistance(unit1, tilePosition);
+	    int distanceUnit2 = getDistance(unit2, tilePosition);
+	    if (distanceUnit1 <= distanceUnit2) {
+		result = unit1;
+	    } else {
+		result = unit2;
+	    }
+	    if (result.equals(unit2) && (distanceUnit1 - distanceUnit2) <= minDiff) {
+		result = unit1;
+	    }
+	    if (distanceUnit1 >= maxDistance || distanceUnit1 >= maxDistance) {
+		result = unit1;
+	    }
+	}
+
+	return result;
+    }
 }

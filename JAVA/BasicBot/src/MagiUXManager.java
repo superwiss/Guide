@@ -100,7 +100,7 @@ public class MagiUXManager extends Manager {
 	MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "2 phase choke point");
 
 	if (locationManager.getEnemyStartLocation() != null) {
-	    
+
 	    tilePos = locationManager.getThreePhaseChokePointForSiege();
 	    MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 600, Color.Blue);
 	    MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "3 phase Tank point");
@@ -119,8 +119,16 @@ public class MagiUXManager extends Manager {
     public void drawCurrentMultiInfoOnScreen(int x, int y) {
 	MyBotModule.Broodwar.drawTextScreen(x, y, white + " <Current Strategy>");
 	MyBotModule.Broodwar.drawTextScreen(x, y + 10, teal + "MultiCount = " + strategyManager.multiCount);
-	MyBotModule.Broodwar.drawTextScreen(x, y + 20, teal + "Mechanic Count = " + allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size());
+	MyBotModule.Broodwar.drawTextScreen(x, y + 20, teal + "Mechanic Count = " + allianceUnitInfo.getSupplyUsedExceptWorker());
 	MyBotModule.Broodwar.drawTextScreen(x, y + 30, teal + "Phase = " + strategyManager.getPhase());
+	MyBotModule.Broodwar.drawTextScreen(x, y + 40, teal + "Enemy Base = " + locationManager.getEnemyStartLocation());
+
+	int seq = 1;
+	for (StrategyStatus status : strategyManager.getStrategyStatus()) {	    
+	    MyBotModule.Broodwar.drawTextScreen(x, y + 40 + seq * 10, teal + "Strategy status = " + status);
+	    seq++;
+	}
+
     }
 
     private void drawBuildingBoxMap(List<TilePosition> tilePositionList, UnitType unitType, String name) {

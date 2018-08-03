@@ -1,17 +1,20 @@
 import bwapi.Position;
+import bwapi.UnitType;
 
 public class ActionDetail {
     private String command;
     private Unit2 srcUnit;
     private Unit2 destUnit;
+    private UnitType unitType;
     private Position position;
     private int actionFrame;
     private int margin;
 
-    public ActionDetail(String command, Unit2 srcUnit, Unit2 destUnit, Position position, int actionFrame, int margin) {
+    public ActionDetail(String command, Unit2 srcUnit, Unit2 destUnit, UnitType unitType, Position position, int actionFrame, int margin) {
 	this.command = command;
 	this.srcUnit = srcUnit;
 	this.destUnit = destUnit;
+	this.unitType = unitType;
 	this.position = position;
 	this.actionFrame = actionFrame;
 	this.margin = margin;
@@ -27,6 +30,10 @@ public class ActionDetail {
 
     public Unit2 getDestUnit() {
 	return destUnit;
+    }
+
+    public UnitType getUnitType() {
+	return unitType;
     }
 
     public Position getPosition() {
@@ -67,6 +74,13 @@ public class ActionDetail {
 		}
 	    }
 	    if (true == result) {
+		if (null != unitType) {
+		    result = unitType.equals(target.getUnitType());
+		} else {
+		    result = null == target.getUnitType();
+		}
+	    }
+	    if (true == result) {
 		if (null != position) {
 		    result = position.getX() == target.getPosition().getX() && position.getY() == target.getPosition().getY();
 		} else {
@@ -97,6 +111,10 @@ public class ActionDetail {
 	    result += destUnit.getID();
 	}
 
+	if (null != unitType) {
+	    result += unitType.toString().hashCode();
+	}
+
 	if (null != position) {
 	    result += position.getX() + position.getY();
 	}
@@ -109,6 +127,6 @@ public class ActionDetail {
     @Override
     public String toString() {
 	return "ActionDetail[command=" + command + ", srcUnit=" + (null != srcUnit ? srcUnit.getID() : "null") + ", destUnit=" + (null != destUnit ? destUnit.getID() : "null")
-		+ ", position=" + position + ", actionFrame=" + actionFrame + ", margin=" + margin;
+		+ ", unitType=" + unitType + ", position=" + position + ", actionFrame=" + actionFrame + ", margin=" + margin;
     }
 }

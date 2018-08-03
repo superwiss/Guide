@@ -4,6 +4,7 @@ public enum UnitKind {
     ALL, // 모든 유닛
 
     Worker, // SCV, Probe, Drone
+    Worker_Construct, // 건설용 일꾼
 
     Worker_Gather_Gas, // 가스를 캐는 일꾼
 
@@ -12,12 +13,14 @@ public enum UnitKind {
     Bionic_Attackable, // 일꾼과 매딕을 제외한 공격용 바이오닉 유닛
     Mechanic_Unit, //메카닉 유닛
     AntiAir_Unit, // 공중 공격이 가능한 유닛
+    AntiVessel_Unit, //베슬에게 위험한 유닛
 
     Clocked, // 클로킹 유닛
 
     Scouting_Unit, // 정찰 유닛
 
     Building, // 건물
+    Building_Trainable, // 유닛 생산이 가능한 건물
 
     Addon, // 애드온 건물
 

@@ -102,9 +102,9 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 
 	    result.add(new TilePosition(107, 6));
 	    result.add(new TilePosition(107, 9));
-	    result.add(new TilePosition(111, 9));
-	    result.add(new TilePosition(111, 12));
-	    result.add(new TilePosition(111, 15));
+	    result.add(new TilePosition(110, 13));
+	    result.add(new TilePosition(110, 16));
+	    result.add(new TilePosition(110, 19));
 
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
@@ -114,12 +114,16 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 	    result.add(new TilePosition(121, 99));
 	    result.add(new TilePosition(121, 110));
 
-	    result.add(new TilePosition(110, 104));
 	    result.add(new TilePosition(114, 104));
-	    result.add(new TilePosition(110, 107));
 	    result.add(new TilePosition(114, 107));
-	    result.add(new TilePosition(106, 107));
+	    
 	    result.add(new TilePosition(106, 104));
+	    result.add(new TilePosition(106, 107));
+	    
+	    result.add(new TilePosition(110, 104));
+	    result.add(new TilePosition(110, 107));
+	    
+	    
 
 	    //애드온 건물
 
@@ -131,8 +135,9 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 
 	    result.add(new TilePosition(13, 116));
 	    result.add(new TilePosition(13, 113));
-	    result.add(new TilePosition(17, 113));
+	    result.add(new TilePosition(13, 110));
 	    result.add(new TilePosition(17, 110));
+	    result.add(new TilePosition(17, 106));
 
 	    result.add(new TilePosition(7, 124));
 
@@ -419,11 +424,11 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 	    // 11시 11개
 	    result.add(new TilePosition(13, 25));
 	    result.add(new TilePosition(7, 4));
-	    result.add(new TilePosition(13, 20));
 	    result.add(new TilePosition(10, 9));
 	    result.add(new TilePosition(2, 30));
 	    result.add(new TilePosition(11, 5));
 	    result.add(new TilePosition(15, 20));
+	    result.add(new TilePosition(15, 22));
 	    result.add(new TilePosition(8, 9));
 	    result.add(new TilePosition(23, 0));
 	    result.add(new TilePosition(23, 8));
@@ -485,10 +490,10 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result = new TilePosition(90, 31);
+	    result = new TilePosition(90, 29);
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result = new TilePosition(96, 90);
+	    result = new TilePosition(96, 91);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
 	    result = new TilePosition(36, 96);

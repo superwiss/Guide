@@ -50,19 +50,19 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	    init(gameStatus.getAllianceUnitInfo().getAnyUnit(UnitKind.Terran_Command_Center));
 	}
 
-//	size3by2Buildings = init3by2SizeBuildings();
-//	baseEntranceBunkers = initBaseEntranceBunker();
-//	entranceBuilding = initEntranceBuildings();
-//	secondEntranceBuilding = initSecondEntranceBuildings();
-//	firstExtensionChokePoint = initFirstExtensionChokePoint();
-//	secondExtensionChokePoint = initSecondExtensionChokePoint();
-//	twoPhaseChokePoint = initTwoPhaseChokePoint();
-//	threePhaseChokePointForSiege = initThreePhaseChokePointForSiege();
-//	threePhaseChokePointForMech = initThreePhaseChokePointForMech();
-//	trainingBuildings = initTrainingBuildings();
-//	baseEntranceChokePoint = initBaseEntranceChokePoint();
-//	baseTankPoint = initBaseTankPoint();
-//	baseTurrets = initBaseTurret();
+	//		size3by2Buildings = init3by2SizeBuildings();
+	//		baseEntranceBunkers = initBaseEntranceBunker();
+	//		entranceBuilding = initEntranceBuildings();
+	//		secondEntranceBuilding = initSecondEntranceBuildings();
+	//		firstExtensionChokePoint = initFirstExtensionChokePoint();
+	//		secondExtensionChokePoint = initSecondExtensionChokePoint();
+	//		twoPhaseChokePoint = initTwoPhaseChokePoint();
+	//		threePhaseChokePointForSiege = initThreePhaseChokePointForSiege();
+	//		threePhaseChokePointForMech = initThreePhaseChokePointForMech();
+	//		trainingBuildings = initTrainingBuildings();
+	//		baseEntranceChokePoint = initBaseEntranceChokePoint();
+	//		baseTankPoint = initBaseTankPoint();
+	//		baseTurrets = initBaseTurret();
 
     }
 
@@ -199,12 +199,12 @@ public abstract class LocationManager extends Manager implements MapInfo {
     public TilePosition getThreePhaseChokePointForSiege() {
 	return threePhaseChokePointForSiege;
     }
-    
+
     @Override
     public TilePosition getThreePhaseChokePointForMech() {
 	return threePhaseChokePointForMech;
     }
-    
+
     // 앞마당 입구 방어를 위한 위치를 리턴한다.
     @Override
     public List<TilePosition> getBaseTankPoint() {
@@ -280,8 +280,10 @@ public abstract class LocationManager extends Manager implements MapInfo {
     // 다음 확장의 위치를 리턴한다.
     public TilePosition getNextExpansionPoint() {
 
-	double tempDistance;
-	double closestDistance = 999999;
+	//	double tempDistance;
+	//	double closestDistance = 999999;
+	int expansionPoint = 0;
+	int tempExpansionPoint = 0;
 	TilePosition nextExpansionLocation = null;
 
 	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
@@ -305,13 +307,35 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	    }
 
 	    //아군 기지에서 가장 가까운 확장부터 하나씩 가져간다
-	    //TODO 아군스타팅 포인트, 적군 스타팅 포인트에 따라 확장 점수를 부여하여, 가장 중요도가 높은 확장부터 가져간다?
-	    tempDistance = BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
-	    if (tempDistance < closestDistance && tempDistance > 0) {
-		closestDistance = tempDistance;
+	    //각 포인트에 대해 확장 점수를 부여하여, 가장 중요도가 높은 확장부터 가져간다
+	    //아군 기지로부터의 거리 
+	    //주변에 적 전투 유닛들이 있을 경우 
+	    //적 본진과의 거리
+
+	    int baseDistance = (int) BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
+	    int enemyUnitCount = enemyUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Combat_Unit, 100).size();
+	    int enemyBaseDistance = (int) targetBaseLocation.getDistance(enemyStartLocation.toPosition());
+
+	    tempExpansionPoint = (10000 - baseDistance) + enemyUnitCount * 1000 + enemyBaseDistance;
+	    System.out.println("확장점수 계산 " + tempExpansionPoint);
+	    System.out.println(targetBaseLocation.getX() / 32 + " " + targetBaseLocation.getY() / 32);
+	    System.out.println("아군기지 거리 " + (10000 - baseDistance));
+	    System.out.println("적숫자 " + enemyUnitCount * 100);
+	    System.out.println("적기지 거리" + enemyBaseDistance);
+
+	    if (tempExpansionPoint > expansionPoint) {
+		expansionPoint = tempExpansionPoint;
 		nextExpansionLocation = targetBaseLocation.getTilePosition();
+
 	    }
+
+	    //	    tempDistance = BWTA.getGroundDistance(allianceBaseLocation, targetBaseLocation.getTilePosition());
+	    //	    if (tempDistance < closestDistance && tempDistance > 0) {
+	    //		closestDistance = tempDistance;
+	    //		nextExpansionLocation = targetBaseLocation.getTilePosition();
+	    //	    }
 	}
+	System.out.println("베스트 확장 포인트" + nextExpansionLocation.getX() + " " + nextExpansionLocation.getY());
 	return nextExpansionLocation;
     }
 

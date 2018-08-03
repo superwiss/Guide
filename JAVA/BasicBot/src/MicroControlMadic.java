@@ -34,11 +34,15 @@ public class MicroControlMadic extends Manager {
     }
 
     private void followBionicUnit() {
+	if (strategyManager.isSkipMicroControl()) {
+	    return;
+	}
+
 	Position newPosition = null;
 	Set<Unit2> bionicSet = null;
 	if (true == strategyManager.hasAttackTilePosition()) {
 	    Position attackPosition = strategyManager.getAttackTilePositon().toPosition();
-	    bionicSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Siege_Tank);
+	    bionicSet = allianceUnitInfo.getUnitSet(UnitKind.Bionic_Unit);
 	    // 메딕을 제외한 - 공격 목표 지점에서 가장 가까운 선두 바이오닉 유닛을 구한다.
 	    Unit2 headBionicUnit = allianceUnitInfo.getClosestUnit(bionicSet, attackPosition, medicUnitTypeSet);
 	    if (null == headBionicUnit) {

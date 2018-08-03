@@ -2,8 +2,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class Util {
@@ -89,4 +93,25 @@ public class Util {
 	    }
 	}
     }
+
+    public static <T, E> List<T> mapSortByListValue(final Map<T, List<T>> map, final Comparator<List<T>> comparator) {
+	List<T> result = new ArrayList<>();
+
+	result.addAll(map.keySet());
+
+	Collections.sort(result, (k1, k2) -> comparator.compare(map.get(k1), map.get(k2)));
+
+	return result;
+    }
+
+    public static <T, E> List<T> mapSortByValue(final Map<T, List<T>> map, final Comparator<T> comparator) {
+	List<T> result = new ArrayList<>();
+
+	result.addAll(map.keySet());
+
+	Collections.sort(result, (k1, k2) -> comparator.compare(k1, k2));
+
+	return result;
+    }
+
 }

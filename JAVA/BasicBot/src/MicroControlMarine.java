@@ -28,7 +28,6 @@ public class MicroControlMarine extends Manager {
     protected void onFrame() {
 	super.onFrame();
 
-	
 	if (gameStatus.isMatchedInterval(1)) {
 	    if (strategyManager.hasStrategyItem(StrategyItem.AUTO_RESEARCH_STIMPACK)) {
 		checkIfUsingStimPack();
@@ -41,8 +40,8 @@ public class MicroControlMarine extends Manager {
 		waitBionicUnit();
 	    }
 	}
-	
-	if (gameStatus.isMatchedInterval(3)) {
+
+	if (gameStatus.isMatchedInterval(1)) {
 	    if (strategyManager.hasStrategyItem(StrategyItem.ALLOW_PHASE)) {
 		//페이즈에 따라 목표지점을 달리한다.
 		followPhase();
@@ -59,8 +58,14 @@ public class MicroControlMarine extends Manager {
 	    if (!marine.exists()) {
 		Log.warn("[MicroControlMarine:checkIfUsingStimPack] 마린(%s)이 exist 하지 않습니다.", marine);
 	    } else {
+
 		if (strategyManager.getPhase() == 0) {
-		    ActionUtil.attackPosition(allianceUnitInfo, marine, locationManager.getBaseEntranceChokePoint().toPosition());
+		    Position baseEntrance = locationManager.getBaseEntranceChokePoint().toPosition();
+		    if (marine.getDistance(baseEntrance) < 50) {
+			marine.holdPosition();
+		    } else {
+			ActionUtil.moveToPosition(allianceUnitInfo, marine, baseEntrance);
+		    }
 		} else if (strategyManager.getPhase() == 1) {
 		    ActionUtil.attackPosition(allianceUnitInfo, marine, locationManager.getSecondExtensionChokePoint().toPosition());
 		} else if (strategyManager.getPhase() == 2) {

@@ -1,4 +1,3 @@
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
@@ -10,6 +9,9 @@ import bwapi.TilePosition;
 public class ScoutManager extends Manager {
     private Queue<TilePosition> searchQueue = new LinkedList<>();
 
+    private LocationManager locationManager;
+    private StrategyManager strategyManager;
+
     // TODO 정찰은 1개만 가능하도록 구현됨. 다중 유닛 정찰 구현하기.
     @Override
     public void onFrame() {
@@ -20,8 +22,9 @@ public class ScoutManager extends Manager {
 	    return;
 	}
 
-	UnitInfo allianceUnitInfo = gameStatus.getAllianceUnitInfo();
-	LocationManager locationManager = gameStatus.getLocationManager();
+	locationManager = gameStatus.getLocationManager();
+	strategyManager = gameStatus.getStrategyManager();
+
 	Unit2 scoutUnit = allianceUnitInfo.getAnyUnit(UnitKind.Scouting_Unit);
 
 	if (null == scoutUnit) {
@@ -45,8 +48,6 @@ public class ScoutManager extends Manager {
 		if (null == locationManager.getEnemyStartLocation()) {
 		    // 다음 지점으로 이동한다.
 		    onFrame();
-		} else {
-		    searchQueue.clear();
 		}
 	    } else {
 		// 정찰을 계속한다.
@@ -60,7 +61,9 @@ public class ScoutManager extends Manager {
     protected void onUnitDiscover(Unit2 unit) {
 	super.onUnitDiscover(unit);
 
-	LocationManager locationManager = gameStatus.getLocationManager();
+	if (0 == gameStatus.getFrameCount()) {
+	    return;
+	}
 
 	// 적 본진을 찾았으면 중단한다. 
 	if (null != locationManager.getEnemyStartLocation()) {
@@ -95,7 +98,6 @@ public class ScoutManager extends Manager {
 
 	UnitInfo allianceUnitInfo = gameStatus.getAllianceUnitInfo();
 	UnitInfo enemyUnitInfo = gameStatus.getEnemyUnitInfo();
-	LocationManager locationManager = gameStatus.getLocationManager();
 
 	// 정찰중인 유닛이 죽었을 경우를 처리...
 	if (allianceUnitInfo.isKindOf(unit, UnitKind.Scouting_Unit)) {
@@ -206,11 +208,15 @@ public class ScoutManager extends Manager {
 	locationManager.initThreePhaseChokePointForSiege();
 	locationManager.initThreePhaseChokePointForMech();
 	searchQueue.clear();
+	if (strategyManager.hasStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+	    strategyManager.removeStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE);
+	}
     }
 
+    // 최초(상대의 위치를 파악하는게 가장 핵심인) 정찰을 수행한다.
+    // 정찰을 시작하면 true, 정찰을 시작할 수 없으면 false를 리턴한다.
     public boolean doFirstSearch() {
 	boolean result = true;
-	LocationManager locationManager = gameStatus.getLocationManager();
 	WorkerManager workerManager = gameStatus.getWorkerManager();
 
 	UnitInfo allianceUnitInfo = gameStatus.getAllianceUnitInfo();

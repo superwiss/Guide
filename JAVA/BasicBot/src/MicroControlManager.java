@@ -15,6 +15,7 @@ public class MicroControlManager extends Manager implements EventDispatcher {
 	eventHandlers.add(new MicroControlTank());
 	eventHandlers.add(new MicroControlGoliath());
 	eventHandlers.add(new MicroControlVulture());
+	eventHandlers.add(new MicroControlVessel());
     }
 
     @Override

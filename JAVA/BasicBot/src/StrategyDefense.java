@@ -25,83 +25,57 @@ public class StrategyDefense extends StrategyBase {
     public void onFrame() {
 	super.onFrame();
 
-	// 5초에 한 번씩 수행한다.
-	if (gameStatus.isMatchedInterval(5)) {
-	    doWholeAttack();
+	if (strategyManager.isSkipMicroControl()) {
+	    return;
 	}
+
+	if (strategyManager.isSkipMicroControl()) {
+	    return;
+	}
+
+	// 공격 시점과 장소를 체크한다.
+	checkAttackTimingAndPosition();
     }
 
-    // 전체 공격을 처리한다.
-    void doWholeAttack() {
-	// 모든 공격 가능한 유닛셋을 가져온다.
+    private void checkAttackTimingAndPosition() {
+	if (!gameStatus.isMatchedInterval(1)) {
+	    // 1초에 한 번만 수행한다.
+	    return;
+	}
+
+	if (strategyManager.hasStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
+	    return;
+	}
+
+	// 일꾼을 제외한 인구수를 구한다.
+//	int supplyUsed = allianceUnitInfo.getSupplyUsedExceptWorker();
 	Set<Unit2> attackableUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit);
-	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
-	Log.debug("총 공격 조건 확인. 공격 위치: %s, 아군 공격 가능한 유닛 수: %d, 적 본진 위치: %s", strategyManager.getAttackTilePositon(), attackableUnitSet.size(),
-		locationManager.getEnemyStartLocation());
+	int supplyUsed = attackableUnitSet.size();
 
-	System.out.println(locationManager.getEnemyStartLocation());
-	if (true == strategyManager.hasAttackTilePosition() || (attackableUnitSet.size() > 60 && null != locationManager.getEnemyStartLocation())) {
-	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnitSet.size());
-	    TilePosition attackTilePosition = calcAttackPosition();
-	    strategyManager.setPhase(5);
+	if (strategyManager.hasStrategyStatus(StrategyStatus.FULLY_ATTACK)) {
+	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
 
+	    // 공격 위치 반경 1200 이내에 아군 유닛이 없다면.. 공격이 막힌 것으로 봐야한다.
 	    if (null != attackTilePosition) {
-		strategyManager.setAttackTilePosition(attackTilePosition);
-
-		Log.info("총 공격! 공격할 위치: %s", attackTilePosition);
-		for (Unit2 attackableUnit : attackableUnitSet) {
-
-		    if (attackableUnit.getDistance(attackTilePosition.toPosition()) > 300) {
-			if (attackableUnit.canUnsiege()) {
-			    attackableUnit.unsiege();
-			}
-		    }
-		    ActionUtil.attackPosition(allianceUnitInfo, attackableUnit, attackTilePosition.toPosition());
-		}
-	    }
-	}
-    }
-
-    // 공격갈 위치를 계산한다.
-    private TilePosition calcAttackPosition() {
-	TilePosition result = null;
-
-	// 내 본진의 위치
-	TilePosition allianceStartTilePosition = locationManager.getAllianceBaseLocation();
-
-	// 적 본진의 위치
-	Set<Unit2> enemyMainBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.MAIN_BUILDING);
-
-	// 가급적 본진에서 가장 가까운 적 본진부터 공격한다.
-	Unit2 closestMainBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyMainBuildingSet, allianceStartTilePosition.toPosition());
-
-	if (null != closestMainBuilding) {
-	    // 적 메인 건물이 존재할 경우..
-	    result = enemyUnitInfo.getLastTilePosition(closestMainBuilding);
-	} else {
-	    // 적 메인 건물은 찾지 못했지만, 다른 건물들이 존재할 경우.
-	    Set<Unit2> enemyBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.Building);
-	    if (!enemyBuildingSet.isEmpty()) {
-		// 적 건물이 다수 존재할 경우, 내 본진에서 가장 가까운 상대 건물부터 공격한다.
-		Unit2 closestBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyBuildingSet, allianceStartTilePosition.toPosition());
-		if (null != closestBuilding) {
-		    result = enemyUnitInfo.getLastTilePosition(closestBuilding);
-		}
-	    } else {
-		TilePosition enemyBaseLocation = locationManager.getEnemyStartLocation();
-		if (gameStatus.isExplored(enemyBaseLocation)) {
-		    Log.info("적 건물을 찾을 수 없다. 탐색하자");
-		    result = null;
+		Set<Unit2> attackUnitSet = allianceUnitInfo.getUnitsInRange(attackTilePosition.toPosition(), UnitKind.Combat_Unit, 1200);
+		if (attackUnitSet.isEmpty() || supplyUsed < 20) {
+		    strategyManager.removeStrategyStatus(StrategyStatus.FULLY_ATTACK);
+		    strategyManager.removeStrategyStatus(StrategyStatus.ATTACK);
+		    strategyManager.setPhase(1);
+		    Log.info("총 공격이 실패했다. 병력을 모아서 다시 공격가자.");
 		} else {
-		    // 어떠한 적 건물도 찾지 못했지만, 적 본진 위치는 알고 있을 경우 (예를 들어 3곳을 정찰 성공했다면 남은 한 곳은 방문하지 않아도 적 본진이다.)
-		    Log.info("적 건물은 없지만, 적 위치는 알고 있다. 적 위치로 공격을 가자: %s", enemyBaseLocation);
-		    result = enemyBaseLocation;
+		    strategyManager.setPhase(5);
+		    strategyManager.setAttackTilePosition(attackTilePosition);
+		    Log.info("총 공격을 유지한다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
 		}
 	    }
+	} else if (supplyUsed >= 60) {
+	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+	    strategyManager.setAttackTilePosition(attackTilePosition);
+	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+	    Log.info("총 공격을 간다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
 	}
-	Log.info("총 공격한다: %s", result);
-
-	return result;
     }
 
     @Override
@@ -201,6 +175,8 @@ public class StrategyDefense extends StrategyBase {
 	strategyItems.add(StrategyItem.BLOCK_ENTRANCE);
 	strategyItems.add(StrategyItem.AUTO_ASSIGN_GAS_SCV);
 	strategyItems.add(StrategyItem.ALLOW_PHASE);
+	
+	strategyItems.add(StrategyItem.USE_SCIENCE_VESSEL);
 
 	//마이크로 매니저를 통해 위치를 지정하기 때문에 렐리포인트는 더이상 사용하지 않는다.
 	//strategyItems.add(StrategyItem.SET_FACTORY_RALLY);

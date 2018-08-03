@@ -32,7 +32,7 @@ public class BuildManager extends Manager {
 
 	if (!queue.isEmpty()) {
 	    BuildOrderItem buildItem = queue.peek();
-//	    System.out.println("큐가 찼다 " + buildItem.toString());
+	    //	    System.out.println("큐가 찼다 " + buildItem.toString());
 	    if (false == buildItem.isInProgress()) {
 		//		Log.info("BuildOrder Start: %s", buildItem.toString());
 	    } else {
@@ -248,7 +248,11 @@ public class BuildManager extends Manager {
 		} else if (UnitType.Terran_Engineering_Bay.equals(buildingType)) {
 		    tilePositionList = locationManager.getTrainingBuildings();
 		} else if (UnitType.Terran_Bunker.equals(buildingType)) {
-		    tilePositionList = locationManager.getBaseEntranceBunker();
+		    if (buildOrderItem.getTilePosition() != null) {			
+			tilePositionList.add(buildOrderItem.getTilePosition());
+		    } else {
+			tilePositionList = locationManager.getBaseEntranceBunker();
+		    }
 		} else if (UnitType.Terran_Command_Center.equals(buildingType)) {
 		    if (buildOrderItem.getTilePosition() != null) {
 			tilePositionList.add(buildOrderItem.getTilePosition());
@@ -272,7 +276,7 @@ public class BuildManager extends Manager {
 			if (true == alreadyBuilt) {
 			    continue;
 			}
-
+			
 			// 건설 가능한 일꾼을 가져온다.
 			Unit2 worker = workerManager.getInterruptableWorker(tilePosition);
 			if (null != worker) {

@@ -15,9 +15,7 @@ public class GameCommander implements EventDispatcher {
     public GameCommander() {
 	gameStatus = new GameStatus();
 
-	MagiConfig config = new MagiConfig();
-
-	if (true == config.isReleaseMode()) {
+	if (true == gameStatus.getConfig().isReleaseMode()) {
 	    // 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생할 수 있으니 주의
 	    Log.setLogLevel(Log.Level.WARN);
 	} else {
@@ -31,7 +29,7 @@ public class GameCommander implements EventDispatcher {
 	gameStatus.setStrategyManager(new StrategyManager());
 	gameStatus.setMicroControlManager(new MicroControlManager());
 	gameStatus.setEliminateManager(new EliminateManager());
-	if (true != config.isReleaseMode()) {
+	if (true != gameStatus.getConfig().isReleaseMode()) {
 	    gameStatus.setTrainingManager(new TrainingManager());
 	    gameStatus.setUxManager(new MagiUXManager());
 	}
@@ -43,7 +41,7 @@ public class GameCommander implements EventDispatcher {
 	eventHandlers.add(gameStatus.getStrategyManager());
 	eventHandlers.add(gameStatus.getMicroControlManager());
 	eventHandlers.add(gameStatus.getEliminateManager());
-	if (true != config.isReleaseMode()) {
+	if (true != gameStatus.getConfig().isReleaseMode()) {
 	    eventHandlers.add(gameStatus.getTrainingManager());
 	    eventHandlers.add(gameStatus.getUxManager());
 	}
@@ -59,7 +57,7 @@ public class GameCommander implements EventDispatcher {
 
 	ActionUtil.setGame(gameStatus.getGame());
 
-	gameStatus.sendText("MagiBot 2018.07.24.00");
+	gameStatus.sendText("MagiBot 2018.08.02.00");
 
 	try {
 	    EventData eventData = new EventData(EventData.ON_START, gameStatus);
@@ -197,15 +195,6 @@ public class GameCommander implements EventDispatcher {
 	Unit2 unit = Unit2.get(rawUnit);
 	//	Log.info("onUnitDiscover(%s)", UnitUtil.toString(unit));
 
-	try {
-	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
-	    executeEventHandler(eventData);
-	} catch (Exception e) {
-	    //	    Log.error("onUnitDiscover() Exception: %s", e.toString());
-	    e.printStackTrace();
-	    throw e;
-	}
-
 	if (true == UnitUtil.isAllianceUnit(unit)) {
 	    gameStatus.getAllianceUnitInfo().add(unit);
 	} else if (true == UnitUtil.isEnemyUnit(unit)) {
@@ -216,6 +205,15 @@ public class GameCommander implements EventDispatcher {
 	    } else if (unit.getType() == UnitType.Resource_Vespene_Geyser) {
 		gameStatus.getAllianceUnitInfo().add(unit);
 	    }
+	}
+
+	try {
+	    EventData eventData = new EventData(EventData.ON_UNIT_DISCOVER, unit);
+	    executeEventHandler(eventData);
+	} catch (Exception e) {
+	    Log.error("onUnitDiscover() Exception: %s", e.toString());
+	    e.printStackTrace();
+	    throw e;
 	}
     }
 

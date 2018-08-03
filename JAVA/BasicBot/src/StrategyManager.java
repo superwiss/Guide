@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.Set;
 
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.Unit;
@@ -13,8 +14,12 @@ import bwta.BaseLocation;
 
 public class StrategyManager extends Manager {
 
+    private BuildManager buildManager;
+    private LocationManager locationManager;
+    private WorkerManager workerManager;
     private StrategyBase strategy = null; // 현재 전략
     private Set<StrategyItem> strategyItems = new HashSet<>(); // 전략 전술 플래그
+    private Set<StrategyStatus> strategyStatus = new HashSet<>(); // 현재 상태
     private TilePosition attackTilePosition = null; // 공격 지점. 공격 지점이 null이면 유닛들은 대기한다. 공격 지점이 설정되면, 유닛들은 해당 지점으로 Attack Position을 수행한다.
     private TilePosition defenceTilePosition = null; // 방어 지점. 아군 유닛이나 건물이 공격 받으면, 그 위치가 방어 지점이 된다.
     private Unit2 headAllianceUnit = null; // 아군의 공격 선두 유닛
@@ -22,28 +27,49 @@ public class StrategyManager extends Manager {
     private int lastScanFrameCount = 0; // 마지막으로 스캔을 뿌린 시각
     public static int multiCount = 0;
     private int phase = 0;
-
-    BuildManager buildManager = null;
-    LocationManager locationManager = null;
-    WorkerManager workerManager = null;
+    private boolean skipMicroControl = false;
 
     @Override
     protected void onStart(GameStatus gameStatus) {
 	super.onStart(gameStatus);
 
-	// TODO 상대방의 종족이나 ID에 따라서 전략을 선택한다.
-	strategy = new StrategyDefense();
-	strategy.onStart(gameStatus);
+	// 각종 매니져 설정
+	this.buildManager = gameStatus.getBuildManager();
+	this.locationManager = gameStatus.getLocationManager();
+	this.workerManager = gameStatus.getWorkerManager();
 
-	buildManager = gameStatus.getBuildManager();
-	locationManager = gameStatus.getLocationManager();
-	workerManager = gameStatus.getWorkerManager();
+	// 거의 모든 전략에서 사용될 수 있는 범용적인 전략을 세팅한다.
+	//	setPassiveStrategyItem();
+
+	// TODO 상대방의 종족이나 ID에 따라서 전략을 선택한다.
+	//strategy = new StrategyDefault();
+	//strategy = new StrategyTwoFactory();
+	if (gameStatus.isComputer()) {
+	    if (gameStatus.getEnemyRace().equals(Race.Terran)) {
+		Log.info("User: Computer, Terran");
+		strategy = new StrategyDefense();
+	    } else {
+		Log.info("User: Computer, Not Terran");
+		strategy = new StrategyDefense();
+	    }
+	} else {
+	    if (gameStatus.isMatchPlayerByName("JohnVer")) {
+		Log.info("User: JohnVer");
+		strategy = new StrategyDefense();
+	    } else {
+		Log.info("User: Default");
+		strategy = new StrategyDefense();
+	    }
+	}
+
+	strategy.onStart(gameStatus);
     }
 
     @Override
     public void onFrame() {
 	super.onFrame();
 
+	checkIfSkipMicroControl();
 	doExpansion();
 	checkIfuseScan();
 
@@ -65,9 +91,130 @@ public class StrategyManager extends Manager {
 	doPhaseCheck();
 	doScienceFacility();
 	doRebalance();
+
+	useScienceVessel();
+	buildBunker();
 	//doFactoryRally();
 
 	strategy.onFrame();
+    }
+
+    private void buildBunker() {
+
+	if (buildManager.isInitialBuildFinished()) {
+
+	    for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+
+		//아군 본진의 경우 제외한다.
+		if (targetBaseLocation.getTilePosition().equals(locationManager.allianceBaseLocation)) {
+		    continue;
+		}
+
+		//앞마당도 제외한다.
+		if (targetBaseLocation.getTilePosition().equals(locationManager.getFirstExpansionLocation().get(0))) {
+		    continue;
+		}
+
+		//아군의 커맨드 센터가 지어져 있을 경우, 벙커를 건설한다.
+		if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 320).size() > 0) {
+
+		    if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Bunker, 320).size() == 0) {
+			System.out.println(targetBaseLocation.getTilePosition().getX() + " " + targetBaseLocation.getTilePosition().getY());
+			System.out.println("벙커를 짓고싶다");
+			if (0 == buildManager.getQueueSize()) {
+			    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Bunker)) {
+				TilePosition goodPosition = needBuildPlace(targetBaseLocation.getTilePosition());
+				buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Bunker, goodPosition));
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+    private TilePosition needBuildPlace(TilePosition tilePosition) {
+
+	int currentX = tilePosition.getX();
+	int currentY = tilePosition.getY();
+	int bunkerSizeX = 3;
+	int bunkerSizeY = 3;
+	boolean canBuildHere = false;
+	TilePosition goodPosition = null;
+
+	for (int x_position = 0; x_position < 2; x_position++) {
+	    for (int y_position = 0; y_position < 2; y_position++) {
+		if (currentX >= 0 && currentX < gameStatus.getMapWidth() && currentY >= 0 && currentY < gameStatus.getMapHeight()) {
+
+		    canBuildHere = canBuildHere(new TilePosition(currentX, currentY));
+
+		    if (canBuildHere == true) {
+			goodPosition = new TilePosition(currentX, currentY);
+			break;
+		    }
+		}
+		currentY = currentY + bunkerSizeY;
+	    }
+
+	    if (canBuildHere) {
+		break;
+	    }
+	    currentY = tilePosition.getY();
+	    currentX = currentX + bunkerSizeX;
+	}
+
+	return goodPosition;
+    }
+
+    private boolean canBuildHere(TilePosition tilePosition) {
+
+	boolean alreadyBuilt = false;
+	Set<Unit2> buildingSet = allianceUnitInfo.getUnitSet(UnitKind.Building);
+	for (Unit2 building : buildingSet) {
+	    if (building.getTilePosition().equals(tilePosition)) {
+		alreadyBuilt = true;
+		continue;
+	    }
+	}
+	if (true == alreadyBuilt) {
+	    return false;
+	} else {
+	    return true;
+	}
+    }
+
+    // 자동으로 공격 유닛을 훈련하는 작업을 수행한다.
+    private void useScienceVessel() {
+	// 1초에 한 번만 수행된다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	if (hasStrategyItem(StrategyItem.USE_SCIENCE_VESSEL)) {
+
+	    if (true == buildManager.isInitialBuildFinished()) {
+
+		//머신샵이 없는 건물에서 탱크를 생산할 경우 데드락이 걸리는 문제 해결 필요
+		Unit2 starport = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Starport);
+		if (starport != null) {
+
+		    Set<Unit2> vesselSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Science_Vessel);
+
+		    int vesselCount = vesselSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Starport, UnitType.Terran_Science_Vessel);
+		    int maxVesselCount = 2;
+
+		    Log.info("사이언스 베슬 생산. 베슬 수: %d", vesselCount);
+		    if (vesselCount < maxVesselCount) {
+			Unit2 bestStarport = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Starport, UnitType.Terran_Science_Vessel);
+			if (bestStarport != null) {
+			    if (bestStarport.canTrain(UnitType.Terran_Science_Vessel)) {
+				bestStarport.train(UnitType.Terran_Science_Vessel);
+			    }
+			}
+		    }
+		}
+	    }
+	}
     }
 
     private void doRebalance() {
@@ -83,30 +230,37 @@ public class StrategyManager extends Manager {
 
     private void doScienceFacility() {
 
-	if (allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 30) {
+	if (allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 24) {
 
-	    BuildManager buildManager = gameStatus.getBuildManager();
-
-	    //사이언스 퍼실리티 건설
 	    Unit2 starport = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Starport);
 	    if (null == starport) {
 		if (hasStrategyItem(StrategyItem.AUTO_BUILD_TWO_ARMORY)) {
 		    if (gameStatus.getMineral() > 150 && gameStatus.getGas() > 100 && 0 == buildManager.getQueueSize() && buildManager.isInitialBuildFinished()) {
 			if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Starport).size() == 0) {
-			    // 첫번째 아머리는 바로 짓는다.
 			    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Starport));
 			}
 		    }
 		}
-	    }
+	    } else {
+		Unit2 controlTower = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Control_Tower);
 
-	    Unit2 scienceFacility = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Science_Facility);
-	    if (null == scienceFacility) {
-		if (hasStrategyItem(StrategyItem.AUTO_BUILD_TWO_ARMORY)) {
-		    if (gameStatus.getMineral() > 150 && gameStatus.getGas() > 150 && 0 == buildManager.getQueueSize() && buildManager.isInitialBuildFinished()) {
-			if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Science_Facility).size() == 0) {
-			    // 첫번째 아머리는 바로 짓는다.
-			    buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Science_Facility));
+		if (null == controlTower && starport.isCompleted()) {
+
+		    for (Unit2 forAddonStarport : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Starport)) {
+			if (forAddonStarport.canBuildAddon()) {
+			    forAddonStarport.buildAddon(UnitType.Terran_Control_Tower);
+			}
+		    }
+		}
+
+		Unit2 scienceFacility = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Science_Facility);
+		if (null == scienceFacility) {
+		    if (hasStrategyItem(StrategyItem.AUTO_BUILD_TWO_ARMORY)) {
+			if (gameStatus.getMineral() > 150 && gameStatus.getGas() > 150 && 0 == buildManager.getQueueSize() && buildManager.isInitialBuildFinished()) {
+			    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Science_Facility).size() == 0) {
+				// 첫번째 아머리는 바로 짓는다.
+				buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Science_Facility));
+			    }
 			}
 		    }
 		}
@@ -133,13 +287,13 @@ public class StrategyManager extends Manager {
 
 	    //	    System.out.println("메카닉 유닛 수 " + allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size());
 
-	    if (allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 30 && phase != 5) {
+	    if (allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 30 && phase != 5 && !hasStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
 		setPhase(2);
 	    }
 
-//	    if (allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 45 && phase != 5) {
-//		setPhase(3);
-//	    }
+	    if (allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 40 && phase != 5 && !hasStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
+		setPhase(3);
+	    }
 
 	}
 
@@ -339,7 +493,7 @@ public class StrategyManager extends Manager {
 
 		//TODO 확장을 가져가는 다양한 조건들이 추가될 예정이다.
 		//메카닉 유닛이 여유가 있을 경우 확장을 가져간다.
-		if (gameStatus.getMineral() > 600 && allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 40) {
+		if (gameStatus.getMineral() > 400 && allianceUnitInfo.getUnitSet(UnitKind.Mechanic_Unit).size() > 25) {
 		    if (0 == buildManager.getQueueSize()) {
 			buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, locationManager.getNextExpansionPoint()));
 		    }
@@ -443,6 +597,15 @@ public class StrategyManager extends Manager {
 		    }
 		}
 	    }
+	}
+    }
+
+    // 마이크로 컨트롤 중단 여부를 체크한다.
+    private void checkIfSkipMicroControl() {
+	if (hasStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+	    skipMicroControl = true;
+	} else {
+	    skipMicroControl = false;
 	}
     }
 
@@ -618,7 +781,7 @@ public class StrategyManager extends Manager {
 	    }
 	} else {
 	    //아카데미가 지어져 있지 않을 경우 12000프레임 후에 건설한다.
-	    if (gameStatus.getMineral() > 150 && buildManager.getQueueSize() == 0 && gameStatus.getFrameCount() > 10000) {
+	    if (gameStatus.getMineral() > 150 && buildManager.getQueueSize() == 0) {
 		buildManager.add(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
 	    }
 	}
@@ -727,6 +890,8 @@ public class StrategyManager extends Manager {
 	    if (hasStrategyItem(StrategyItem.AUTO_LOAD_MARINE_TO_BUNKER)) {
 		if (0 < bunker.getSpaceRemaining()) {
 		    marineToBunker(allianceUnitInfo, bunker);
+		} else {
+		    repairCount = 3;
 		}
 	    }
 	    if (hasStrategyItem(StrategyItem.AUTO_REPAIR_BUNKER)) {
@@ -748,6 +913,10 @@ public class StrategyManager extends Manager {
 	    int bunkerCount = allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Bunker).size();
 	    Log.info("마린 생산. 마린 수: %d, 벙커 수: %d", marineCount, bunkerCount);
 	    if (bunkerCount * 4 > marineCount) {
+		barracks.train(UnitType.Terran_Marine);
+	    }
+	    if (marineCount < 4 && buildManager.isInitialBuildFinished()) {
+		//마린4마리 항시 유지
 		barracks.train(UnitType.Terran_Marine);
 	    }
 	}
@@ -789,7 +958,6 @@ public class StrategyManager extends Manager {
 	}
     }
 
-    // 아카데미와 관련된 작업을 수행한다.
     private void doFactoryAddOnJob() {
 	// 1초에 한 번만 수행된다.
 	if (!gameStatus.isMatchedInterval(1)) {
@@ -1012,7 +1180,7 @@ public class StrategyManager extends Manager {
 		    }
 		    // 적 클로킹 유닛 distance 거리 미만에 존재하는 아군 유닛이 5기 이상이면 스캔을 뿌린다.
 		    Set<Unit2> allianceUnitSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Terran_Marine, distance);
-		    Set<Unit2> mechanicUnitSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Mechanic_Unit, distance);
+		    Set<Unit2> mechanicUnitSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Mechanic_Unit, 400);
 		    Log.info("적 클로킹 유닛 발견: %s. 주변의 마린 수: %d, 거리: %d", clockedUnit, allianceUnitSet.size(), distance);
 		    if (5 <= allianceUnitSet.size() || 5 <= mechanicUnitSet.size()) {
 			allianceUnitInfo.doScan(clockedUnit.getPosition());
@@ -1034,33 +1202,90 @@ public class StrategyManager extends Manager {
 
     }
 
+    // 공격갈 위치를 계산한다.
+    public TilePosition calcAndGetAttackTilePosition() {
+	TilePosition result = null;
+
+	// 내 본진의 위치
+	TilePosition allianceStartTilePosition = locationManager.getAllianceBaseLocation();
+
+	// 적 본진의 위치
+	Set<Unit2> enemyMainBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.MAIN_BUILDING);
+
+	// 가급적 본진에서 가장 가까운 적 본진부터 공격한다.
+	Unit2 closestMainBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyMainBuildingSet, allianceStartTilePosition.toPosition());
+
+	if (null != closestMainBuilding) {
+	    // 적 메인 건물이 존재할 경우..
+	    result = enemyUnitInfo.getLastTilePosition(closestMainBuilding);
+	    Log.info("getAttackPosition: 적 메인 건물(%s)", result);
+	} else {
+	    // 적 메인 건물은 찾지 못했지만, 다른 건물들이 존재할 경우.
+	    Set<Unit2> enemyBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.Building);
+	    if (!enemyBuildingSet.isEmpty()) {
+		// 적 건물이 다수 존재할 경우, 내 본진에서 가장 가까운 상대 건물부터 공격한다.
+		Unit2 closestBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyBuildingSet, allianceStartTilePosition.toPosition());
+		result = enemyUnitInfo.getLastTilePosition(closestBuilding);
+		Log.info("getAttackPosition: 적 일반 건물(%s)", result);
+	    } else {
+		TilePosition enemyStartLocation = locationManager.getEnemyStartLocation();
+		if (gameStatus.isExplored(enemyStartLocation)) {
+		    Log.info("getAttackPosition: 적 건물이 존재하지 않음.");
+		    result = null;
+		} else {
+		    // 어떠한 적 건물도 찾지 못했지만, 적 본진 위치는 알고 있을 경우 (예를 들어 3곳을 정찰 성공했다면 남은 한 곳은 방문하지 않아도 적 본진이다.)
+		    result = enemyStartLocation;
+		    Log.info("getAttackPosition: 적 건물을 명시적으로 발견하지는 못했지만, 예측되는 곳(%s)으로 이동한다.", result);
+		}
+	    }
+	}
+
+	if (null == result) {
+	    // 공격 지점이 없으면, 탐색 모드로 전환한다.
+	    if (!hasStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
+		Log.info("Enalbe SEARCH_FOR_ELIMINATE mode");
+		addStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE);
+	    }
+	}
+
+	return result;
+    }
+
+    // StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE 구현부
     // 본진 주변에 적 유닛이 있으면, 방어한다.
     private void doDefenceBase() {
 	// 1초에 한 번만 실행한다.
 	if (!gameStatus.isMatchedInterval(1)) {
 	    return;
 	}
+	removeStrategyStatus(StrategyStatus.BACK_TO_BASE);
 	if (hasStrategyItem(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE)) {
 	    // 커맨드 센터를 가져온다.
 	    Set<Unit2> commandCenterSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center);
 	    for (Unit2 commandCenter : commandCenterSet) {
 		// 커맨드 센터 반경 800 이내의 적 유닛 정보를 하나 가져온다.
-		Unit2 enemyUnit = enemyUnitInfo.getAnyUnitInRange(commandCenter.getPosition(), UnitKind.ALL, 800);
-		if (null != enemyUnit) {
-		    Log.info("본진(%s)에 침입한 적(%s) 발견함. 방어하자.", commandCenter, enemyUnit);
-		    Set<Unit2> defenceAllianceUnitSet = null;
-		    //공중 유닛의 경우 공중공격이 가능한 유닛을 파견한다.
-		    if (enemyUnit.isFlying()) {
-			defenceAllianceUnitSet = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.AntiAir_Unit, 800);
-		    } else {
-			defenceAllianceUnitSet = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Combat_Unit, 800);
-		    }
+		Set<Unit2> enemyUnitSet = enemyUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.ALL, 800);
+		// 쳐들어온 적 병력이 없으면 skip 하고 다음 커멘트 센터를 검사한다.
+		if (enemyUnitSet.isEmpty()) {
+		    continue;
+		}
 
+		Position defencePosition = enemyUnitSet.iterator().next().getPosition();
+		Set<Unit2> defenceAllianceUnitSet = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Combat_Unit, 800);
+		if (enemyUnitSet.size() < defenceAllianceUnitSet.size()) {
+		    Log.info("본진(%s)에 침입한 적(%d) 발견함. 방어하자.", commandCenter, enemyUnitSet.size());
 		    // 커맨드 센터 반경 800 이내의 아군 유닛으로 방어한다.
 		    for (Unit2 defenceAllianceUnit : defenceAllianceUnitSet) {
-			ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, enemyUnit.getPosition());
+			ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, defencePosition);
+		    }
+		} else {
+		    Log.info("본진(%s)에 침입한 적(%d)이 아군(%d)보다 많다. 주 병력을 모두 회군시키자.", commandCenter, enemyUnitSet.size(), defenceAllianceUnitSet.size());
+		    addStrategyStatus(StrategyStatus.BACK_TO_BASE);
+		    for (Unit2 allianceUnit : allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit)) {
+			ActionUtil.attackPosition(allianceUnitInfo, allianceUnit, defencePosition);
 		    }
 		}
+
 	    }
 	}
     }
@@ -1087,6 +1312,22 @@ public class StrategyManager extends Manager {
 
     public void setStrategyItems(Set<StrategyItem> strategyItems) {
 	this.strategyItems = strategyItems;
+    }
+
+    public boolean hasStrategyStatus(StrategyStatus strategyStatus) {
+	return this.strategyStatus.contains(strategyStatus);
+    }
+
+    public Set<StrategyStatus> getStrategyStatus() {
+	return strategyStatus;
+    }
+
+    public void addStrategyStatus(StrategyStatus strategyStatus) {
+	this.strategyStatus.add(strategyStatus);
+    }
+
+    public void removeStrategyStatus(StrategyStatus strategyStatus) {
+	this.strategyStatus.remove(strategyStatus);
     }
 
     public boolean hasAttackTilePosition() {
@@ -1125,5 +1366,21 @@ public class StrategyManager extends Manager {
 
     public void setDefenceTilePosition(TilePosition defenceTilePosition) {
 	this.defenceTilePosition = defenceTilePosition;
+    }
+
+    public boolean addStrategyItem(StrategyItem strategyItem) {
+	return strategyItems.add(strategyItem);
+    }
+
+    public boolean removeStrategyItem(StrategyItem strategyItem) {
+	return strategyItems.remove(strategyItem);
+    }
+
+    public boolean isSkipMicroControl() {
+	return skipMicroControl;
+    }
+
+    public void setSkipMicroControl(boolean skipMicroControl) {
+	this.skipMicroControl = skipMicroControl;
     }
 }
