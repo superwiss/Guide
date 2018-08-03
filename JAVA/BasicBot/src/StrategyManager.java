@@ -381,12 +381,13 @@ public class StrategyManager extends Manager {
     private void doRefineryJob() {
 
 	if (hasStrategyItem(StrategyItem.AUTO_ASSIGN_GAS_SCV) && buildManager.isInitialBuildFinished()) {
-
+	    
 	    //5초에 한번만 시행한다. 
-	    if (!gameStatus.isMatchedInterval(8)) {
+	    if (!gameStatus.isMatchedInterval(5)) {
 		return;
 	    }
-
+	    
+	    System.out.println("가스일꾼");
 	    //아군의 모든 커맨드 센터를 대상으로
 	    for (Unit2 commandCenter : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center)) {
 
@@ -403,7 +404,7 @@ public class StrategyManager extends Manager {
 			//미네랄 일꾼이 3기 이상이고, 리파이너리가 지어져 있으면 미네랄 일꾼을 가스에 할당한다.
 			//			System.out.println("현재 미네랄 일꾼 " + workerManager.findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size());
 			if (workerManager.findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size() >= 3 && refinery.isCompleted()) {
-			    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS, refinery));
+			    buildManager.addFirst(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS, refinery));
 			} else {
 			    //미네랄 일꾼이 부족하거나 리파이너리가 건설 중이다.
 			    //			    System.out.println("미네랄 일꾼이 부족하다 or 건설중이다.");
@@ -417,7 +418,7 @@ public class StrategyManager extends Manager {
 			    //가져온 베스핀 가스 위치에 리파이너리를 건설한다.
 			    Unit2 vespene = allianceUnitInfo.findOneUnitNear(commandCenter, UnitKind.Resource_Vespene_Geyser, 320);
 			    if (vespene != null) {
-				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery, vespene.getTilePosition()));
+				buildManager.addFirst(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery, vespene.getTilePosition()));
 			    } else {
 				//				System.out.println("여긴 베스핀이 없어");
 				continue;
@@ -745,8 +746,8 @@ public class StrategyManager extends Manager {
 
 		    int maxscv = 60;
 
-		    System.out.println("현재 scv 카운트 " + scvCount);
-		    System.out.println("맥스 워커 카운트 " + maxworkerCount);
+//		    System.out.println("현재 scv 카운트 " + scvCount);
+//		    System.out.println("맥스 워커 카운트 " + maxworkerCount);
 		    if (scvCount < maxscv && scvCount < maxworkerCount) {
 			Unit2 commandCenter = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Command_Center, UnitType.Terran_SCV);
 			if (null != commandCenter) {

@@ -113,8 +113,8 @@ public class MicroControlGoliath extends Manager {
 		int distance = UnitUtil.getDistance(allianceUnit, enemyUnit);
 		int groundWeaponDistance = allianceUnit.getType().groundWeapon().maxRange();
 		if (allianceUnit.canAttack(enemyUnit) && allianceUnit.isInWeaponRange(enemyUnit)) {
-		    Log.trace("아군(%s)이 적군(%s)를 공격할 수 있음. distance=%d, weaponDistance=%d, enemyHP=%d", allianceUnit, enemyUnit, distance, groundWeaponDistance,
-			    enemyUnit.getHitPoints());
+//		    Log.trace("아군(%s)이 적군(%s)를 공격할 수 있음. distance=%d, weaponDistance=%d, enemyHP=%d", allianceUnit, enemyUnit, distance, groundWeaponDistance,
+//			    enemyUnit.getHitPoints());
 		    attackableUnitList.add(allianceUnit);
 		}
 	    }
@@ -129,14 +129,14 @@ public class MicroControlGoliath extends Manager {
 	Comparator<Unit2> comparatorByUnitDistance = (u1, u2) -> UnitUtil.getDistance(u1, u2);
 	Set<Unit2> attackFinishSet = new HashSet<>();
 	for (Unit2 enemyUnit : sortedEnemyUnitList) {
-	    Log.trace("enemy unit 순서 : unit=%s, hp=%d", enemyUnit, enemyUnit.getHitPoints());
+//	    Log.trace("enemy unit 순서 : unit=%s, hp=%d", enemyUnit, enemyUnit.getHitPoints());
 	    List<Unit2> attackableAllianceUnitList = attackableUnitMap.get(enemyUnit);
 	    Collections.sort(attackableAllianceUnitList, comparatorByUnitDistance);
 	    int damage = 0;
 	    for (Unit2 allianceUnit : attackableAllianceUnitList) {
 		if (!attackFinishSet.contains(allianceUnit)) {
 		    if (enemyUnit.getHitPoints() - damage >= 0) {
-			Log.trace("\t공격 시도: 아균=%s, 적군=%s, 적군체력=%d, 아군 누적 예상 공격력=%d", allianceUnit, enemyUnit, enemyUnit.getHitPoints(), damage);
+//			Log.trace("\t공격 시도: 아균=%s, 적군=%s, 적군체력=%d, 아군 누적 예상 공격력=%d", allianceUnit, enemyUnit, enemyUnit.getHitPoints(), damage);
 			attackFinishSet.add(allianceUnit);
 			ActionUtil.attackEnemyUnit(allianceUnitInfo, allianceUnit, enemyUnit);
 			damage += UnitUtil.getDamage(allianceUnit, enemyUnit);

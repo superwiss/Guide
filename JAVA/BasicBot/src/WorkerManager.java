@@ -171,6 +171,17 @@ public class WorkerManager extends Manager {
 		    commandCenterWorksListMap.put(shortageCommand, workerList);
 		} else {
 		    Log.warn("커맨드 센터가 없습니다. 일꾼 ID: %s", worker);
+		    for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
+			if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 300).size() > 0) {
+			    if (!commandCenterWorksListMap.containsKey(commandCenter)) {
+				commandCenterWorksListMap.put(commandCenter, new LinkedList<>());
+			    }
+			    List<Unit2> workerList = commandCenterWorksListMap.get(commandCenter);
+			    workerList.add(worker);
+			    System.out.println(worker.getID());
+			    commandCenterWorksListMap.put(commandCenter, workerList);
+			}
+		    }
 		}
 	    }
 	}
@@ -182,18 +193,18 @@ public class WorkerManager extends Manager {
     public int checkMineralBalance(Unit2 commandCenter, int total_scv, int total_mineral) {
 
 	int mineralCount = allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size();
-	System.out.println("현재 미네랄 숫자 " + mineralCount);
+	//	System.out.println("현재 미네랄 숫자 " + mineralCount);
 	int scvCount = findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size();
-	System.out.println("현재 scv 숫자 " + scvCount);
-	System.out.println("토탈 scv 숫자 " + total_scv);
+	//	System.out.println("현재 scv 숫자 " + scvCount);
+	//	System.out.println("토탈 scv 숫자 " + total_scv);
 
 	double d = (mineralCount / (double) total_mineral);
-	System.out.println("d" + d);
+	//	System.out.println("d" + d);
 	int goodNum = (int) (total_scv * (d));
-	System.out.println("적정 숫자 " + goodNum);
+	//	System.out.println("적정 숫자 " + goodNum);
 
 	int result = scvCount - goodNum;
-	System.out.println("결과 값 " + result);
+	//	System.out.println("결과 값 " + result);
 	return result;
     }
 
@@ -204,15 +215,12 @@ public class WorkerManager extends Manager {
 	Set<Unit2> findUnitSet = new HashSet<>();
 	WorkerManager workerManager = gameStatus.getWorkerManager();
 
-	System.out.println(scvUnitSet.size());
-
 	for (Unit2 scv : scvUnitSet) {
 	    if (workerManager.isinterruptableWorker(scv)) {
 		findUnitSet.add(scv);
 	    }
 	}
 
-	System.out.println(findUnitSet.size());
 	return findUnitSet;
     }
 

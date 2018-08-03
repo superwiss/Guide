@@ -46,7 +46,7 @@ public class BuildManager extends Manager {
 	}
 
 	Iterator<BuildOrderItem> iterator = buildOrderItemList.iterator();
-	Log.info("%s BuildOrder Execute start. buildOrderSize=%d, Mieral=%d, Gas=%d", TAG, buildOrderItemList.size(), gameStatus.getMineral(), gameStatus.getGas());
+	//	Log.info("%s BuildOrder Execute start. buildOrderSize=%d, Mieral=%d, Gas=%d", TAG, buildOrderItemList.size(), gameStatus.getMineral(), gameStatus.getGas());
 	while (iterator.hasNext()) {
 	    BuildOrderItem buildOrderItem = iterator.next();
 
@@ -94,16 +94,16 @@ public class BuildManager extends Manager {
 	    }
 
 	    if (true == jobFinish) {
-		Log.trace("%s 빌드 오더 실행 완료: %s", TAG, buildOrderItem);
+		//		Log.trace("%s 빌드 오더 실행 완료: %s", TAG, buildOrderItem);
 		iterator.remove();
 	    } else if (true == buildOrderItem.isInProgress()) {
-		Log.trace("%s 빌드 오더 실행 중: %s", TAG, buildOrderItem);
+		//		Log.trace("%s 빌드 오더 실행 중: %s", TAG, buildOrderItem);
 	    } else {
-		Log.trace("%s 빌드 오더 Skip: %s", TAG, buildOrderItem);
+		//		Log.trace("%s 빌드 오더 Skip: %s", TAG, buildOrderItem);
 	    }
 
 	}
-	Log.info("%s BuildOrder Execute finish", TAG);
+	//	Log.info("%s BuildOrder Execute finish", TAG);
 
 	if (gameStatus.isMatchedInterval(1)) {
 	    rebalanceFactoryTrainingQueue();
@@ -360,7 +360,13 @@ public class BuildManager extends Manager {
     private boolean tryGatherGas(BuildOrderItem buildOrderItem) {
 	boolean result = false;
 
-	Unit2 refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
+	Unit2 refinery = null;
+	if (buildOrderItem.getTargetUnit() != null) {
+	    refinery = buildOrderItem.getTargetUnit();
+	} else {
+	    refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
+	}
+	
 	if (null != refinery && refinery.isCompleted()) {
 	    Unit2 workerForGatherGas = workerManager.getInterruptableWorker(refinery.getTilePosition());
 	    if (null != workerForGatherGas) {
