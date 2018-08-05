@@ -498,6 +498,11 @@ public class BuildManager extends Manager {
 			TilePosition checkTile = new TilePosition(tilePosition.getX() + 2, tilePosition.getY() + 1);
 			MyBotModule.Broodwar.drawCircleMap(checkTile.getX() * 32, checkTile.getY() * 32, 50, Color.Green);
 			for (Unit2 unit2 : allianceUnitInfo.findUnitSetNearTile(checkTile, UnitKind.ALL, 50)) {
+			    
+			    if (unit2.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+				unit2.unsiege();
+			    }
+			    
 			    if (unit2.getID() != worker.getID()) {
 				Position randomPosition = randomPosition(unit2.getPosition(), 1000);
 				ActionUtil.moveToPosition(allianceUnitInfo, unit2, randomPosition, 1000);
@@ -570,13 +575,18 @@ public class BuildManager extends Manager {
 	    } else {
 		result = locationManager.getBaseRefinery();
 	    }
-	} else if (UnitType.Terran_Factory.equals(buildingType) || UnitType.Terran_Starport.equals(buildingType) || UnitType.Terran_Science_Facility.equals(buildingType)) {
+	} else if (UnitType.Terran_Factory.equals(buildingType) || UnitType.Terran_Starport.equals(buildingType) || UnitType.Terran_Science_Facility.equals(buildingType)
+		|| UnitType.Terran_Engineering_Bay.equals(buildingType)) {
 	    result = locationManager.getTrainingBuildings();
-	} else if (UnitType.Terran_Supply_Depot.equals(buildingType)) {
-	    result = locationManager.get3by2SizeBuildings();
-	} else if (UnitType.Terran_Academy.equals(buildingType) || UnitType.Terran_Armory.equals(buildingType)) {
+	} else if (UnitType.Terran_Supply_Depot.equals(buildingType) || UnitType.Terran_Academy.equals(buildingType) || UnitType.Terran_Armory.equals(buildingType)) {
 	    result = locationManager.get3by2SizeBuildings();
 	} else if (UnitType.Terran_Bunker.equals(buildingType)) {
+	    if (buildOrderItem.getTilePosition() != null) {
+		result.add(buildOrderItem.getTilePosition());
+	    } else {
+		result = locationManager.getBaseEntranceBunker();
+	    }
+	} else if (UnitType.Terran_Missile_Turret.equals(buildingType)) {
 	    if (buildOrderItem.getTilePosition() != null) {
 		result.add(buildOrderItem.getTilePosition());
 	    } else {

@@ -155,6 +155,10 @@ public class WorkerManager extends Manager {
 		    if (!commandCenter.isCompleted()) {
 			continue;
 		    }
+		    
+		    if (commandCenter.isLifted()) {
+			continue;
+		    }
 
 		    int result2 = checkMineralBalance(commandCenter, total_scv, total_mineral);
 		    if (result2 <= 1) {

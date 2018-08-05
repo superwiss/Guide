@@ -79,6 +79,7 @@ public class StrategyManager extends Manager {
 	doSCVAutoTrain();
 	doAcademyJob();
 	doArmoryJob();
+	doEngineeringJob();
 	doEngineeringBayJob();
 	doMachineShopJob();
 
@@ -96,6 +97,7 @@ public class StrategyManager extends Manager {
 
 	useScienceVessel();
 	buildBunker();
+//	buildTurret();
 	doBlockEntrance();
 	//doFactoryRally();
 
@@ -164,6 +166,38 @@ public class StrategyManager extends Manager {
 	}
     }
 
+    private void buildTurret() {
+
+	if (buildManager.isInitialBuildFinished()) {
+
+	    for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+
+		//아군 본진의 경우 제외한다.
+		if (targetBaseLocation.getTilePosition().equals(locationManager.allianceBaseLocation)) {
+		    continue;
+		}
+
+		//앞마당도 제외한다.
+		if (targetBaseLocation.getTilePosition().equals(locationManager.getFirstExpansionLocation().get(0))) {
+		    continue;
+		}
+
+		//아군의 커맨드 센터가 지어져 있을 경우, 벙커를 건설한다.
+		if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 320).size() > 0) {
+
+		    if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Missile_Turret, 320).size() <= 4) {
+			if (0 == buildManager.getQueueSize()) {
+			    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Missile_Turret)) {
+				TilePosition goodPosition = needTurretPlace(targetBaseLocation.getTilePosition());
+				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Missile_Turret, goodPosition));
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
     private TilePosition needBuildPlace(TilePosition tilePosition) {
 
 	int currentX = tilePosition.getX();
@@ -175,6 +209,39 @@ public class StrategyManager extends Manager {
 
 	for (int x_position = 0; x_position < 2; x_position++) {
 	    for (int y_position = 0; y_position < 2; y_position++) {
+		if (currentX >= 0 && currentX < gameStatus.getMapWidth() && currentY >= 0 && currentY < gameStatus.getMapHeight()) {
+
+		    canBuildHere = canBuildHere(new TilePosition(currentX, currentY));
+
+		    if (canBuildHere == true) {
+			goodPosition = new TilePosition(currentX, currentY);
+			break;
+		    }
+		}
+		currentY = currentY + bunkerSizeY;
+	    }
+
+	    if (canBuildHere) {
+		break;
+	    }
+	    currentY = tilePosition.getY();
+	    currentX = currentX + bunkerSizeX;
+	}
+
+	return goodPosition;
+    }
+
+    private TilePosition needTurretPlace(TilePosition tilePosition) {
+
+	int currentX = tilePosition.getX() - 4;
+	int currentY = tilePosition.getY() - 4;
+	int bunkerSizeX = 2;
+	int bunkerSizeY = 2;
+	boolean canBuildHere = false;
+	TilePosition goodPosition = null;
+
+	for (int x_position = 0; x_position < 6; x_position++) {
+	    for (int y_position = 0; y_position < 6; y_position++) {
 		if (currentX >= 0 && currentX < gameStatus.getMapWidth() && currentY >= 0 && currentY < gameStatus.getMapHeight()) {
 
 		    canBuildHere = canBuildHere(new TilePosition(currentX, currentY));
@@ -294,6 +361,10 @@ public class StrategyManager extends Manager {
 			    }
 			}
 		    }
+		} else {
+		    if (!scienceFacility.isLifted()) {
+			scienceFacility.lift();
+		    }
 		}
 	    }
 	}
@@ -305,7 +376,7 @@ public class StrategyManager extends Manager {
 
 	    int completeCommand = 0;
 	    for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-		if (commandCenter.isCompleted()) {
+		if (commandCenter.isCompleted() && !commandCenter.isLifted()) {
 		    completeCommand++;
 		}
 	    }
@@ -812,6 +883,27 @@ public class StrategyManager extends Manager {
 	    }
 	}
     }
+    
+    // 엔지니어링 베이와 관련된 작업을 수행한다.
+    private void doEngineeringJob() {
+	// 1초에 한 번만 수행된다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+	Unit2 engineer = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Engineering_Bay);
+	if (null != engineer) {
+	    
+	    if (!engineer.isLifted()) {
+		engineer.lift();
+	    } 
+
+	} else {
+	    //아카데미가 지어져 있지 않을 경우 12000프레임 후에 건설한다.
+	    if (gameStatus.getMineral() > 125 && buildManager.getQueueSize() == 0) {
+		buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Engineering_Bay));
+	    }
+	}
+    }
 
     // 아머리와 관련된 작업을 수행한다.
     private void doArmoryJob() {
@@ -1013,6 +1105,10 @@ public class StrategyManager extends Manager {
     //본진에 건설된 커맨드 센터를 멀티로 이동시키는 메소드
     private void liftCommandJob() {
 
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+	
 	//멀티가 지어져 있지 않은 상황
 	if (hasStrategyItem(StrategyItem.AUTO_LIFT_COMMAND_CENTER) && multiCount <= 2) {
 
@@ -1043,6 +1139,8 @@ public class StrategyManager extends Manager {
 			}
 		    } else {
 			//떠있을 경우 멀티 위치에 착지시킨다.
+			System.out.println("착지");
+			System.out.println(firstExpansionLocation.getX() + " " + firstExpansionLocation.getY());
 			firstExpansionCommandCenter.land(new TilePosition(firstExpansionLocation.getX(), firstExpansionLocation.getY()));
 		    }
 		}

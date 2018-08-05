@@ -275,16 +275,6 @@ public abstract class LocationManager extends Manager implements MapInfo {
 
 	    //아군 본진의 경우 제외한다.
 	    if (targetBaseLocation.getTilePosition().equals(allianceBaseLocation)) {
-		//		Set<Unit2> com = allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 200);
-		//		for (Unit2 unit2 : com) {
-
-		//		    for(Unit2 command : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
-		//			System.out.println(unit2.getID() + " " + command.getID() + "커맨드 센터 본진과 타겟과의 거리" + unit2.getDistance(command.getPosition()));
-		//		    }
-		//		    for (BaseLocation targetBaseLocation2 : BWTA.getBaseLocations()) {
-
-		//		    }
-		//		}
 		continue;
 	    }
 
