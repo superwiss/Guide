@@ -70,13 +70,13 @@ public class StrategyDefense extends StrategyBase {
 		}
 	    }
 	} else if (supplyUsed >= 62) {
-//	} else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() > 6) {
-	    	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
-	    	    strategyManager.setAttackTilePosition(attackTilePosition);
-	    	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-	    	    strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
-	    	    Log.info("총 공격을 간다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
-	} 
+	    //	} else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() > 6) {
+	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+	    strategyManager.setAttackTilePosition(attackTilePosition);
+	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+	    Log.info("총 공격을 간다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
+	}
     }
 
     @Override
@@ -169,7 +169,7 @@ public class StrategyDefense extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_ADDON_MACHINE_SHOP);
 	strategyItems.add(StrategyItem.AUTO_BUILD_EXPANSION);
 	strategyItems.add(StrategyItem.AUTO_BUILD_TURRET);
-	
+
 	strategyItems.add(StrategyItem.AUTO_UPGRADE_MECHANIC_UNIT);
 	strategyItems.add(StrategyItem.AUTO_TRAIN_MECHANIC_UNIT);
 
@@ -180,7 +180,6 @@ public class StrategyDefense extends StrategyBase {
 	strategyItems.add(StrategyItem.ALLOW_PHASE);
 
 	strategyItems.add(StrategyItem.USE_SCIENCE_VESSEL);
-	
 
 	//마이크로 매니저를 통해 위치를 지정하기 때문에 렐리포인트는 더이상 사용하지 않는다.
 	//strategyItems.add(StrategyItem.SET_FACTORY_RALLY);

@@ -161,6 +161,21 @@ public class StrategyManager extends Manager {
 			    }
 			}
 		    }
+
+		    if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Missile_Turret, 320).size() < 2) {
+
+			Unit2 bunker = null;
+			for (Unit2 bunkers : allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Bunker, 300)) {
+			    bunker = bunkers;
+			}
+
+			if (0 == buildManager.getQueueSize() && bunker != null) {
+			    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Missile_Turret)) {
+				TilePosition goodPosition = needTurretPlace(bunker.getTilePosition());
+				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Missile_Turret, goodPosition));
+			    }
+			}
+		    }
 		}
 	    }
 	}
@@ -221,31 +236,25 @@ public class StrategyManager extends Manager {
 
     private TilePosition needTurretPlace(TilePosition tilePosition) {
 
-	int currentX = tilePosition.getX() - 4;
-	int currentY = tilePosition.getY() - 4;
-	int bunkerSizeX = 2;
-	int bunkerSizeY = 2;
+	int currentX = tilePosition.getX() - 2;
+	int currentY = tilePosition.getY();
+	int bunkerSizeX = 6;
 	boolean canBuildHere = false;
 	TilePosition goodPosition = null;
 
 	for (int x_position = 0; x_position < 6; x_position++) {
-	    for (int y_position = 0; y_position < 6; y_position++) {
-		if (currentX >= 0 && currentX < gameStatus.getMapWidth() && currentY >= 0 && currentY < gameStatus.getMapHeight()) {
 
-		    canBuildHere = canBuildHere(new TilePosition(currentX, currentY));
-
-		    if (canBuildHere == true) {
-			goodPosition = new TilePosition(currentX, currentY);
-			break;
-		    }
+	    if (currentX >= 0 && currentX < gameStatus.getMapWidth() && currentY >= 0 && currentY < gameStatus.getMapHeight()) {
+		canBuildHere = canBuildHere(new TilePosition(currentX, currentY));
+		if (canBuildHere == true) {
+		    goodPosition = new TilePosition(currentX, currentY);
+		    break;
 		}
-		currentY = currentY + bunkerSizeY;
 	    }
 
 	    if (canBuildHere) {
 		break;
 	    }
-	    currentY = tilePosition.getY();
 	    currentX = currentX + bunkerSizeX;
 	}
 

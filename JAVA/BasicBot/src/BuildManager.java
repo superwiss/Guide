@@ -495,20 +495,20 @@ public class BuildManager extends Manager {
 		    } else {
 
 			//데드락 확인용 원 그리기
-			TilePosition checkTile = new TilePosition(tilePosition.getX() + 2, tilePosition.getY() + 1);
-			MyBotModule.Broodwar.drawCircleMap(checkTile.getX() * 32, checkTile.getY() * 32, 50, Color.Green);
-			for (Unit2 unit2 : allianceUnitInfo.findUnitSetNearTile(checkTile, UnitKind.ALL, 50)) {
-			    
-			    if (unit2.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
-				unit2.unsiege();
-			    }
-			    
-			    if (unit2.getID() != worker.getID()) {
-				Position randomPosition = randomPosition(unit2.getPosition(), 1000);
-				ActionUtil.moveToPosition(allianceUnitInfo, unit2, randomPosition, 1000);
-			    }
-
-			}
+//			TilePosition checkTile = new TilePosition(tilePosition.getX() + 2, tilePosition.getY() + 1);
+//			MyBotModule.Broodwar.drawCircleMap(checkTile.getX() * 32, checkTile.getY() * 32, 50, Color.Green);
+//			for (Unit2 unit2 : allianceUnitInfo.findUnitSetNearTile(checkTile, UnitKind.ALL, 50)) {
+//			    
+//			    if (unit2.getType() == UnitType.Terran_Siege_Tank_Siege_Mode) {
+//				unit2.unsiege();
+//			    }
+//			    
+//			    if (unit2.getID() != worker.getID()) {
+//				Position randomPosition = randomPosition(unit2.getPosition(), 1000);
+//				ActionUtil.moveToPosition(allianceUnitInfo, unit2, randomPosition, 1000);
+//			    }
+//
+//			}
 			// 건설할 수 없는 상태라면, 어느 정도 타이밍에 일꾼이 건설할 위치로 미리 이동해야 할지 컨트롤 한다.
 			// 이미 건물을 짓기 위해서 이동 중이라면 아무것도 하지 않고 skip 한다.
 
