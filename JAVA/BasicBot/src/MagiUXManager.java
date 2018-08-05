@@ -57,12 +57,12 @@ public class MagiUXManager extends Manager {
 	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Bunker, "Bunker");
 
 	//터렛 건설 위치
-//	tilePositionList = locationManager.getBaseTurret();
-//	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "Turret");
+	tilePositionList = locationManager.getBaseTurret();
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "Turret");
 
 	//확장 터렛 건설 위치
-//	tilePositionList = locationManager.getFirstExpansionTurret();
-//	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "ExTurret");
+	tilePositionList = locationManager.getFirstExpansionTurret();
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "ExTurret");
 
 	//확장 기지 위치
 	tilePositionList = locationManager.getFirstExpansionLocation();

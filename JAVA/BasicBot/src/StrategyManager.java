@@ -97,7 +97,7 @@ public class StrategyManager extends Manager {
 
 	useScienceVessel();
 	buildBunker();
-//	buildTurret();
+	buildTurret();
 	doBlockEntrance();
 	//doFactoryRally();
 
@@ -168,30 +168,18 @@ public class StrategyManager extends Manager {
 
     private void buildTurret() {
 
-	if (buildManager.isInitialBuildFinished()) {
+	if (hasStrategyItem(StrategyItem.AUTO_BUILD_TURRET) && buildManager.isInitialBuildFinished()) {
 
-	    for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+	    int maxTurret = 10;
+	    Unit2 engineer = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Engineering_Bay);
 
-		//아군 본진의 경우 제외한다.
-		if (targetBaseLocation.getTilePosition().equals(locationManager.allianceBaseLocation)) {
-		    continue;
-		}
-
-		//앞마당도 제외한다.
-		if (targetBaseLocation.getTilePosition().equals(locationManager.getFirstExpansionLocation().get(0))) {
-		    continue;
-		}
-
-		//아군의 커맨드 센터가 지어져 있을 경우, 벙커를 건설한다.
-		if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 320).size() > 0) {
-
-		    if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Missile_Turret, 320).size() <= 4) {
-			if (0 == buildManager.getQueueSize()) {
-			    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Missile_Turret)) {
-				TilePosition goodPosition = needTurretPlace(targetBaseLocation.getTilePosition());
-				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Missile_Turret, goodPosition));
-			    }
-			}
+	    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Missile_Turret).size() < maxTurret && engineer != null) {
+		if (gameStatus.getMineral() > 200 && 0 == buildManager.getQueueSize()) {
+		    if (4 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Missile_Turret).size()) {
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Missile_Turret));
+		    } else if (10 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() && multiCount > 2 && gameStatus.getMineral() > 400) {
+			//팩토리가 3개 지어지고 난 후 부터는 멀티가 있을 때 팩토리를 건설한다.
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Missile_Turret));
 		    }
 		}
 	    }
@@ -841,8 +829,11 @@ public class StrategyManager extends Manager {
 		    if (scvCount < maxscv && scvCount < maxworkerCount) {
 			Unit2 commandCenter = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Command_Center, UnitType.Terran_SCV);
 			if (null != commandCenter) {
-			    Log.info("SCV 생산. SCV 수: %d,", scvCount);
-			    commandCenter.train(UnitType.Terran_SCV);
+			    if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size() > 4
+				    && allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Vespene_Geyser, 300).size() > 0) {
+				Log.info("SCV 생산. SCV 수: %d,", scvCount);
+				commandCenter.train(UnitType.Terran_SCV);
+			    }
 			}
 		    }
 		}
@@ -883,7 +874,7 @@ public class StrategyManager extends Manager {
 	    }
 	}
     }
-    
+
     // 엔지니어링 베이와 관련된 작업을 수행한다.
     private void doEngineeringJob() {
 	// 1초에 한 번만 수행된다.
@@ -892,10 +883,10 @@ public class StrategyManager extends Manager {
 	}
 	Unit2 engineer = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Engineering_Bay);
 	if (null != engineer) {
-	    
+
 	    if (!engineer.isLifted()) {
 		engineer.lift();
-	    } 
+	    }
 
 	} else {
 	    //아카데미가 지어져 있지 않을 경우 12000프레임 후에 건설한다.
@@ -1108,7 +1099,7 @@ public class StrategyManager extends Manager {
 	if (!gameStatus.isMatchedInterval(1)) {
 	    return;
 	}
-	
+
 	//멀티가 지어져 있지 않은 상황
 	if (hasStrategyItem(StrategyItem.AUTO_LIFT_COMMAND_CENTER) && multiCount <= 2) {
 

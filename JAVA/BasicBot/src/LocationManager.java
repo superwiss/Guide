@@ -49,6 +49,10 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	if (1 == gameStatus.getFrameCount()) {
 	    init(gameStatus.getAllianceUnitInfo().getAnyUnit(UnitKind.Terran_Command_Center));
 	}
+	
+//	baseTurrets = initBaseTurret();
+//	firstExpansionTurrets = initFirstExpansionTurret();
+//	size3by2Buildings = init3by2SizeBuildings();
     }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.

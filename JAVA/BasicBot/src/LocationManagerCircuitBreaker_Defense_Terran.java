@@ -93,10 +93,10 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    // 7시
 	    result.add(new TilePosition(0, 107));
 	    result.add(new TilePosition(7, 105));
-	    result.add(new TilePosition(14, 105));
+	    result.add(new TilePosition(14, 109));
 	    result.add(new TilePosition(7, 109));
 	    result.add(new TilePosition(0, 111));
-	    result.add(new TilePosition(14, 109));
+	    result.add(new TilePosition(14, 105));
 	    result.add(new TilePosition(14, 113));
 	    result.add(new TilePosition(14, 117));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
@@ -217,35 +217,31 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    result.add(new TilePosition(125, 100));
 	    result.add(new TilePosition(122, 102));
 	    result.add(new TilePosition(120, 125));
-	    result.add(new TilePosition(120, 123));
-
 	    result.add(new TilePosition(117, 125));
-	    result.add(new TilePosition(117, 123));
 	    result.add(new TilePosition(114, 125));
-	    result.add(new TilePosition(114, 123));
 	    result.add(new TilePosition(111, 125));
-
-	    result.add(new TilePosition(111, 123));
 	    result.add(new TilePosition(108, 125));
-	    result.add(new TilePosition(108, 123));
 	    result.add(new TilePosition(105, 125));
-	    result.add(new TilePosition(105, 123));
-
 	    result.add(new TilePosition(102, 125));
-	    result.add(new TilePosition(102, 123));
 	    result.add(new TilePosition(99, 125));
-	    result.add(new TilePosition(99, 123));
 	    result.add(new TilePosition(96, 125));
 
+	    result.add(new TilePosition(99, 123));
+	    result.add(new TilePosition(102, 123));
+	    result.add(new TilePosition(105, 123));
+	    result.add(new TilePosition(108, 123));
+	    result.add(new TilePosition(111, 123));
+	    result.add(new TilePosition(114, 123));
+	    result.add(new TilePosition(117, 123));
+	    
 	    result.add(new TilePosition(111, 121));
+	    result.add(new TilePosition(108, 121));
+	    result.add(new TilePosition(105, 121));
+	    result.add(new TilePosition(102, 121));
+	    
 	    result.add(new TilePosition(111, 119));
 	    result.add(new TilePosition(108, 119));
 	    result.add(new TilePosition(105, 119));
-	    
-	    result.add(new TilePosition(108, 121));
-	    result.add(new TilePosition(105, 121));
-
-	    result.add(new TilePosition(102, 121));
 	    result.add(new TilePosition(121, 113));
 	    result.add(new TilePosition(124, 113));
 
@@ -350,52 +346,129 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result.add(new TilePosition(117, 5));
-	    result.add(new TilePosition(120, 12));
-	    result.add(new TilePosition(120, 14));
-	    result.add(new TilePosition(106, 13));
-	    result.add(new TilePosition(106, 15));
-	    result.add(new TilePosition(94, 3));
-	    result.add(new TilePosition(120, 24));
-	    result.add(new TilePosition(117, 22));
+	    result.add(new TilePosition(114, 37));
+	    result.add(new TilePosition(114, 11));
+	    result.add(new TilePosition(116, 22));
+	    result.add(new TilePosition(109, 22));
+	    result.add(new TilePosition(119, 12));
+
+	    result.add(new TilePosition(121, 42));
+	    result.add(new TilePosition(104, 14));
+	    result.add(new TilePosition(104, 7));
+	    result.add(new TilePosition(117, 42));
+	    result.add(new TilePosition(125, 33));
+
+	    result.add(new TilePosition(114, 4));
+	    result.add(new TilePosition(104, 12));
+	    result.add(new TilePosition(121, 33));
+	    result.add(new TilePosition(110, 28));
 
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result.add(new TilePosition(116, 120));
-	    result.add(new TilePosition(115, 115));
-	    result.add(new TilePosition(110, 102));
-	    result.add(new TilePosition(112, 102));
-	    result.add(new TilePosition(118, 120));
-	    result.add(new TilePosition(117, 115));
+	    result.add(new TilePosition(115, 116));
+	    result.add(new TilePosition(112, 90));
+	    result.add(new TilePosition(112, 103));
+	    result.add(new TilePosition(115, 119));
+	    result.add(new TilePosition(123, 86));
+
+	    result.add(new TilePosition(104, 110));
+	    result.add(new TilePosition(110, 103));
+	    result.add(new TilePosition(112, 86));
+	    result.add(new TilePosition(115, 91));
+	    result.add(new TilePosition(97, 123));
+
+	    result.add(new TilePosition(125, 102));
+	    result.add(new TilePosition(124, 94));
+	    result.add(new TilePosition(115, 93));
+	    result.add(new TilePosition(125, 87));
 
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 
 	    // 7시 9개
-	    result.add(new TilePosition(22, 113));
-	    result.add(new TilePosition(7, 119));
-	    result.add(new TilePosition(7, 109));
-	    result.add(new TilePosition(31, 122));
-	    result.add(new TilePosition(7, 107));
-	    result.add(new TilePosition(7, 121));
-	    result.add(new TilePosition(22, 111));
-	    result.add(new TilePosition(6, 99));
-	    result.add(new TilePosition(12, 101));
+	    result.add(new TilePosition(13, 91));
+	    result.add(new TilePosition(11, 103));
+	    result.add(new TilePosition(9, 121));
+	    result.add(new TilePosition(11, 117));
+	    result.add(new TilePosition(9, 85));
+
+	    result.add(new TilePosition(17, 103));
+	    result.add(new TilePosition(20, 109));
+	    result.add(new TilePosition(3, 86));
+	    result.add(new TilePosition(2, 114));
+	    result.add(new TilePosition(18, 119));
+	    result.add(new TilePosition(1, 94));
+	    result.add(new TilePosition(16, 98));
+	    result.add(new TilePosition(14, 85));
 
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 
-	    // 11시 11개
-	    result.add(new TilePosition(13, 25));
-	    result.add(new TilePosition(7, 4));
-	    result.add(new TilePosition(10, 9));
-	    result.add(new TilePosition(2, 30));
-	    result.add(new TilePosition(11, 5));
-	    result.add(new TilePosition(15, 20));
-	    result.add(new TilePosition(15, 22));
-	    result.add(new TilePosition(8, 9));
-	    result.add(new TilePosition(23, 0));
-	    result.add(new TilePosition(23, 8));
-	    result.add(new TilePosition(23, 10));
+	    //11시
+	    result.add(new TilePosition(15, 32));
+	    result.add(new TilePosition(13, 23));
+	    result.add(new TilePosition(11, 8));
+	    result.add(new TilePosition(15, 23));
+	    result.add(new TilePosition(9, 12));
 
+	    result.add(new TilePosition(8, 42));
+	    result.add(new TilePosition(6, 42));
+	    result.add(new TilePosition(22, 9));
+	    result.add(new TilePosition(22, 11));
+	    result.add(new TilePosition(27, 2));
+	    result.add(new TilePosition(0, 6));
+
+	    result.add(new TilePosition(13, 38));
+
+	    result.add(new TilePosition(2, 32));
+
+	    result.add(new TilePosition(15, 36));
+
+	}
+
+	return result;
+    }
+
+    // 첫번째 확장에 위치한 터렛의 위치를 설정한다.
+    @Override
+    public List<TilePosition> initFirstExpansionTurret() {
+
+	List<TilePosition> result = new ArrayList<>();
+
+	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+	    // 1시
+	    //	    result.add(new TilePosition(112, 39));
+	    //	    result.add(new TilePosition(121, 42));
+	    //	    result.add(new TilePosition(125, 33));
+	    //	    result.add(new TilePosition(117, 42));
+	    //	    result.add(new TilePosition(121, 33));
+	    //	    result.add(new TilePosition(110, 28));
+
+	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+	    // 5시
+	    //	    result.add(new TilePosition(112, 90));
+	    //	    result.add(new TilePosition(123, 86));
+	    //	    result.add(new TilePosition(112, 86));
+	    //	    result.add(new TilePosition(124, 94));
+	    //	    result.add(new TilePosition(115, 91));
+	    //	    result.add(new TilePosition(115, 93));
+	    //	    result.add(new TilePosition(125, 87));
+
+	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+	    // 7시
+	    //	    result.add(new TilePosition(11, 91));
+	    //	    result.add(new TilePosition(9, 85));
+	    //	    result.add(new TilePosition(3, 86));
+	    //	    result.add(new TilePosition(1, 94));
+	    //	    result.add(new TilePosition(16, 98));
+	    //	    result.add(new TilePosition(14, 85));
+
+	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+	    // 11시
+	    //	    result.add(new TilePosition(15, 32));
+	    //	    result.add(new TilePosition(13, 38));
+	    //	    result.add(new TilePosition(6, 42));
+	    //	    result.add(new TilePosition(2, 32));
+	    //	    result.add(new TilePosition(8, 42));
+	    //	    result.add(new TilePosition(15, 36));
 	}
 
 	return result;
@@ -414,7 +487,7 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    result = new TilePosition(117, 103);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result = new TilePosition(5, 105);
+	    result = new TilePosition(6, 105);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
 	    result = new TilePosition(11, 24);
@@ -603,46 +676,6 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 		    result = new TilePosition(40, 79); //ok!!
 		}
 	    }
-	}
-
-	return result;
-    }
-
-    // 첫번째 확장에 위치한 터렛의 위치를 설정한다.
-    @Override
-    public List<TilePosition> initFirstExpansionTurret() {
-
-	List<TilePosition> result = new ArrayList<>();
-
-	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
-	    // 1시
-	    result.add(new TilePosition(86, 10));
-	    result.add(new TilePosition(88, 16));
-	    result.add(new TilePosition(86, 16));
-	    result.add(new TilePosition(90, 10));
-
-	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
-	    // 5시
-	    result.add(new TilePosition(114, 86));
-	    result.add(new TilePosition(117, 93));
-	    result.add(new TilePosition(112, 86));
-	    result.add(new TilePosition(115, 92));
-	    result.add(new TilePosition(110, 86));
-
-	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
-	    // 7시
-	    result.add(new TilePosition(36, 116));
-	    result.add(new TilePosition(41, 110));
-	    result.add(new TilePosition(40, 116));
-	    result.add(new TilePosition(37, 110));
-	    result.add(new TilePosition(39, 110));
-
-	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
-	    // 11시
-	    result.add(new TilePosition(14, 36));
-	    result.add(new TilePosition(12, 42));
-	    result.add(new TilePosition(12, 36));
-	    result.add(new TilePosition(14, 41));
 	}
 
 	return result;

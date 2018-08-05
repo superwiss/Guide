@@ -168,7 +168,8 @@ public class StrategyDefense extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_BUILD_TWO_ARMORY);
 	strategyItems.add(StrategyItem.AUTO_ADDON_MACHINE_SHOP);
 	strategyItems.add(StrategyItem.AUTO_BUILD_EXPANSION);
-
+	strategyItems.add(StrategyItem.AUTO_BUILD_TURRET);
+	
 	strategyItems.add(StrategyItem.AUTO_UPGRADE_MECHANIC_UNIT);
 	strategyItems.add(StrategyItem.AUTO_TRAIN_MECHANIC_UNIT);
 
@@ -179,6 +180,7 @@ public class StrategyDefense extends StrategyBase {
 	strategyItems.add(StrategyItem.ALLOW_PHASE);
 
 	strategyItems.add(StrategyItem.USE_SCIENCE_VESSEL);
+	
 
 	//마이크로 매니저를 통해 위치를 지정하기 때문에 렐리포인트는 더이상 사용하지 않는다.
 	//strategyItems.add(StrategyItem.SET_FACTORY_RALLY);

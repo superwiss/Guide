@@ -590,7 +590,7 @@ public class BuildManager extends Manager {
 	    if (buildOrderItem.getTilePosition() != null) {
 		result.add(buildOrderItem.getTilePosition());
 	    } else {
-		result = locationManager.getBaseEntranceBunker();
+		result = locationManager.getBaseTurret();
 	    }
 	} else if (UnitType.Terran_Command_Center.equals(buildingType)) {
 	    if (buildOrderItem.getTilePosition() != null) {
