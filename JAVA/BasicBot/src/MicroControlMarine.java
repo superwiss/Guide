@@ -59,7 +59,7 @@ public class MicroControlMarine extends Manager {
 	}
 
 	aggressiveMoveAttack();
-//	fullyAttack();
+	fullyAttack();
     }
 
     private void followPhase() {
@@ -81,7 +81,10 @@ public class MicroControlMarine extends Manager {
 		    ActionUtil.attackPosition(allianceUnitInfo, marine, locationManager.getSecondExtensionChokePoint().toPosition());
 		} else if (strategyManager.getPhase() == 2) {
 		    ActionUtil.attackPosition(allianceUnitInfo, marine, locationManager.getTwoPhaseChokePoint().toPosition());
+		} else if (strategyManager.getPhase() == 3) {
+		    ActionUtil.attackPosition(allianceUnitInfo, marine, locationManager.getThreePhaseChokePointForMech().toPosition());
 		}
+
 	    }
 	}
     }

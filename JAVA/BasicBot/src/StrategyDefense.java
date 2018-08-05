@@ -70,7 +70,6 @@ public class StrategyDefense extends StrategyBase {
 		}
 	    }
 	} else if (supplyUsed >= 62) {
-	    //	} else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() > 6) {
 	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
 	    strategyManager.setAttackTilePosition(attackTilePosition);
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
@@ -180,6 +179,7 @@ public class StrategyDefense extends StrategyBase {
 	strategyItems.add(StrategyItem.ALLOW_PHASE);
 
 	strategyItems.add(StrategyItem.USE_SCIENCE_VESSEL);
+	strategyItems.add(StrategyItem.AUTO_DEFENCE_MULTI);
 
 	//마이크로 매니저를 통해 위치를 지정하기 때문에 렐리포인트는 더이상 사용하지 않는다.
 	//strategyItems.add(StrategyItem.SET_FACTORY_RALLY);

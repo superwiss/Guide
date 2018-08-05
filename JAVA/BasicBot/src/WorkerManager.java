@@ -148,7 +148,7 @@ public class WorkerManager extends Manager {
 		Unit2 shortageCommand = null;
 		for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
 
-		    if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 300).size() == 0) {
+		    if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 340).size() == 0) {
 			continue;
 		    }
 

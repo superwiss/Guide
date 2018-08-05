@@ -96,7 +96,7 @@ public class StrategyManager extends Manager {
 	doRebalance();
 
 	useScienceVessel();
-	buildBunker();
+	doDefenceMulti();
 	buildTurret();
 	doBlockEntrance();
 	//doFactoryRally();
@@ -134,9 +134,9 @@ public class StrategyManager extends Manager {
 
     }
 
-    private void buildBunker() {
+    private void doDefenceMulti() {
 
-	if (buildManager.isInitialBuildFinished()) {
+	if (buildManager.isInitialBuildFinished() && hasStrategyItem(StrategyItem.AUTO_DEFENCE_MULTI)) {
 
 	    for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
 
@@ -147,6 +147,11 @@ public class StrategyManager extends Manager {
 
 		//앞마당도 제외한다.
 		if (targetBaseLocation.getTilePosition().equals(locationManager.getFirstExpansionLocation().get(0))) {
+		    continue;
+		}
+
+		//미네랄이 없는 멀티는 제외한다.
+		if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Resource_Mineral_Field, 320).size() == 0) {
 		    continue;
 		}
 
@@ -173,6 +178,18 @@ public class StrategyManager extends Manager {
 			    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Missile_Turret)) {
 				TilePosition goodPosition = needTurretPlace(bunker.getTilePosition());
 				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Missile_Turret, goodPosition));
+			    }
+			}
+		    }
+
+		    //확장 주변의 건물을 수리한다.
+		    Set<Unit2> buildingSet = allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Building, 320);
+		    for (Unit2 buidling : buildingSet) {
+			if (gameStatus.getMineral() > 0) {
+			    if (buidling.getType().maxHitPoints() > buidling.getHitPoints()) {
+				repairBunker(allianceUnitInfo, buidling);
+			    } else {
+				repairCount = 3;
 			    }
 			}
 		    }
@@ -587,8 +604,10 @@ public class StrategyManager extends Manager {
 		//다음확장이 발견되어 있지 않다면 스캔을 뿌려본다.
 		if (allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Comsat_Station).size() > 0) {
 		    TilePosition nextExpansionPoint = locationManager.getNextExpansionPoint();
-		    if (!gameStatus.isExplored(nextExpansionPoint)) {
-			allianceUnitInfo.doScan(nextExpansionPoint.toPosition());
+		    if (nextExpansionPoint != null) {
+			if (!gameStatus.isExplored(nextExpansionPoint)) {
+			    allianceUnitInfo.doScan(nextExpansionPoint.toPosition());
+			}
 		    }
 		}
 
@@ -1004,7 +1023,18 @@ public class StrategyManager extends Manager {
 	    return;
 	}
 	Set<Unit2> bunkerSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Bunker);
+	int bunkerCount = 0;
 	for (Unit2 bunker : bunkerSet) {
+
+	    //주변에 미네랄이 없는 벙커는 수리하거나 마린을 넣지 않는다.
+	    if (allianceUnitInfo.findUnitSetNearTile(bunker.getTilePosition(), UnitKind.Resource_Mineral_Field, 400).size() == 0) {
+		//미네랄을 다 캔 지역의 마린을 벙커에서 꺼낸다.
+		bunker.unloadAll();
+		continue;
+	    }
+
+	    bunkerCount++;
+
 	    if (hasStrategyItem(StrategyItem.AUTO_LOAD_MARINE_TO_BUNKER)) {
 		if (0 < bunker.getSpaceRemaining()) {
 		    marineToBunker(allianceUnitInfo, bunker);
@@ -1013,6 +1043,7 @@ public class StrategyManager extends Manager {
 		}
 	    }
 	    if (hasStrategyItem(StrategyItem.AUTO_REPAIR_BUNKER)) {
+
 		if (gameStatus.getMineral() > 0) {
 		    if (UnitType.Terran_Bunker.maxHitPoints() > bunker.getHitPoints()) {
 			repairBunker(allianceUnitInfo, bunker);
@@ -1023,12 +1054,13 @@ public class StrategyManager extends Manager {
 	    }
 	}
 
+	System.out.println(bunkerCount + "        qewqpikwejoiqwjeoiqjweoijqwoiejqwoiejqoiwejioqwjeoiqjweioqjweiojqwioe");
+
 	//건설된 벙커 수만큼 마린을 생산한다
 	Unit2 barracks = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
 	if (null != barracks) {
 	    Set<Unit2> marineSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Marine);
 	    int marineCount = marineSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Barracks, UnitType.Terran_Marine);
-	    int bunkerCount = allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Bunker).size();
 	    Log.info("마린 생산. 마린 수: %d, 벙커 수: %d", marineCount, bunkerCount);
 	    if (bunkerCount * 4 > marineCount) {
 		barracks.train(UnitType.Terran_Marine);

@@ -38,5 +38,7 @@ public enum StrategyItem {
     USE_SCIENCE_VESSEL,
 
     AUTO_BUILD_TURRET, //자동으로 터렛을 건설한다.
+    AUTO_DEFENCE_MULTI, // 자동으로 멀티를 방어한다.
     AUTO_BUILD_EXPANSION // 자동으로 확장을 건설한다.
+    
 }
