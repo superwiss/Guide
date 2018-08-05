@@ -589,7 +589,6 @@ public class UnitUtil {
     }
     
     private static void checkIfAntiVesselUnit(Set<UnitKind> unitKindSet, String strUnitType) {
-	
 	switch (strUnitType) {
 	case "Terran_Marine":
 	case "Terran_Ghost":
@@ -608,6 +607,7 @@ public class UnitUtil {
 	case "Protoss_Dragoon":
 	case "Protoss_Corsair":
 	case "Protoss_Scout":
+	case "Protoss_Archon":
 	case "Protoss_Photon_Cannon":
 	    
 	    unitKindSet.add(UnitKind.AntiVessel_Unit);

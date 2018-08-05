@@ -455,7 +455,6 @@ public class StrategyManager extends Manager {
 
 		}
 
-		System.out.println("??????????");
 		//대상 커맨드 센터에 할당된 가스 일꾼이 3기 미만일 경우,
 		Set<Unit2> gasScv = allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Worker_Gather_Gas, 320);
 		if (gasScv.size() > 3) {
@@ -491,10 +490,8 @@ public class StrategyManager extends Manager {
 	    //현재 확장 갯수를 업데이트 한다
 	    for (Unit2 commandCenter : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center)) {
 		//커맨드 센터 주변에 미네랄이 6개 이상 있을 경우 운영중인 확장이라고 생각한다.
-		System.out.println("전체 커맨드 " + commandCenter.getID());
 		if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 400).size() > 6) {
 		    if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Vespene_Geyser, 400).size() > 0) {
-			System.out.println(commandCenter.getID());
 			currentMultiCount++;
 		    }
 		}
@@ -566,9 +563,6 @@ public class StrategyManager extends Manager {
 		}
 	    }
 
-	    System.out.println("토탈 scv " + total_scv);
-	    System.out.println("총 미네랄 " + total_mineral);
-
 	    //각 커맨드 센터의 일꾼 부족 현황을 가져온다.
 	    for (Unit2 commandCenter : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
 
@@ -580,7 +574,6 @@ public class StrategyManager extends Manager {
 
 		    //이미 적정 숫자의 일꾼이 있는 커맨드 센터 제외
 		    if (workerManager.findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size() > 10) {
-			System.out.println("밸런스를 맞출 필요가 없습니다.");
 			continue;
 		    }
 
@@ -615,15 +608,12 @@ public class StrategyManager extends Manager {
 			    scvCandidate = workerManager.findMineralWorkerSetNear(enoughCommand, UnitKind.Terran_SCV, 500);
 			}
 
-			System.out.println("여유량" + scvCandidate.size());
 			//부족한 숫자만큼 scv를 stop시켜 다른 커맨드 센터에 할당되게 한다.
 			if (Math.abs(result) > 4) {
 			    result = 4;
 			}
 			int seq = 0;
 			for (Unit2 scv : scvCandidate) {
-			    //			    scv.stop();
-			    System.out.println("아이디" + scv.getID());
 			    ActionUtil.stop(allianceUnitInfo, scv);
 			    seq++;
 			    if (seq == Math.abs(result)) {
@@ -1024,7 +1014,7 @@ public class StrategyManager extends Manager {
     private void liftCommandJob() {
 
 	//멀티가 지어져 있지 않은 상황
-	if (hasStrategyItem(StrategyItem.AUTO_LIFT_COMMAND_CENTER) && multiCount == 1) {
+	if (hasStrategyItem(StrategyItem.AUTO_LIFT_COMMAND_CENTER) && multiCount <= 2) {
 
 	    Set<Unit2> commandCenterUnitSet = allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center);
 
@@ -1332,7 +1322,6 @@ public class StrategyManager extends Manager {
 			ActionUtil.attackPosition(allianceUnitInfo, allianceUnit, defencePosition);
 		    }
 		}
-
 	    }
 	}
 
@@ -1350,7 +1339,6 @@ public class StrategyManager extends Manager {
 
 	    Position defencePosition = enemyUnitSet.iterator().next().getPosition();
 	    Set<Unit2> defenceAllianceUnitSet = allianceUnitInfo.getUnitsInRange(chokePoint.toPosition(), UnitKind.Combat_Unit, 600);
-	    System.out.println("근처의 적 유닛 " + enemyUnitSet);
 
 	    for (Unit2 defenceAllianceUnit : defenceAllianceUnitSet) {
 		ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, defencePosition);

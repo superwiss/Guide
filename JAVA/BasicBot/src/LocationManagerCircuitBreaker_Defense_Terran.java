@@ -237,8 +237,11 @@ public class LocationManagerCircuitBreaker_Defense_Terran extends LocationManage
 	    result.add(new TilePosition(99, 123));
 	    result.add(new TilePosition(96, 125));
 
-	    result.add(new TilePosition(114, 121));
 	    result.add(new TilePosition(111, 121));
+	    result.add(new TilePosition(111, 119));
+	    result.add(new TilePosition(108, 119));
+	    result.add(new TilePosition(105, 119));
+	    
 	    result.add(new TilePosition(108, 121));
 	    result.add(new TilePosition(105, 121));
 

@@ -69,7 +69,7 @@ public class StrategyDefense extends StrategyBase {
 		    Log.info("총 공격을 유지한다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
 		}
 	    }
-	} else if (supplyUsed >= 65) {
+	} else if (supplyUsed >= 62) {
 //	} else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() > 6) {
 	    	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
 	    	    strategyManager.setAttackTilePosition(attackTilePosition);
