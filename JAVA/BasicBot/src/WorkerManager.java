@@ -179,6 +179,8 @@ public class WorkerManager extends Manager {
 			    List<Unit2> workerList = commandCenterWorksListMap.get(commandCenter);
 			    workerList.add(worker);
 			    System.out.println(worker.getID());
+
+			    
 			    commandCenterWorksListMap.put(commandCenter, workerList);
 			}
 		    }

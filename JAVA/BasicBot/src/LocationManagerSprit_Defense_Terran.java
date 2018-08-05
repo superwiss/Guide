@@ -454,7 +454,7 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 
     // 앞마당 입구 방어를 위한 위치를 설정한다.
     @Override
-    public TilePosition initFirstExtensionChokePoint() {
+    public TilePosition initFirstExtensionTankPoint() {
 	TilePosition result = null;
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
@@ -800,6 +800,12 @@ public class LocationManagerSprit_Defense_Terran extends LocationManager {
 
     @Override
     public TilePosition initThreePhaseChokePointForMech() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public List<TilePosition> initMineralExpansion() {
 	// TODO Auto-generated method stub
 	return null;
     }

@@ -57,12 +57,12 @@ public class MagiUXManager extends Manager {
 	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Bunker, "Bunker");
 
 	//터렛 건설 위치
-	tilePositionList = locationManager.getBaseTurret();
-	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "Turret");
+//	tilePositionList = locationManager.getBaseTurret();
+//	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "Turret");
 
 	//확장 터렛 건설 위치
-	tilePositionList = locationManager.getFirstExpansionTurret();
-	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "ExTurret");
+//	tilePositionList = locationManager.getFirstExpansionTurret();
+//	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "ExTurret");
 
 	//확장 기지 위치
 	tilePositionList = locationManager.getFirstExpansionLocation();
@@ -80,6 +80,10 @@ public class MagiUXManager extends Manager {
 	tilePositionList = locationManager.getBaseTankPoint();
 	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "Tank");
 
+	//미네랄 멀티 위치
+	tilePositionList = locationManager.getMineralExpansion();
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Command_Center, "MineralMulti");
+	
 	//베이스 초크포인트 위치
 	TilePosition tilePos = locationManager.getBaseEntranceChokePoint();
 	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 30, Color.Red);
@@ -120,7 +124,7 @@ public class MagiUXManager extends Manager {
     public void drawCurrentMultiInfoOnScreen(int x, int y) {
 	MyBotModule.Broodwar.drawTextScreen(x, y, white + " <Current Strategy>");
 	MyBotModule.Broodwar.drawTextScreen(x, y + 10, teal + "MultiCount = " + strategyManager.multiCount);
-	MyBotModule.Broodwar.drawTextScreen(x, y + 20, teal + "Mechanic Count = " + allianceUnitInfo.getSupplyUsedExceptWorker());
+	MyBotModule.Broodwar.drawTextScreen(x, y + 20, teal + "Mechanic Count = " + allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit).size());
 	MyBotModule.Broodwar.drawTextScreen(x, y + 30, teal + "Phase = " + strategyManager.getPhase());
 	MyBotModule.Broodwar.drawTextScreen(x, y + 40, teal + "Enemy Base = " + locationManager.getEnemyStartLocation());
 

@@ -2,6 +2,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.sun.beans.util.Cache.Kind;
+
 import bwapi.Position;
 import bwapi.Race;
 import bwapi.TechType;
@@ -94,6 +96,7 @@ public class StrategyManager extends Manager {
 
 	useScienceVessel();
 	buildBunker();
+	doBlockEntrance();
 	//doFactoryRally();
 
 	//doAutoTrainTank();
@@ -103,6 +106,30 @@ public class StrategyManager extends Manager {
 	doAutoBuildSupply();
 
 	strategy.onFrame();
+    }
+
+    private void doBlockEntrance() {
+
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE)) {
+
+	    TilePosition blockPosition = locationManager.getEntranceBuilding().get(0);
+	    Set<Unit2> buildingSet = allianceUnitInfo.findUnitSetNearTile(blockPosition, UnitKind.Building, 320);
+
+	    for (Unit2 buidling : buildingSet) {
+		if (gameStatus.getMineral() > 0) {
+		    if (buidling.getType().maxHitPoints() > buidling.getHitPoints()) {
+			repairBunker(allianceUnitInfo, buidling);
+		    } else {
+			repairCount = 3;
+		    }
+		}
+	    }
+	}
+
     }
 
     private void buildBunker() {
@@ -125,8 +152,6 @@ public class StrategyManager extends Manager {
 		if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 320).size() > 0) {
 
 		    if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Bunker, 320).size() == 0) {
-			System.out.println(targetBaseLocation.getTilePosition().getX() + " " + targetBaseLocation.getTilePosition().getY());
-			System.out.println("벙커를 짓고싶다");
 			if (0 == buildManager.getQueueSize()) {
 			    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Bunker)) {
 				TilePosition goodPosition = needBuildPlace(targetBaseLocation.getTilePosition());
@@ -381,13 +406,12 @@ public class StrategyManager extends Manager {
     private void doRefineryJob() {
 
 	if (hasStrategyItem(StrategyItem.AUTO_ASSIGN_GAS_SCV) && buildManager.isInitialBuildFinished()) {
-	    
+
 	    //5초에 한번만 시행한다. 
 	    if (!gameStatus.isMatchedInterval(5)) {
 		return;
 	    }
-	    
-	    System.out.println("가스일꾼");
+
 	    //아군의 모든 커맨드 센터를 대상으로
 	    for (Unit2 commandCenter : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center)) {
 
@@ -431,6 +455,7 @@ public class StrategyManager extends Manager {
 
 		}
 
+		System.out.println("??????????");
 		//대상 커맨드 센터에 할당된 가스 일꾼이 3기 미만일 경우,
 		Set<Unit2> gasScv = allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Worker_Gather_Gas, 320);
 		if (gasScv.size() > 3) {
@@ -466,9 +491,12 @@ public class StrategyManager extends Manager {
 	    //현재 확장 갯수를 업데이트 한다
 	    for (Unit2 commandCenter : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center)) {
 		//커맨드 센터 주변에 미네랄이 6개 이상 있을 경우 운영중인 확장이라고 생각한다.
-		if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 320).size() > 6) {
-		    multiCount++;
-		    currentMultiCount++;
+		System.out.println("전체 커맨드 " + commandCenter.getID());
+		if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Mineral_Field, 400).size() > 6) {
+		    if (allianceUnitInfo.findUnitSetNear(commandCenter, UnitKind.Resource_Vespene_Geyser, 400).size() > 0) {
+			System.out.println(commandCenter.getID());
+			currentMultiCount++;
+		    }
 		}
 	    }
 	    multiCount = currentMultiCount;
@@ -488,14 +516,15 @@ public class StrategyManager extends Manager {
 
 	    //전체 커맨드 센터 숫자를 가져온다.
 	    int totalCommandCount = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size();
-
 	    //앞마당까지 지어진 상황에서 추가 확장을 가져가는 메소드
 	    if (totalCommandCount >= 2) {
 
 		//다음확장이 발견되어 있지 않다면 스캔을 뿌려본다.
-		TilePosition nextExpansionPoint = locationManager.getNextExpansionPoint();
-		if (!gameStatus.isExplored(nextExpansionPoint)) {
-		    allianceUnitInfo.doScan(nextExpansionPoint.toPosition());
+		if (allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Comsat_Station).size() > 0) {
+		    TilePosition nextExpansionPoint = locationManager.getNextExpansionPoint();
+		    if (!gameStatus.isExplored(nextExpansionPoint)) {
+			allianceUnitInfo.doScan(nextExpansionPoint.toPosition());
+		    }
 		}
 
 		//TODO 확장을 가져가는 다양한 조건들이 추가될 예정이다.
@@ -506,7 +535,7 @@ public class StrategyManager extends Manager {
 		    }
 		}
 		//미네랄이 과도하게 남을 경우 확장을 시도한다?
-		if (gameStatus.getMineral() > 2000) {
+		if (gameStatus.getMineral() > 1000) {
 		    if (0 == buildManager.getQueueSize()) {
 			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, locationManager.getNextExpansionPoint()));
 		    }
@@ -657,7 +686,7 @@ public class StrategyManager extends Manager {
 		// 서플 여유가 8개 이하면 서플을 짓는다. (최대 2개를 동시에 지을 수 있음) 
 		// TODO 최적화 필요
 		if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 8 * 2 && gameStatus.getSupplyTotal() < 400) {
-//		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+		    //		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 		} else if (gameStatus.getMineral() > 200 && gameStatus.getGas() > 100 && 0 == buildManager.getQueueSize() && gameStatus.getFrameCount() > 10000) {
 		    if (4 > allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size()) {
 			// 팩토리가 4개 미만이고, BuildOrder Queue가 비어있으면 팩토리를 짓는다.
@@ -746,8 +775,8 @@ public class StrategyManager extends Manager {
 
 		    int maxscv = 60;
 
-//		    System.out.println("현재 scv 카운트 " + scvCount);
-//		    System.out.println("맥스 워커 카운트 " + maxworkerCount);
+		    //		    System.out.println("현재 scv 카운트 " + scvCount);
+		    //		    System.out.println("맥스 워커 카운트 " + maxworkerCount);
 		    if (scvCount < maxscv && scvCount < maxworkerCount) {
 			Unit2 commandCenter = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Command_Center, UnitType.Terran_SCV);
 			if (null != commandCenter) {
@@ -1305,6 +1334,40 @@ public class StrategyManager extends Manager {
 		}
 
 	    }
+	}
+
+	if (hasStrategyItem(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE) && buildManager.isInitialBuildFinished()) {
+	    // 커맨드 센터를 가져온다.
+
+	    TilePosition chokePoint = locationManager.getThreePhaseChokePointForMech();
+
+	    // 커맨드 센터 반경 800 이내의 적 유닛 정보를 하나 가져온다.
+	    Set<Unit2> enemyUnitSet = enemyUnitInfo.getUnitsInRange(chokePoint.toPosition(), UnitKind.ALL, 400);
+	    // 쳐들어온 적 병력이 없으면 skip 하고 다음 커멘트 센터를 검사한다.
+	    if (enemyUnitSet.isEmpty()) {
+		return;
+	    }
+
+	    Position defencePosition = enemyUnitSet.iterator().next().getPosition();
+	    Set<Unit2> defenceAllianceUnitSet = allianceUnitInfo.getUnitsInRange(chokePoint.toPosition(), UnitKind.Combat_Unit, 600);
+	    System.out.println("근처의 적 유닛 " + enemyUnitSet);
+
+	    for (Unit2 defenceAllianceUnit : defenceAllianceUnitSet) {
+		ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, defencePosition);
+	    }
+	    //		if (enemyUnitSet.size() < defenceAllianceUnitSet.size()) {
+	    //		    Log.info("본진(%s)에 침입한 적(%d) 발견함. 방어하자.", commandCenter, enemyUnitSet.size());
+	    //		    // 커맨드 센터 반경 800 이내의 아군 유닛으로 방어한다.
+	    //		    for (Unit2 defenceAllianceUnit : defenceAllianceUnitSet) {
+	    //			ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, defencePosition);
+	    //		    }
+	    //		} else {
+	    //		    Log.info("본진(%s)에 침입한 적(%d)이 아군(%d)보다 많다. 주 병력을 모두 회군시키자.", commandCenter, enemyUnitSet.size(), defenceAllianceUnitSet.size());
+	    //		    addStrategyStatus(StrategyStatus.BACK_TO_BASE);
+	    //		    for (Unit2 allianceUnit : allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit)) {
+	    //			ActionUtil.attackPosition(allianceUnitInfo, allianceUnit, defencePosition);
+	    //		    }
+	    //		}
 	}
     }
 

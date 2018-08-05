@@ -9,6 +9,7 @@ import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import bwta.BWTA;
 
 public class UnitInfo {
 
@@ -329,7 +330,6 @@ public class UnitInfo {
 		    continue;
 		}
 		int distance = unit.getPoint().getApproxDistance(position);
-		//int distance = BWTA.getGroundDistance2(unit.getTilePosition(), position.toTilePosition());
 		if (distance < minDistance) {
 		    minDistance = distance;
 		    result = unit;

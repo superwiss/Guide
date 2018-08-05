@@ -325,7 +325,7 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 
     // 앞마당 입구 방어를 위한 위치를 설정한다.
     @Override
-    public TilePosition initFirstExtensionChokePoint() {
+    public TilePosition initFirstExtensionTankPoint() {
 	TilePosition result = null;
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
@@ -419,6 +419,12 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 
     @Override
     public TilePosition getThreePhaseChokePointForMech() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public List<TilePosition> initMineralExpansion() {
 	// TODO Auto-generated method stub
 	return null;
     }

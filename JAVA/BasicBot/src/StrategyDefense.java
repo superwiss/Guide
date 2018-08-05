@@ -48,7 +48,7 @@ public class StrategyDefense extends StrategyBase {
 	}
 
 	// 일꾼을 제외한 인구수를 구한다.
-//	int supplyUsed = allianceUnitInfo.getSupplyUsedExceptWorker();
+	//	int supplyUsed = allianceUnitInfo.getSupplyUsedExceptWorker();
 	Set<Unit2> attackableUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit);
 	int supplyUsed = attackableUnitSet.size();
 
@@ -69,13 +69,14 @@ public class StrategyDefense extends StrategyBase {
 		    Log.info("총 공격을 유지한다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
 		}
 	    }
-	} else if (supplyUsed >= 60) {
-	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
-	    strategyManager.setAttackTilePosition(attackTilePosition);
-	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-	    strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
-	    Log.info("총 공격을 간다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
-	}
+	} else if (supplyUsed >= 65) {
+//	} else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() > 6) {
+	    	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+	    	    strategyManager.setAttackTilePosition(attackTilePosition);
+	    	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    	    strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+	    	    Log.info("총 공격을 간다. 인구수: %d, 위치: %s", supplyUsed, attackTilePosition);
+	} 
     }
 
     @Override
@@ -176,7 +177,7 @@ public class StrategyDefense extends StrategyBase {
 	strategyItems.add(StrategyItem.BLOCK_ENTRANCE);
 	strategyItems.add(StrategyItem.AUTO_ASSIGN_GAS_SCV);
 	strategyItems.add(StrategyItem.ALLOW_PHASE);
-	
+
 	strategyItems.add(StrategyItem.USE_SCIENCE_VESSEL);
 
 	//마이크로 매니저를 통해 위치를 지정하기 때문에 렐리포인트는 더이상 사용하지 않는다.

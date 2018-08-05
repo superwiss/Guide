@@ -3,6 +3,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import bwapi.Game;
 import bwapi.TilePosition;
 import bwta.BWTA;
 import bwta.BaseLocation;
@@ -23,6 +24,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
     protected List<TilePosition> baseTurrets = null; // 본진에 위치한 터렛의 위치
     protected List<TilePosition> firstExpansionTurrets = null; // 본진에 위치한 터렛의 위치
     protected List<TilePosition> entranceBuilding = null; // 본진 입구막기용 배럭의 위치
+    protected List<TilePosition> mineralExpansion = null; // 서킷브레이커의 미네랄 멀티
     protected List<TilePosition> secondEntranceBuilding = null; // 확장 입구막기용 배럭의 위치
     private TilePosition baseEntranceChokePoint = null; // 본진 입구 방어를 위한 위치
     private TilePosition firstExtensionChokePoint = null; // 앞마당 입구 방어를 위한 위치
@@ -63,7 +65,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	baseTurrets = initBaseTurret();
 	firstExpansionTurrets = initFirstExpansionTurret();
 	baseEntranceChokePoint = initBaseEntranceChokePoint();
-	firstExtensionChokePoint = initFirstExtensionChokePoint();
+	firstExtensionChokePoint = initFirstExtensionTankPoint();
 	secondExtensionChokePoint = initSecondExtensionChokePoint();
 	twoPhaseChokePoint = initTwoPhaseChokePoint();
 	threePhaseChokePointForSiege = initThreePhaseChokePointForSiege();
@@ -71,6 +73,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	entranceBuilding = initEntranceBuildings();
 	secondEntranceBuilding = initSecondEntranceBuildings();
 	baseTankPoint = initBaseTankPoint();
+	mineralExpansion = initMineralExpansion();
     }
 
     // index번째 스타팅 포인트 위치를 리턴한다.
@@ -183,6 +186,11 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	return threePhaseChokePointForMech;
     }
 
+    @Override
+    public List<TilePosition> getMineralExpansion() {
+	return mineralExpansion;
+    }
+
     // 앞마당 입구 방어를 위한 위치를 리턴한다.
     @Override
     public List<TilePosition> getBaseTankPoint() {
@@ -264,9 +272,22 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	TilePosition nextExpansionLocation = null;
 
 	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+
 	    //아군 본진의 경우 제외한다.
-	    if (targetBaseLocation.getTilePosition().equals(allianceBaseLocation))
+	    if (targetBaseLocation.getTilePosition().equals(allianceBaseLocation)) {
+		//		Set<Unit2> com = allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 200);
+		//		for (Unit2 unit2 : com) {
+
+		//		    for(Unit2 command : allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center)) {
+		//			System.out.println(unit2.getID() + " " + command.getID() + "커맨드 센터 본진과 타겟과의 거리" + unit2.getDistance(command.getPosition()));
+		//		    }
+		//		    for (BaseLocation targetBaseLocation2 : BWTA.getBaseLocations()) {
+
+		//		    }
+		//		}
 		continue;
+	    }
+
 	    //이미 아군의 커맨드 센터가 지어져 있을 경우 제외한다.
 	    if (allianceUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.Terran_Command_Center, 100).size() > 0) {
 		continue;
@@ -274,6 +295,18 @@ public abstract class LocationManager extends Manager implements MapInfo {
 
 	    //이미 적군의 생산기지 지어져 있을 경우 제외한다.
 	    if (enemyUnitInfo.findUnitSetNearTile(targetBaseLocation.getTilePosition(), UnitKind.MAIN_BUILDING, 100).size() > 0) {
+		continue;
+	    }
+
+	    //적기지 및 앞마당은 제외한다.
+	    if (enemyStartLocation.getDistance(targetBaseLocation.getTilePosition()) < 35) {
+//		System.out.println(targetBaseLocation.getTilePosition().getX() + " " + targetBaseLocation.getTilePosition().getY() + " ????????????????????????????");
+//		System.out.println((int) enemyStartLocation.getDistance(targetBaseLocation.getTilePosition()));
+		continue;
+	    }
+
+	    //미네랄 멀티는 제외한다.(일꾼 버그)
+	    if (targetBaseLocation.getTilePosition().equals(getMineralExpansion().get(0))) {
 		continue;
 	    }
 
@@ -297,8 +330,8 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	    if (tempExpansionPoint > expansionPoint) {
 		expansionPoint = tempExpansionPoint;
 		nextExpansionLocation = targetBaseLocation.getTilePosition();
-
 	    }
+
 	}
 	return nextExpansionLocation;
     }

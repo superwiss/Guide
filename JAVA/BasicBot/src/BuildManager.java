@@ -8,6 +8,7 @@ import java.util.Set;
 
 import bwapi.Color;
 import bwapi.Order;
+import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 
@@ -48,8 +49,8 @@ public class BuildManager extends Manager {
 	Iterator<BuildOrderItem> iterator = buildOrderItemList.iterator();
 	//	Log.info("%s BuildOrder Execute start. buildOrderSize=%d, Mieral=%d, Gas=%d", TAG, buildOrderItemList.size(), gameStatus.getMineral(), gameStatus.getGas());
 	while (iterator.hasNext()) {
-	    BuildOrderItem buildOrderItem = iterator.next();
 
+	    BuildOrderItem buildOrderItem = iterator.next();
 	    Log.info("%s Current Order=%s", TAG, buildOrderItem);
 
 	    BuildOrderItem.Order order = buildOrderItem.getOrder();
@@ -366,7 +367,7 @@ public class BuildManager extends Manager {
 	} else {
 	    refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
 	}
-	
+
 	if (null != refinery && refinery.isCompleted()) {
 	    Unit2 workerForGatherGas = workerManager.getInterruptableWorker(refinery.getTilePosition());
 	    if (null != workerForGatherGas) {
@@ -492,6 +493,17 @@ public class BuildManager extends Manager {
 			Log.info("%s 건물을 짓는다. 건물=%s, 위치=%s, 일꾼=%s", TAG, buildingType, tilePosition, worker);
 			break;
 		    } else {
+
+			//데드락 확인용 원 그리기
+			TilePosition checkTile = new TilePosition(tilePosition.getX() + 2, tilePosition.getY() + 1);
+			MyBotModule.Broodwar.drawCircleMap(checkTile.getX() * 32, checkTile.getY() * 32, 50, Color.Green);
+			for (Unit2 unit2 : allianceUnitInfo.findUnitSetNearTile(checkTile, UnitKind.ALL, 50)) {
+			    if (unit2.getID() != worker.getID()) {
+				Position randomPosition = randomPosition(unit2.getPosition(), 1000);
+				ActionUtil.moveToPosition(allianceUnitInfo, unit2, randomPosition, 1000);
+			    }
+
+			}
 			// 건설할 수 없는 상태라면, 어느 정도 타이밍에 일꾼이 건설할 위치로 미리 이동해야 할지 컨트롤 한다.
 			// 이미 건물을 짓기 위해서 이동 중이라면 아무것도 하지 않고 skip 한다.
 
@@ -582,6 +594,13 @@ public class BuildManager extends Manager {
 	}
 
 	return result;
+    }
+
+    public static Position randomPosition(Position sourcePosition, int dist) {
+	int x = sourcePosition.getX() + (int) (Math.random() * dist) - dist / 2;
+	int y = sourcePosition.getY() + (int) (Math.random() * dist) - dist / 2;
+	Position destPosition = new Position(x, y);
+	return destPosition;
     }
 
 }

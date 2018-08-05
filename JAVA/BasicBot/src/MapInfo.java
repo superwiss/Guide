@@ -46,6 +46,10 @@ public interface MapInfo {
 
     // 배럭, 팩토리, 스타포트와 같은 병력 훈련용 타일의 위치를 리턴한다.
     abstract List<TilePosition> getTrainingBuildings();
+    
+    abstract List<TilePosition> getMineralExpansion();
+    
+    abstract List<TilePosition> initMineralExpansion();
 
     abstract List<TilePosition> initEntranceBuildings();
     
@@ -100,7 +104,7 @@ public interface MapInfo {
     abstract TilePosition getBaseEntranceChokePoint();
 
     // 앞마당 입구 방어를 위한 위치를 설정한다.
-    abstract TilePosition initFirstExtensionChokePoint();
+    abstract TilePosition initFirstExtensionTankPoint();
     
     // 두번째 확장  방어를 위한 위치를 설정한다.
     abstract TilePosition initSecondExtensionChokePoint();

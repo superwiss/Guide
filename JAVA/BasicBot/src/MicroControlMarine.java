@@ -59,7 +59,7 @@ public class MicroControlMarine extends Manager {
 	}
 
 	aggressiveMoveAttack();
-	fullyAttack();
+//	fullyAttack();
     }
 
     private void followPhase() {
