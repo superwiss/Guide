@@ -387,20 +387,20 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    result.add(new TilePosition(117, 34));
 	    result.add(new TilePosition(62, 5));
+	    result.add(new TilePosition(110, 63));
 	    result.add(new TilePosition(62, 119));
 	    result.add(new TilePosition(14, 63));
-	    result.add(new TilePosition(110, 63));
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    result.add(new TilePosition(117, 92));
-	    result.add(new TilePosition(62, 5));
 	    result.add(new TilePosition(62, 119));
-	    result.add(new TilePosition(14, 63));
 	    result.add(new TilePosition(110, 63));
+	    result.add(new TilePosition(14, 63));
+	    result.add(new TilePosition(62, 5));
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    result.add(new TilePosition(7, 92));
-	    result.add(new TilePosition(62, 5));
 	    result.add(new TilePosition(62, 119));
 	    result.add(new TilePosition(14, 63));
+	    result.add(new TilePosition(62, 5));
 	    result.add(new TilePosition(110, 63));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    result.add(new TilePosition(7, 34));
