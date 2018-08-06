@@ -27,7 +27,7 @@ public class BuildOrderItem {
 	this.targetUnitType = targetUnitType;
 
     }
-    
+
     public BuildOrderItem(Order order, UnitType targetUnitType, TilePosition tilePosition) {
 	this.order = order;
 	this.targetUnitType = targetUnitType;
@@ -39,7 +39,7 @@ public class BuildOrderItem {
 	this.order = order;
 	this.tilePosition = tilePosition;
     }
-    
+
     public BuildOrderItem(Order order, Unit2 targetUnit) {
 	this.order = order;
 	this.targetUnit = targetUnit;
@@ -67,7 +67,7 @@ public class BuildOrderItem {
     public UnitType getTargetUnitType() {
 	return targetUnitType;
     }
-    
+
     public Unit2 getTargetUnit() {
 	return targetUnit;
     }
@@ -106,6 +106,64 @@ public class BuildOrderItem {
 
     public StrategyItem getStrategyItem() {
 	return strategyItem;
+    }
+
+    @Override
+    public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result + (inProgress ? 1231 : 1237);
+	result = prime * result + ((order == null) ? 0 : order.hashCode());
+	result = prime * result + ((strategyItem == null) ? 0 : strategyItem.hashCode());
+	result = prime * result + ((targetUnitType == null) ? 0 : targetUnitType.hashCode());
+	result = prime * result + ((techType == null) ? 0 : techType.hashCode());
+	result = prime * result + ((tilePosition == null) ? 0 : tilePosition.hashCode());
+	result = prime * result + ((upgradeType == null) ? 0 : upgradeType.hashCode());
+	result = prime * result + ((worker == null) ? 0 : worker.hashCode());
+	return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+	if (this == obj)
+	    return true;
+	if (obj == null)
+	    return false;
+	if (getClass() != obj.getClass())
+	    return false;
+	BuildOrderItem other = (BuildOrderItem) obj;
+	if (inProgress != other.inProgress)
+	    return false;
+	if (order != other.order)
+	    return false;
+	if (strategyItem != other.strategyItem)
+	    return false;
+	if (targetUnitType == null) {
+	    if (other.targetUnitType != null)
+		return false;
+	} else if (!targetUnitType.equals(other.targetUnitType))
+	    return false;
+	if (techType == null) {
+	    if (other.techType != null)
+		return false;
+	} else if (!techType.equals(other.techType))
+	    return false;
+	if (tilePosition == null) {
+	    if (other.tilePosition != null)
+		return false;
+	} else if (!tilePosition.equals(other.tilePosition))
+	    return false;
+	if (upgradeType == null) {
+	    if (other.upgradeType != null)
+		return false;
+	} else if (!upgradeType.equals(other.upgradeType))
+	    return false;
+	if (worker == null) {
+	    if (other.worker != null)
+		return false;
+	} else if (!worker.equals(other.worker))
+	    return false;
+	return true;
     }
 
     @Override

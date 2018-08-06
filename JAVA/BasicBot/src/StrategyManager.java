@@ -40,7 +40,7 @@ public class StrategyManager extends Manager {
 	    if (gameStatus.getEnemyRace().equals(Race.Terran)) {
 		Log.info("User: Computer, Terran");
 		strategy = new StrategyTwoFactory();
-	    } else if (gameStatus.getEnemyRace().equals(Race.Zerg)){
+	    } else if (gameStatus.getEnemyRace().equals(Race.Zerg)) {
 		Log.info("User: Computer, Zerg");
 		strategy = new StrategyFiveFactoryGoliath();
 	    } else {
@@ -51,7 +51,7 @@ public class StrategyManager extends Manager {
 	    if (gameStatus.isMatchPlayerByName("JohnVer")) {
 		Log.info("User: JohnVer");
 		strategy = new StrategyTwoFactory();
-	    } else if (gameStatus.getEnemyRace().equals(Race.Zerg)){
+	    } else if (gameStatus.getEnemyRace().equals(Race.Zerg)) {
 		Log.info("User: Zerg");
 		strategy = new StrategyFiveFactoryGoliath();
 	    } else {
@@ -80,7 +80,7 @@ public class StrategyManager extends Manager {
 	doAutoTrainVulture();
 	doAutoBuildFactory();
 	doAutoExtension();
-	
+
 	strategy.onFrame();
     }
 
@@ -144,7 +144,7 @@ public class StrategyManager extends Manager {
 	    Log.info("getAttackPosition: 적 메인 건물(%s)", result);
 	} else {
 	    // 적 메인 건물은 찾지 못했지만, 다른 건물들이 존재할 경우.
-	    Set<Unit2> enemyBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.Building);
+	    Set<Unit2> enemyBuildingSet = enemyUnitInfo.getLandedBuildingSet();
 	    if (!enemyBuildingSet.isEmpty()) {
 		// 적 건물이 다수 존재할 경우, 내 본진에서 가장 가까운 상대 건물부터 공격한다.
 		Unit2 closestBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyBuildingSet, allianceStartTilePosition.toPosition());
@@ -251,7 +251,7 @@ public class StrategyManager extends Manager {
 	    }
 	}
     }
-    
+
     // 머신셥과 관련된 작업을 수행한다.
     private void doMachineShopJob() {
 	// 1초에 한 번만 수행된다.
@@ -504,7 +504,7 @@ public class StrategyManager extends Manager {
 	if (!hasStrategyItem(StrategyItem.AUTO_EXTENSION)) {
 	    return;
 	}
-	
+
 	// 돈과 가스가 남으면 커맨드 센터를 지어본다.
 	if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Command_Center)) {
 	    if (allianceUnitInfo.checkResourceIfCanBuild(UnitType.Terran_Command_Center)) {
@@ -562,11 +562,11 @@ public class StrategyManager extends Manager {
     public void addStrategyStatus(StrategyStatus strategyStatus) {
 	this.strategyStatus.add(strategyStatus);
     }
-    
+
     public Set<StrategyStatus> getStrategyStatus() {
 	return strategyStatus;
     }
-    
+
     public void removeStrategyStatus(StrategyStatus strategyStatus) {
 	this.strategyStatus.remove(strategyStatus);
     }

@@ -554,6 +554,8 @@ public class BuildManager extends Manager {
 	    }
 	} else if (UnitType.Terran_Factory.equals(buildingType)) {
 	    result = locationManager.getTrainingBuildings();
+	} else if (UnitType.Terran_Starport.equals(buildingType)) {
+	    result = locationManager.getTrainingBuildings();
 	} else if (UnitType.Terran_Supply_Depot.equals(buildingType)) {
 	    result = locationManager.get3by2SizeBuildings();
 	} else if (UnitType.Terran_Academy.equals(buildingType) || UnitType.Terran_Armory.equals(buildingType)) {
@@ -570,4 +572,17 @@ public class BuildManager extends Manager {
 	return result;
     }
 
+    // 빌드 오더 리스트에 buildOrderItem가 존재하는지 확인한다.
+    public boolean hasBuildOrderItem(BuildOrderItem buildOrderItem) {
+	boolean result = false;
+
+	for (BuildOrderItem eachBuildOrder : buildOrderItemList) {
+	    if (eachBuildOrder.equals(buildOrderItem)) {
+		result = true;
+		break;
+	    }
+	}
+
+	return result;
+    }
 }
