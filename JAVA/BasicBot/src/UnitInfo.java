@@ -217,6 +217,19 @@ public class UnitInfo {
 	    Log.trace("정찰 유닛이 죽어버렸음..");
 	}
     }
+    
+    public void releaseGasUnit(Unit2 unit) {
+	if (null != unit) {
+	    // 유닛을 Gas 타입에서 원래 타입으로 원복한다.
+	    Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
+	    for (UnitKind unitKind : unitKinds) {
+		unitKindMap.get(unitKind).add(unit);
+	    }
+	    unitKindMap.get(UnitKind.Worker_Gather_Gas).remove(unit);
+	} else {
+	    Log.trace("유닛이 죽어버렸음..");
+	}
+    }
 
     // 메모리에 저장된 unitSet 중에서 position에 제일 가까운 unit을 리턴한다.
     public Unit2 getClosestUnitWithLastTilePosition(Set<Unit2> unitSet, Position position) {
@@ -292,6 +305,17 @@ public class UnitInfo {
 	}
 
 	return result;
+    }
+    
+    //완성된 유닛셋만 리턴한다
+    public Set<Unit2> getCompletedUnitSet(UnitKind unitKind) {
+	Set<Unit2> completedUnitSet = new HashSet<>();
+	for (Unit2 unit : getUnitSet(unitKind)) {
+	    if (true == unit.isCompleted()) {
+		completedUnitSet.add(unit);
+	    }
+	}
+	return completedUnitSet;
     }
 
     // unitSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. 유닛 타입이 excludeUnitType일 경우는 제외한다.

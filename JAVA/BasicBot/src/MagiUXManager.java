@@ -12,6 +12,9 @@ import bwapi.UnitType;
 public class MagiUXManager extends Manager {
     private StrategyManager strategyManager = null;
     private UnitInfo allianceUnitInfo = null;
+    
+    private final char white = '';
+    private final char teal = '';
 
     @Override
     protected void onStart(GameStatus gameStatus) {
@@ -154,6 +157,9 @@ public class MagiUXManager extends Manager {
 	    MyBotModule.Broodwar.drawBoxMap(x1, y1, x2, y2, Color.Green, false);
 	    MyBotModule.Broodwar.drawTextMap(x1 + 5, y1 + 2, "Engineering  " + sequence);
 	}
+	
+	//게임정보를 맵에 표시합니다.
+	drawCurrentMultiInfoOnScreen(40, 60);
     }
 
     // Unit의 ID를 표시한다.
@@ -215,6 +221,18 @@ public class MagiUXManager extends Manager {
 	    }
 	}
 
+    }
+    
+    public void drawCurrentMultiInfoOnScreen(int x, int y) {
+	MyBotModule.Broodwar.drawTextScreen(x, y, white + " <Current Strategy>");
+	MyBotModule.Broodwar.drawTextScreen(x, y + 10, teal + "CombatUnit Count = " + allianceUnitInfo.getSupplyUsedExceptWorker());
+	MyBotModule.Broodwar.drawTextScreen(x, y + 20, teal + "Goliath Count = " + allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath).size());
+	
+	int seq = 1;
+	for (StrategyStatus status : strategyManager.getStrategyStatus()) {	    
+	    MyBotModule.Broodwar.drawTextScreen(x, y + 20 + seq * 10, teal + "Strategy Status = " + status);
+	    seq++;
+	}
     }
 
 }

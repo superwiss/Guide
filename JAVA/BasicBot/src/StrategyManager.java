@@ -40,6 +40,9 @@ public class StrategyManager extends Manager {
 	    if (gameStatus.getEnemyRace().equals(Race.Terran)) {
 		Log.info("User: Computer, Terran");
 		strategy = new StrategyTwoFactory();
+	    } else if (gameStatus.getEnemyRace().equals(Race.Zerg)){
+		Log.info("User: Computer, Zerg");
+		strategy = new StrategyFiveFactoryGoliath();
 	    } else {
 		Log.info("User: Computer, Not Terran");
 		strategy = new StrategyDefault();
@@ -48,6 +51,9 @@ public class StrategyManager extends Manager {
 	    if (gameStatus.isMatchPlayerByName("JohnVer")) {
 		Log.info("User: JohnVer");
 		strategy = new StrategyTwoFactory();
+	    } else if (gameStatus.getEnemyRace().equals(Race.Zerg)){
+		Log.info("User: Zerg");
+		strategy = new StrategyFiveFactoryGoliath();
 	    } else {
 		Log.info("User: Default");
 		strategy = new StrategyDefault();
@@ -65,14 +71,16 @@ public class StrategyManager extends Manager {
 	checkIfuseScan();
 	doBunkerJob();
 	doAcademyJob();
+	doMachineShopJob();
 	doAttackUnitAutoTrain();
 	doDefenceBase();
 	doAutoBuildSupply();
+	doAutoTrainGoliath();
 	doAutoTrainTank();
 	doAutoTrainVulture();
 	doAutoBuildFactory();
 	doAutoExtension();
-
+	
 	strategy.onFrame();
     }
 
@@ -243,6 +251,24 @@ public class StrategyManager extends Manager {
 	    }
 	}
     }
+    
+    // 머신셥과 관련된 작업을 수행한다.
+    private void doMachineShopJob() {
+	// 1초에 한 번만 수행된다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+	Unit2 machineShop = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Machine_Shop);
+	if (null != machineShop) {
+	    // 골리앗이 4마리 이상일 때 사거리 업그레이드를 한다.
+	    if (hasStrategyItem(StrategyItem.AUTO_UPGRADE_CHARON_BOOSTERS)) {
+		int goliathCount = allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath).size();
+		if (machineShop.canUpgrade(UpgradeType.Charon_Boosters) && goliathCount > 4) {
+		    machineShop.upgrade(UpgradeType.Charon_Boosters);
+		}
+	    }
+	}
+    }
 
     // 벙커 관련된 작업을 수행한다.
     private void doBunkerJob() {
@@ -327,7 +353,7 @@ public class StrategyManager extends Manager {
 			distance = 150;
 		    }
 		    // 적 클로킹 유닛 distance 거리 미만에 존재하는 아군 유닛이 5기 이상이면 스캔을 뿌린다.
-		    Set<Unit2> allianceUnitSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Terran_Marine, distance);
+		    Set<Unit2> allianceUnitSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Combat_Unit, distance);
 		    Log.info("적 클로킹 유닛 발견: %s. 주변의 마린 수: %d, 거리: %d", clockedUnit, allianceUnitSet.size(), distance);
 		    if (5 <= allianceUnitSet.size()) {
 			allianceUnitInfo.doScan(clockedUnit.getPosition());
@@ -423,6 +449,28 @@ public class StrategyManager extends Manager {
 	}
     }
 
+    // StrategyItem.AUTO_TRAIN_GOLIATH 구현부
+    // 골리앗을 자동으로 생성해준다.
+    private void doAutoTrainGoliath() {
+	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_GOLIATH)) {
+	    Set<Unit2> factorySet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory);
+	    for (Unit2 factory : factorySet) {
+		if (!factory.isCompleted()) {
+		    continue;
+		}
+		if (gameStatus.getGas() > 50) {
+		    if (0 == factory.getTrainingQueue().size()) {
+			int trainingRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.TRAINING, UnitType.Terran_Goliath);
+			if (1 > trainingRemainSize) {
+			    Log.info("골리앗 생산. 남은 훈련시간: %d, 팩토리: %s", factory.getRemainingTrainTime(), factory);
+			    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Goliath));
+			}
+		    }
+		}
+	    }
+	}
+    }
+
     // StrategyItem.AUTO_BUILD_FACTORY 구현부
     // 여유가 되면 팩토리를 자동으로 추가한다. 이미 건설 중인 팩토리가 있다면, 건설하지 않는다. 즉 동시에 두 개의 팩토리가 지어지지는 않는다.
     private void doAutoBuildFactory() {
@@ -445,7 +493,7 @@ public class StrategyManager extends Manager {
     }
 
     // StrategyItem.AUTO_EXTENSION 구현부
-    // 여유가 되면 팩토리를 자동으로 추가한다. 이미 건설 중인 팩토리가 있다면, 건설하지 않는다. 즉 동시에 두 개의 팩토리가 지어지지는 않는다.
+    // 여유가 되면 커맨드 센터를 자동으로 추가한다. 이미 건설 중인 커맨드 센터가 있다면, 건설하지 않는다.
     private void doAutoExtension() {
 	// 1초에 한 번만 실행한다.
 	if (!gameStatus.isMatchedInterval(1)) {
@@ -455,12 +503,14 @@ public class StrategyManager extends Manager {
 	if (!hasStrategyItem(StrategyItem.AUTO_EXTENSION)) {
 	    return;
 	}
+	
+	System.out.println("확장안하냐");
 
-	// 돈과 가스가 남으면 팩토리를 지어본다.
+	// 돈과 가스가 남으면 커맨드 센터를 지어본다.
 	if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Command_Center)) {
 	    if (allianceUnitInfo.checkResourceIfCanBuild(UnitType.Terran_Command_Center)) {
-		int buildFactoryRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center);
-		if (1 > buildFactoryRemainSize) {
+		int buildCommandCenterRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center);
+		if (1 > buildCommandCenterRemainSize) {
 		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center));
 		}
 	    }
@@ -513,7 +563,11 @@ public class StrategyManager extends Manager {
     public void addStrategyStatus(StrategyStatus strategyStatus) {
 	this.strategyStatus.add(strategyStatus);
     }
-
+    
+    public Set<StrategyStatus> getStrategyStatus() {
+	return strategyStatus;
+    }
+    
     public void removeStrategyStatus(StrategyStatus strategyStatus) {
 	this.strategyStatus.remove(strategyStatus);
     }

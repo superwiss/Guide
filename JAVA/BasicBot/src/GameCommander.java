@@ -204,6 +204,8 @@ public class GameCommander implements EventDispatcher {
 	} else {
 	    if (unit.getType().isMineralField()) {
 		gameStatus.getAllianceUnitInfo().add(unit);
+	    } else if (unit.getType() == UnitType.Resource_Vespene_Geyser) {
+		gameStatus.getAllianceUnitInfo().add(unit);
 	    }
 	}
 
