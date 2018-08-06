@@ -42,6 +42,13 @@ public class StrategyDefault extends StrategyBase {
 	Set<Unit2> attackableUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit);
 	// 총 공격 전이고, 공격 유닛이 60마리 이상이고, 적 본진을 발견했으면 총 공격 모드로 변환한다.
 	Log.debug("총 공격 조건 확인. 공격 위치: %s, 아군 공격 가능한 유닛 수: %d, 적 본진 위치: %s", attackTilePosition, attackableUnitSet.size(), locationManager.getEnemyStartLocation());
+	
+	if (!strategyManager.hasStrategyStatus(StrategyStatus.FULLY_ATTACK) && attackableUnitSet.size() > 50) {
+	    TilePosition tilePositon = locationManager.getFirstExtensionChokePoint();
+	    for (Unit2 attackableUnit : attackableUnitSet) {
+		ActionUtil.attackPosition(allianceUnitInfo, attackableUnit, tilePositon.toPosition());
+	    }
+	}
 
 	if (null != attackTilePosition && (attackableUnitSet.size() > 60)) {
 	    Log.info("총 공격 모드로 전환. 아군 유닛 수: %d", attackableUnitSet.size());
