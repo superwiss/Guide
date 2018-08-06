@@ -47,6 +47,7 @@ public class WorkerManager extends Manager {
 	}
 
 	autoRebalanceWorker();
+	doRefineryJob();
 
 	//loggingDetailSCVInfo();
     }
@@ -107,7 +108,7 @@ public class WorkerManager extends Manager {
 	    } else {
 		// 커맨드센터에서 훈련중인 SCV가 아니고, 건설중이 아니고, idle 상태의 일꾼이거나 미네랄을 캐는 일꾼이면 OK
 		result = worker.isCompleted() && !worker.isConstructing() && !worker.isRepairing()
-			&& (worker.isIdle() || worker.isGatheringMinerals() || worker.isMoving() || worker.getOrder().equals(Order.MoveToMinerals));
+			&& (worker.isIdle() || worker.isGatheringMinerals() || !worker.isCarryingMinerals() || worker.isMoving() || worker.getOrder().equals(Order.MoveToMinerals));
 	    }
 	}
 
@@ -313,11 +314,97 @@ public class WorkerManager extends Manager {
 	*/
     }
 
+    //가스 일꾼이 3기 미만인 경우, 자동으로 일꾼 3마리를 할당시켜준다. 확장 주변에 베스핀이 있을 경우 리파이너리를 지어준다.
+    private void doRefineryJob() {
+
+	if (strategyManager.hasStrategyItem(StrategyItem.AUTO_REFINERY_JOB)) {
+
+	    //5초에 한번만 시행한다. 
+	    if (!gameStatus.isMatchedInterval(5)) {
+		return;
+	    }
+
+	    //아군의 모든 완성된 커맨드 센터를 대상으로 한다.
+	    for (Unit2 commandCenter : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center)) {
+
+		//대상 커맨드 센터에 할당된 가스 일꾼이 3기 미만일 경우,
+		if (allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Worker_Gather_Gas, 320).size() < 3) {
+
+		    //대상 커맨드 센터에 할당된 리파이너리를 가져온다.
+		    Unit2 refinery = allianceUnitInfo.getAnyUnitInRange(commandCenter.getPosition(), UnitKind.Terran_Refinery, 320);
+
+		    //리파이너를 찾았을 경우
+		    if (refinery != null) {
+			//대상 커맨드 센터 주변의 미네랄 일꾼을 찾는다.
+			//미네랄 일꾼이 3기 이상이고, 리파이너리가 지어져 있으면 미네랄 일꾼을 가스에 할당한다.
+			if (findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size() >= 3 && refinery.isCompleted()) {
+			    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS, refinery));
+			} else {
+			    //미네랄 일꾼이 부족하거나 리파이너리가 아직 건설 중이다.
+			}
+
+		    } else {
+			//리파이너리가 없어서 건설이 필요하다.
+			//큐에 아무것도 없고, 대상 커맨드 센터가 정상적인 상태일 경우 리파이너리 건설
+			if (0 == buildManager.getQueueSize() && commandCenter.isCompleted() && !commandCenter.isLifted()) {
+			    //대상 커맨드 센터 주변의 베스핀 가스를 가져온다.
+			    //가져온 베스핀 가스 위치에 리파이너리를 건설한다.
+			    Unit2 vespene = allianceUnitInfo.getAnyUnitInRange(commandCenter.getPosition(), UnitKind.Resource_Vespene_Geyser, 320);
+			    if (vespene != null) {
+				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery, vespene.getTilePosition()));
+			    } else {
+				//베스핀이 없는 미네랄 멀티이다.
+				continue;
+			    }
+			} else {
+			    //큐가 찼거나 커맨드 센터가 건설중이다.
+			}
+			return;
+		    }
+
+		}
+
+		//대상 커맨드 센터에 할당된 가스 일꾼이 3기 이상일 경우 해제하여 미네랄 일꾼으로 돌린다.
+		Set<Unit2> gasScv = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Worker_Gather_Gas, 320);
+		int gasScvCount = gasScv.size();
+		if (gasScvCount > 3) {
+		    int seq = 0;
+		    int releaseNum = gasScvCount - 3;
+		    for (Unit2 scv : gasScv) {
+			allianceUnitInfo.releaseGasUnit(scv);
+			scv.stop();
+			seq++;
+			if (seq == releaseNum) {
+			    return;
+			}
+		    }
+
+		}
+	    }
+	}
+    }
+
     private void loggingDetailSCVInfo() {
 	Set<Unit2> scvSet = allianceUnitInfo.getUnitSet(UnitType.Terran_SCV);
 	Log.trace("SCV size: %d", scvSet.size());
 	for (Unit2 scv : scvSet) {
 	    UnitUtil.loggingDetailUnitInfo(scv);
 	}
+    }
+
+    //대상 유닛 근처에 있는 미네랄 일꾼을 리턴한다.
+    public Set<Unit2> findMineralWorkerSetNear(Unit2 baseUnit, UnitKind wantFind, int findRange) {
+
+	Set<Unit2> scvUnitSet = allianceUnitInfo.getUnitsInRange(baseUnit.getPosition(), wantFind, findRange);
+	Set<Unit2> findUnitSet = new HashSet<>();
+	WorkerManager workerManager = gameStatus.getWorkerManager();
+
+	for (Unit2 scv : scvUnitSet) {
+	    if (workerManager.isinterruptableWorker(scv)) {
+		findUnitSet.add(scv);
+	    }
+	}
+
+	return findUnitSet;
     }
 }

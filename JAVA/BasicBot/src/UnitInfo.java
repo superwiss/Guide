@@ -16,6 +16,8 @@ public class UnitInfo {
 	SCOUT, GATHER_GAS
     }
 
+    private static final String TAG = "[UnitInfo]";
+
     // 모든 아군 유닛 셋
     private Set<Unit2> unitSet = new HashSet<>();
 
@@ -28,7 +30,7 @@ public class UnitInfo {
     // 유닛의 마지막 상태
     private Map<Unit2, UnitStatus> lastStatusMap = new HashMap<>();
 
-    // 유닛의 마지막 위치
+    // 유닛의 마지막 위치gg
     private Map<Unit2, TilePosition> lastTilePositoin = new HashMap<>();
 
     private GameStatus gameStatus;
@@ -148,8 +150,9 @@ public class UnitInfo {
 	    // 유닛의 초기 상태는 Idle이다.
 	    lastStatusMap.put(unit, UnitStatus.IDLE);
 
-	    // 건물일 경우, 유닛의 마지막 위치를 기록한다.
-	    if (unit.getType().isBuilding()) {
+	    // 건물일 경우, 유닛의 마지막 위치를 기록한다. (떠 있는 건물은 위치를 저장하지 않는다)
+	    if (unit.getType().isBuilding() && false == unit.isLifted()) {
+		Log.info("%s Add building(%s) to lastTilePositoin", TAG, unit);
 		lastTilePositoin.put(unit, unit.getTilePosition());
 	    }
 	} else {
@@ -163,6 +166,7 @@ public class UnitInfo {
 	    lastStatusMap.remove(unit);
 
 	    if (lastTilePositoin.containsKey(unit)) {
+		Log.info("%s Remove building(%s) from lastTilePositoin", TAG, unit);
 		lastTilePositoin.remove(unit);
 	    }
 	}
@@ -218,6 +222,19 @@ public class UnitInfo {
 	}
     }
 
+    public void releaseGasUnit(Unit2 unit) {
+	if (null != unit) {
+	    // 유닛을 Gas 타입에서 원래 타입으로 원복한다.
+	    Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
+	    for (UnitKind unitKind : unitKinds) {
+		unitKindMap.get(unitKind).add(unit);
+	    }
+	    unitKindMap.get(UnitKind.Worker_Gather_Gas).remove(unit);
+	} else {
+	    Log.trace("유닛이 죽어버렸음..");
+	}
+    }
+
     // 메모리에 저장된 unitSet 중에서 position에 제일 가까운 unit을 리턴한다.
     public Unit2 getClosestUnitWithLastTilePosition(Set<Unit2> unitSet, Position position) {
 	return getClosestUnitWithLastTilePosition(unitSet, position, null);
@@ -260,8 +277,25 @@ public class UnitInfo {
 	return result;
     }
 
+    // 적 건물의 위치를 저장한다. (전장의 안개로 건물을 볼 수 없을 경우에도, 상대 건물의 위치를 파악하기 위한 용도)
     public TilePosition getLastTilePosition(Unit2 unit) {
 	return lastTilePositoin.get(unit);
+    }
+
+    // 건물이 지어진 위치에 시야가 밝혀져 있지만, 실제 건물이 없는 경우, lastTilePosition에서 삭제해준다.
+    // 예를 들면 적 건물이 보이지 않는 상태에서 건물이 불타서 스스로 파괴되었거나, 건물을 띄워서 이동했을 경우...)
+    public void updateLastTilePosition() {
+	Set<Unit2> toBeRemoveBuildingSet = new HashSet<>();
+	for (Unit2 building : lastTilePositoin.keySet()) {
+	    TilePosition lastPosition = lastTilePositoin.get(building);
+	    if (gameStatus.isVisible(lastPosition) && !building.isVisible()) {
+		toBeRemoveBuildingSet.add(building);
+	    }
+	}
+	for (Unit2 removeBuilding : toBeRemoveBuildingSet) {
+	    Log.info("%s Remove building(%s) from lastTilePositoin", TAG, removeBuilding);
+	    lastTilePositoin.remove(removeBuilding);
+	}
     }
 
     public String toBuildingString() {
@@ -292,6 +326,17 @@ public class UnitInfo {
 	}
 
 	return result;
+    }
+
+    //완성된 유닛셋만 리턴한다
+    public Set<Unit2> getCompletedUnitSet(UnitKind unitKind) {
+	Set<Unit2> completedUnitSet = new HashSet<>();
+	for (Unit2 unit : getUnitSet(unitKind)) {
+	    if (true == unit.isCompleted()) {
+		completedUnitSet.add(unit);
+	    }
+	}
+	return completedUnitSet;
     }
 
     // unitSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. 유닛 타입이 excludeUnitType일 경우는 제외한다.
@@ -619,4 +664,30 @@ public class UnitInfo {
 	return result;
     }
 
+    // 공중에 떠 있는 건물은 무시하고, 땅에 랜딩된 건물이 존재하는지 여부를 리턴한다.
+    public boolean hasLandedBuilding() {
+	boolean result = false;
+
+	for (Unit2 building : getUnitSet(UnitKind.Building)) {
+	    if (null != building.getTilePosition() && building.getTilePosition().isValid()) {
+		result = true;
+		break;
+	    }
+	}
+
+	return result;
+    }
+
+    // 공중에 떠 있는 건물은 무시하고, 땅에 랜딩된 건물의 위치를 리턴한다.
+    public Set<Unit2> getLandedBuildingSet() {
+	Set<Unit2> result = new HashSet<>();
+
+	for (Unit2 building : getUnitSet(UnitKind.Building)) {
+	    if (null != building.getTilePosition() && building.getTilePosition().isValid()) {
+		result.add(building);
+	    }
+	}
+
+	return result;
+    }
 }

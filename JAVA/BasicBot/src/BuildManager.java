@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -413,7 +414,7 @@ public class BuildManager extends Manager {
 	    UnitType buildingType = buildOrderItem.getTargetUnitType(); // 건설할 건물의 종류.
 
 	    // 건물을 지을 수 있는 타일 리스트를 가져온다.
-	    tilePositionList = getTileListForBuild(buildingType);
+	    tilePositionList = getTileListForBuild(buildingType, buildOrderItem);
 
 	    for (TilePosition tilePosition : tilePositionList) {
 
@@ -540,18 +541,24 @@ public class BuildManager extends Manager {
 	return false;
     }
 
-    private List<TilePosition> getTileListForBuild(UnitType buildingType) {
-	List<TilePosition> result = null;
+    private List<TilePosition> getTileListForBuild(UnitType buildingType, BuildOrderItem buildOrderItem) {
+	List<TilePosition> result = new ArrayList<>();
 
 	if (UnitType.Terran_Barracks.equals(buildingType)) {
 	    result = locationManager.getTrainingBuildings();
 	} else if (UnitType.Terran_Refinery.equals(buildingType)) {
-	    result = locationManager.getBaseRefinery();
+	    if (buildOrderItem.getTilePosition() != null) {
+		result.add(buildOrderItem.getTilePosition());
+	    } else {
+		result = locationManager.getBaseRefinery();
+	    }
 	} else if (UnitType.Terran_Factory.equals(buildingType)) {
+	    result = locationManager.getTrainingBuildings();
+	} else if (UnitType.Terran_Starport.equals(buildingType)) {
 	    result = locationManager.getTrainingBuildings();
 	} else if (UnitType.Terran_Supply_Depot.equals(buildingType)) {
 	    result = locationManager.get3by2SizeBuildings();
-	} else if (UnitType.Terran_Academy.equals(buildingType)) {
+	} else if (UnitType.Terran_Academy.equals(buildingType) || UnitType.Terran_Armory.equals(buildingType)) {
 	    result = locationManager.get3by2SizeBuildings();
 	} else if (UnitType.Terran_Bunker.equals(buildingType)) {
 	    result = locationManager.getBaseEntranceBunker();
@@ -565,4 +572,17 @@ public class BuildManager extends Manager {
 	return result;
     }
 
+    // 빌드 오더 리스트에 buildOrderItem가 존재하는지 확인한다.
+    public boolean hasBuildOrderItem(BuildOrderItem buildOrderItem) {
+	boolean result = false;
+
+	for (BuildOrderItem eachBuildOrder : buildOrderItemList) {
+	    if (eachBuildOrder.equals(buildOrderItem)) {
+		result = true;
+		break;
+	    }
+	}
+
+	return result;
+    }
 }
