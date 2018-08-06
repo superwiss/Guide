@@ -388,6 +388,7 @@ public class StrategyManager extends Manager {
 		Set<Unit2> defenceAllianceUnitSet = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Combat_Unit, 800);
 		if (enemyUnitSet.size() < defenceAllianceUnitSet.size()) {
 		    Log.info("본진(%s)에 침입한 적(%d) 발견함. 방어하자.", commandCenter, enemyUnitSet.size());
+		    addStrategyStatus(StrategyStatus.BACK_TO_BASE);
 		    // 커맨드 센터 반경 800 이내의 아군 유닛으로 방어한다.
 		    for (Unit2 defenceAllianceUnit : defenceAllianceUnitSet) {
 			ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, defencePosition);
@@ -504,8 +505,6 @@ public class StrategyManager extends Manager {
 	    return;
 	}
 	
-	System.out.println("확장안하냐");
-
 	// 돈과 가스가 남으면 커맨드 센터를 지어본다.
 	if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Command_Center)) {
 	    if (allianceUnitInfo.checkResourceIfCanBuild(UnitType.Terran_Command_Center)) {

@@ -241,7 +241,6 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result.add(new TilePosition(9, 2));
 	    result.add(new TilePosition(12, 0));
 	    result.add(new TilePosition(12, 2));
-	    result.add(new TilePosition(11, 4));
 	    result.add(new TilePosition(15, 0));
 	    result.add(new TilePosition(15, 2));
 	    result.add(new TilePosition(14, 4));

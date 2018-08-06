@@ -25,7 +25,7 @@ public class MicroControlGoliath extends Manager {
     @Override
     protected void onFrame() {
 	super.onFrame();
-	avoidAttack();
+//	avoidAttack();
 	fullyAttack();
     }
 
