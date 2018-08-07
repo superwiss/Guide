@@ -360,7 +360,12 @@ public class BuildManager extends Manager {
     private boolean tryGatherGas(BuildOrderItem buildOrderItem) {
 	boolean result = false;
 
-	Unit2 refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
+	Unit2 refinery = null;
+	if (buildOrderItem.getTargetUnit() != null) {
+	    refinery = buildOrderItem.getTargetUnit();
+	} else {
+	    refinery = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Refinery);
+	}
 	if (null != refinery && refinery.isCompleted()) {
 	    Unit2 workerForGatherGas = workerManager.getInterruptableWorker(refinery.getTilePosition());
 	    if (null != workerForGatherGas) {
@@ -545,7 +550,11 @@ public class BuildManager extends Manager {
 	List<TilePosition> result = new ArrayList<>();
 
 	if (UnitType.Terran_Barracks.equals(buildingType)) {
-	    result = locationManager.getTrainingBuildings();
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+		result = locationManager.getBlockingEntranceBuilding();
+	    } else {
+		result = locationManager.getTrainingBuildings();
+	    }
 	} else if (UnitType.Terran_Refinery.equals(buildingType)) {
 	    if (buildOrderItem.getTilePosition() != null) {
 		result.add(buildOrderItem.getTilePosition());
@@ -563,7 +572,11 @@ public class BuildManager extends Manager {
 	} else if (UnitType.Terran_Bunker.equals(buildingType)) {
 	    result = locationManager.getBaseEntranceBunker();
 	} else if (UnitType.Terran_Command_Center.equals(buildingType)) {
-	    result = locationManager.getExtentionPosition();
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() == 1) {
+		result = locationManager.getTrainingBuildings();
+	    } else {
+		result = locationManager.getExtentionPosition();
+	    }
 	} else {
 	    Log.error("%s 정의되지 않는 건물 타입입니다: %s", TAG, buildingType);
 	    result = new LinkedList<>();

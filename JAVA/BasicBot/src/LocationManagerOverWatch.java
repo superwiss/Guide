@@ -380,4 +380,16 @@ public class LocationManagerOverWatch extends LocationManager {
 
 	return result;
     }
+
+    @Override
+    public List<TilePosition> getBlockingEntranceBuilding() {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    @Override
+    public List<TilePosition> getSecondEntranceBuilding() {
+	// TODO Auto-generated method stub
+	return null;
+    }
 }

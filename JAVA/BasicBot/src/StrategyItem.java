@@ -5,7 +5,6 @@ public enum StrategyItem {
     AUTO_UPGRADE_U_238_Shells, // 자동으로 마린 사거리 업그레이드를 한다.
     AUTO_UPGRADE_STIMPACK, // 자동으로 스팀팩 업그레이드를 한다.
     AUTO_UPGRADE_CHARON_BOOSTERS, // 자동으로 골리앗 사거리 업그레이드를 한다.
-    
 
     AUTO_ADDON_COMSAT_STATION, // 자동으로 컴샛 스테이션 애드온을 단다.
 
@@ -27,5 +26,7 @@ public enum StrategyItem {
     ASSEMBLE_FOR_BLOCKING_ENEMY, // 적 입구를 조이면서 적이 공격해 오기를 대기한다.
 
     AGGRESSIVE_MOVE_ATTACK, // 공격 후 쿨 타임 차는 동안 Move로 적 방향으로 이동한다.
-    SET_BARRACKS_RALLY // 자동으로 배럭의 랠리 포인트가 아군의 FirstChokePoint로 찍한다.
+    SET_BARRACKS_RALLY, // 자동으로 배럭의 랠리 포인트가 아군의 FirstChokePoint로 찍한다.
+
+    BLOCK_ENTRANCE_ZERG // 저글링도 지나가지 못하도록 입구를 막는다.
 }

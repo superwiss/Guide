@@ -97,4 +97,10 @@ public interface MapInfo {
 
     // 확장 위치를 리턴한다.
     abstract List<TilePosition> getExtentionPosition();
+
+    // 입구를 열고 닫을 배럭의 위치를 리턴한다.
+    abstract List<TilePosition> getBlockingEntranceBuilding();
+
+    // 확장 시 배럭의 위치를 리턴한다.
+    abstract List<TilePosition> getSecondEntranceBuilding();
 }

@@ -41,7 +41,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 
 	// 팩토리는 최초3개 확장 후 5개까지 늘려준다.
 	if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() >= 2) {
-	    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < locationManager.getTrainingBuildings().size() - 5) {
+	    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < 5) {
 		if (gameStatus.getMineral() >= 250 && gameStatus.getGas() >= 150) {
 		    strategyManager.addStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
 		} else {
@@ -68,6 +68,12 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 
 	// 본진에 있는 골리앗을 수리한다.
 	doRepairGoliath();
+
+	// 입구에 있는 배럭을 자동으로 열고 닫는다.
+	doAutoLiftBarracks();
+
+	// 본진의 커맨드 센터를 확장으로 옮긴다.
+	doAutoLiftCommandCenter();
     }
 
     private void checkAttackTimingAndPosition() {
@@ -104,10 +110,10 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		strategyManager.removeStrategyStatus(StrategyStatus.FULLY_ATTACK);
 		Log.info("총 공격이 실패했다. 병력을 모아서 다시 공격가자.");
 	    }
-	} else if (goliathCount < 4) {
+	} else if (goliathCount < 2) {
 	    strategyManager.setAttackTilePosition(locationManager.getBaseEntranceChokePoint());
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-	} else if (goliathCount >= 4 && goliathCount < 24) {
+	} else if (goliathCount >= 2 && goliathCount < 24) {
 	    // 공격 유닛 인구수가 7 ~ 50이면 본진 앞마당 입구로 나온다.
 	    strategyManager.setAttackTilePosition(locationManager.getFirstExtensionChokePoint());
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
@@ -118,7 +124,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
 	    Log.info("적 본진 근처에서 조이기를 한다. 인구수: %d, 위치: %s", goliathCount, strategyManager.getAttackTilePositon());
-	    strategyManager.addStrategyItem(StrategyItem.AUTO_EXTENSION);
+	    //	    strategyManager.addStrategyItem(StrategyItem.AUTO_EXTENSION);
 
 	    // 조이기 시점에 적이 5마리 이상 보이면 총 공격을 한다.
 	    if (enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit).size() > 5) {
@@ -180,7 +186,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 
     // 골리앗 수리와 관련된 작업을 수행한다.
     private void doRepairGoliath() {
-	
+
 	// 1초에 한 번만 수행된다.
 	if (!gameStatus.isMatchedInterval(1)) {
 	    return;
@@ -201,9 +207,9 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    if (goliathSet.size() >= 6) {
 		return;
 	    }
-	    
+
 	    for (Unit2 goliath : goliathSet) {
-		
+
 		if (gameStatus.getMineral() > 50) {
 		    if (UnitType.Terran_Goliath.maxHitPoints() > goliath.getHitPoints()) {
 			repairUnit(allianceUnitInfo, goliath);
@@ -222,6 +228,104 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    if (null != repairWorker) {
 		ActionUtil.repair(allianceUnitInfo, repairWorker, unit);
 		--repairCount;
+	    }
+	}
+    }
+
+    private void doAutoLiftBarracks() {
+
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	//멀티가 아직 지어지지 않았을 경우
+	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center).size() == 1
+		&& allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Barracks).size() > 0) {
+
+	    Unit2 entranceBarrack = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Barracks);
+
+	    //확장기지 근처에 아군 scv가 있을 경우 배럭을 띄운다.
+	    if (allianceUnitInfo.getUnitsInRange(locationManager.getExtentionPosition().get(0).toPosition(), UnitKind.ALL, 250).size() > 0) {
+		//착지 상태의 배럭에 대해
+		if (!entranceBarrack.isLifted()) {
+		    //적 유닛이 근처에 없을 경우에만 띄운다.
+		    if (enemyUnitInfo.getUnitsInRange(locationManager.getExtentionPosition().get(0).toPosition(), UnitKind.ALL, 500).size() == 0) {
+			entranceBarrack.lift();
+		    }
+		}
+	    } else {
+		//배럭이 떠있을 경우 다시 착지시킨다.
+		if (entranceBarrack.isLifted()) {
+		    entranceBarrack
+			    .land(new TilePosition(locationManager.getBlockingEntranceBuilding().get(0).getX(), locationManager.getBlockingEntranceBuilding().get(0).getY()));
+		}
+	    }
+	}
+
+	//멀티가 지어진 경우
+	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center).size() == 2) {
+
+	    Unit2 entranceBarrack = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Barracks);
+	    TilePosition firstExpansionBarrackLocation = locationManager.getSecondEntranceBuilding().get(0);
+
+	    if (entranceBarrack != null) {
+		//착지 상태의 배럭이 확장 위치가 아닐경우 띄운다
+		if (!entranceBarrack.isLifted()) {
+		    if (entranceBarrack.getTilePosition().getX() != firstExpansionBarrackLocation.getX()
+			    || entranceBarrack.getTilePosition().getY() != firstExpansionBarrackLocation.getY()) {
+			entranceBarrack.lift();
+		    }
+		} else {
+		    //떠있을 경우 확장 위치로 배럭을 착지시킨다. 
+		    entranceBarrack.land(new TilePosition(firstExpansionBarrackLocation.getX(), firstExpansionBarrackLocation.getY()));
+		}
+		if (entranceBarrack.isLifted() == false && entranceBarrack.getTilePosition().getX() == firstExpansionBarrackLocation.getX()
+			&& entranceBarrack.getTilePosition().getY() == firstExpansionBarrackLocation.getY()) {
+		    return;
+		}
+	    }
+	}
+    }
+
+    private void doAutoLiftCommandCenter() {
+
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	//멀티가 지어져 있지 않은 상황
+	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center).size() == 2) {
+
+	    Set<Unit2> commandCenterUnitSet = allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center);
+
+	    if (commandCenterUnitSet.size() == 2) {
+
+		Unit2 firstExpansionCommandCenter = null;
+		TilePosition baseLocation = locationManager.getAllianceBaseLocation();
+		TilePosition firstExpansionLocation = locationManager.getExtentionPosition().get(0);
+
+		for (Unit2 unit : commandCenterUnitSet) {
+		    //본진의 커맨드 센터는 무시
+		    if (unit.getTilePosition().getX() == baseLocation.getX() && unit.getTilePosition().getY() == baseLocation.getY()) {
+			continue;
+		    } else {
+			firstExpansionCommandCenter = unit;
+			break;
+		    }
+		}
+
+		if (firstExpansionCommandCenter != null) {
+		    //멀티용 커맨드가 멀티 위치에 있지 않다면 띄운다
+		    if (firstExpansionCommandCenter.isLifted() == false) {
+			if (firstExpansionCommandCenter.getTilePosition().getX() != firstExpansionLocation.getX()
+				|| firstExpansionCommandCenter.getTilePosition().getY() != firstExpansionLocation.getY()) {
+			    firstExpansionCommandCenter.lift();
+			}
+		    } else {
+			//떠있을 경우 멀티 위치에 착지시킨다.
+			firstExpansionCommandCenter.land(new TilePosition(firstExpansionLocation.getX(), firstExpansionLocation.getY()));
+		    }
+		}
 	    }
 	}
     }
@@ -278,6 +382,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_UPGRADE_CHARON_BOOSTERS);
 	strategyItems.add(StrategyItem.AUTO_ADDON_COMSAT_STATION);
 	strategyItems.add(StrategyItem.AUTO_USING_SCAN);
+	strategyItems.add(StrategyItem.BLOCK_ENTRANCE_ZERG);
     }
 
 }

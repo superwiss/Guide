@@ -12,8 +12,17 @@ public class LocationManagerCircuitBreaker extends LocationManager {
     private static final int SEVEN_CLOCK = 2;
     private static final int ELEVEN_CLOCK = 3;
 
+    private StrategyManager strategyManager = null;
+
+    @Override
+    protected void onStart(GameStatus gameStatus) {
+	super.onStart(gameStatus);
+	strategyManager = gameStatus.getStrategyManager();
+    }
+
     @Override
     public List<TilePosition> initBaseLocations() {
+
 	List<TilePosition> result = new ArrayList<>(4);
 
 	result.add(new TilePosition(117, 9)); // 1시
@@ -61,54 +70,104 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result.add(new TilePosition(118, 23));
-	    result.add(new TilePosition(118, 19));
-	    result.add(new TilePosition(118, 15));
-	    result.add(new TilePosition(111, 19));
-	    result.add(new TilePosition(111, 15));
-	    result.add(new TilePosition(111, 11));
-	    result.add(new TilePosition(111, 7));
-	    result.add(new TilePosition(105, 7));
-	    result.add(new TilePosition(105, 11));
-	    result.add(new TilePosition(105, 15));
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+
+		result.add(new TilePosition(122, 24));
+		result.add(new TilePosition(111, 19));
+		result.add(new TilePosition(111, 15));
+		result.add(new TilePosition(111, 11));
+		result.add(new TilePosition(111, 7));
+		result.add(new TilePosition(105, 7));
+		result.add(new TilePosition(105, 11));
+		result.add(new TilePosition(105, 15));
+		result.add(new TilePosition(118, 15));
+		result.add(new TilePosition(118, 19));
+	    } else {
+		result.add(new TilePosition(118, 23));
+		result.add(new TilePosition(118, 19));
+		result.add(new TilePosition(118, 15));
+		result.add(new TilePosition(111, 19));
+		result.add(new TilePosition(111, 15));
+		result.add(new TilePosition(111, 11));
+		result.add(new TilePosition(111, 7));
+		result.add(new TilePosition(105, 7));
+		result.add(new TilePosition(105, 11));
+		result.add(new TilePosition(105, 15));
+	    }
+
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result.add(new TilePosition(118, 102));
-	    result.add(new TilePosition(118, 106));
-	    result.add(new TilePosition(118, 110));
-	    result.add(new TilePosition(111, 106));
-	    result.add(new TilePosition(111, 110));
-	    result.add(new TilePosition(111, 114));
-	    result.add(new TilePosition(105, 110));
-	    result.add(new TilePosition(105, 114));
-	    result.add(new TilePosition(105, 118));
-	    result.add(new TilePosition(111, 118));
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+		result.add(new TilePosition(122, 102));
+		result.add(new TilePosition(110, 104));
+		result.add(new TilePosition(110, 108));
+		result.add(new TilePosition(118, 108));
+		result.add(new TilePosition(110, 112));
+		result.add(new TilePosition(110, 116));
+		result.add(new TilePosition(110, 120));
+	    } else {
+		result.add(new TilePosition(118, 102));
+		result.add(new TilePosition(118, 106));
+		result.add(new TilePosition(118, 110));
+		result.add(new TilePosition(111, 106));
+		result.add(new TilePosition(111, 110));
+		result.add(new TilePosition(111, 114));
+		result.add(new TilePosition(105, 110));
+		result.add(new TilePosition(105, 114));
+		result.add(new TilePosition(105, 118));
+		result.add(new TilePosition(111, 118));
+	    }
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result.add(new TilePosition(0, 101));
-	    result.add(new TilePosition(0, 105));
-	    result.add(new TilePosition(7, 105));
-	    result.add(new TilePosition(0, 109));
-	    result.add(new TilePosition(7, 109));
-	    result.add(new TilePosition(13, 105));
-	    result.add(new TilePosition(13, 109));
-	    result.add(new TilePosition(13, 113));
-	    result.add(new TilePosition(12, 117));
-	    result.add(new TilePosition(12, 121));
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+
+		result.add(new TilePosition(6, 102));
+		result.add(new TilePosition(7, 106));
+		result.add(new TilePosition(13, 106));
+		result.add(new TilePosition(13, 109));
+		result.add(new TilePosition(7, 109));
+		result.add(new TilePosition(0, 109));
+		result.add(new TilePosition(0, 106));
+		result.add(new TilePosition(13, 113));
+		result.add(new TilePosition(12, 117));
+		result.add(new TilePosition(12, 121));
+	    } else {
+		result.add(new TilePosition(0, 101));
+		result.add(new TilePosition(0, 105));
+		result.add(new TilePosition(7, 105));
+		result.add(new TilePosition(0, 109));
+		result.add(new TilePosition(7, 109));
+		result.add(new TilePosition(13, 105));
+		result.add(new TilePosition(13, 109));
+		result.add(new TilePosition(13, 113));
+		result.add(new TilePosition(12, 117));
+		result.add(new TilePosition(12, 121));
+	    }
+
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result.add(new TilePosition(0, 24));
-	    result.add(new TilePosition(0, 20));
-	    result.add(new TilePosition(0, 16));
-	    result.add(new TilePosition(7, 16));
-	    result.add(new TilePosition(7, 20));
-	    result.add(new TilePosition(13, 20));
-	    result.add(new TilePosition(14, 16));
-	    result.add(new TilePosition(8, 12));
-	    result.add(new TilePosition(14, 12));
-	    result.add(new TilePosition(14, 8));
-	}
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
 
+		result.add(new TilePosition(3, 20));
+		result.add(new TilePosition(14, 20));
+		result.add(new TilePosition(14, 16));
+		result.add(new TilePosition(14, 12));
+		result.add(new TilePosition(14, 8));
+		result.add(new TilePosition(8, 12));
+		result.add(new TilePosition(8, 16));
+	    } else {
+		result.add(new TilePosition(0, 24));
+		result.add(new TilePosition(0, 20));
+		result.add(new TilePosition(0, 16));
+		result.add(new TilePosition(7, 16));
+		result.add(new TilePosition(7, 20));
+		result.add(new TilePosition(13, 20));
+		result.add(new TilePosition(14, 16));
+		result.add(new TilePosition(8, 12));
+		result.add(new TilePosition(14, 12));
+		result.add(new TilePosition(14, 8));
+	    }
+	}
 	return result;
     }
 
@@ -140,11 +199,19 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result.add(new TilePosition(125, 25));
-	    result.add(new TilePosition(125, 23));
-	    result.add(new TilePosition(125, 21));
-	    result.add(new TilePosition(125, 19));
-	    result.add(new TilePosition(125, 17));
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+		result.add(new TilePosition(125, 22));
+		result.add(new TilePosition(125, 20));
+		result.add(new TilePosition(125, 18));
+		result.add(new TilePosition(125, 16));
+	    } else {
+		result.add(new TilePosition(125, 25));
+		result.add(new TilePosition(125, 23));
+		result.add(new TilePosition(125, 21));
+		result.add(new TilePosition(125, 19));
+		result.add(new TilePosition(125, 17));
+	    }
+
 	    result.add(new TilePosition(125, 0));
 	    result.add(new TilePosition(125, 2));
 	    result.add(new TilePosition(125, 4));
@@ -169,9 +236,15 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result.add(new TilePosition(101, 2));
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result.add(new TilePosition(125, 102));
-	    result.add(new TilePosition(125, 104));
-	    result.add(new TilePosition(125, 106));
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+		result.add(new TilePosition(125, 100));
+		result.add(new TilePosition(118, 102));
+	    } else {
+		result.add(new TilePosition(125, 102));
+		result.add(new TilePosition(125, 104));
+		result.add(new TilePosition(125, 106));
+	    }
+
 	    result.add(new TilePosition(125, 108));
 	    result.add(new TilePosition(125, 110));
 	    result.add(new TilePosition(125, 112));
@@ -194,11 +267,16 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result.add(new TilePosition(120, 123));
 	    result.add(new TilePosition(117, 121));
 	    result.add(new TilePosition(114, 125));
-	    result.add(new TilePosition(111, 17));
-	    result.add(new TilePosition(114, 17));
+
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result.add(new TilePosition(7, 102));
+
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+		result.add(new TilePosition(0, 100));
+	    } else {
+		result.add(new TilePosition(7, 102));
+	    }
+
 	    result.add(new TilePosition(8, 125));
 	    result.add(new TilePosition(11, 125));
 	    result.add(new TilePosition(14, 125));
@@ -209,9 +287,9 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result.add(new TilePosition(26, 123));
 	    result.add(new TilePosition(23, 123));
 	    result.add(new TilePosition(20, 123));
-	    result.add(new TilePosition(24, 121));
-	    result.add(new TilePosition(21, 121));
-	    result.add(new TilePosition(21, 119));
+	    result.add(new TilePosition(23, 121));
+	    result.add(new TilePosition(20, 121));
+	    result.add(new TilePosition(20, 119));
 	    result.add(new TilePosition(1, 115));
 	    result.add(new TilePosition(4, 115));
 	    result.add(new TilePosition(4, 113));
@@ -228,7 +306,12 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result.add(new TilePosition(29, 123));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result.add(new TilePosition(7, 24));
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+		result.add(new TilePosition(2, 18));
+		result.add(new TilePosition(0, 16));
+	    } else {
+		result.add(new TilePosition(7, 24));
+	    }
 	    result.add(new TilePosition(0, 0));
 	    result.add(new TilePosition(0, 2));
 	    result.add(new TilePosition(0, 4));
@@ -307,16 +390,34 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result = new TilePosition(122, 26);
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+		result = new TilePosition(125, 22);
+	    } else {
+		result = new TilePosition(122, 26);
+	    }
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result = new TilePosition(123, 101);
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+		result = new TilePosition(124, 106);
+	    } else {
+		result = new TilePosition(123, 101);
+	    }
+
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result = new TilePosition(6, 101);
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+		result = new TilePosition(1, 104);
+	    } else {
+		result = new TilePosition(6, 101);
+	    }
+
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result = new TilePosition(4, 25);
+	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+		result = new TilePosition(12, 23);
+	    } else {
+		result = new TilePosition(4, 25);
+	    }
 	}
 
 	return result;
@@ -329,16 +430,16 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result = new TilePosition(109, 34);
+	    result = new TilePosition(113, 34);
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result = new TilePosition(109, 93);
+	    result = new TilePosition(112, 96);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result = new TilePosition(18, 93);
+	    result = new TilePosition(17, 95);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result = new TilePosition(18, 34);
+	    result = new TilePosition(18, 36);
 	}
 
 	return result;
@@ -409,6 +510,45 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result.add(new TilePosition(110, 63));
 	}
 
+	return result;
+    }
+
+    // 입구를 열고 닫을 배럭의 위치를 리턴한다.
+    @Override
+    public List<TilePosition> getBlockingEntranceBuilding() {
+	List<TilePosition> result = new ArrayList<>();
+
+	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+	    result.add(new TilePosition(118, 23));
+	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+	    result.add(new TilePosition(118, 104));
+	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+	    result.add(new TilePosition(2, 102));
+	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+	    result.add(new TilePosition(6, 23));
+	}
+
+	return result;
+    }
+
+    // 확장시 배럭의 위치를 리턴한다.
+    @Override
+    public List<TilePosition> getSecondEntranceBuilding() {
+	List<TilePosition> result = new ArrayList<>();
+
+	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+	    // 1시
+	    result.add(new TilePosition(110, 36));
+	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+	    // 5시
+	    result.add(new TilePosition(110, 90));
+	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+	    // 7시
+	    result.add(new TilePosition(14, 90));
+	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+	    // 11시
+	    result.add(new TilePosition(16, 31));
+	}
 	return result;
     }
 }
