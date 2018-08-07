@@ -159,9 +159,21 @@ public class MicroControlMarine extends Manager {
 	}
 
 	if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && strategyManager.getAttackTilePositon() == locationManager.getBaseEntranceChokePoint()) {
-	    for (Unit2 unit : allianceUnitInfo.getUnitSet(UnitKind.Terran_Marine)) {
+
+	    if (!gameStatus.isMatchedInterval(1)) {
+		return;
+	    }
+
+	    for (Unit2 marine : allianceUnitInfo.getUnitSet(UnitKind.Terran_Marine)) {
+
 		TilePosition attackTilePositon = strategyManager.getAttackTilePositon();
-		ActionUtil.moveToPosition(allianceUnitInfo, unit, attackTilePositon);
+		Unit2 enemy = enemyUnitInfo.getAnyUnitInRange(attackTilePositon.toPosition(), UnitKind.Combat_Unit, 100);
+		if (enemy != null) {
+		    ActionUtil.attackEnemyUnit(allianceUnitInfo, marine, enemy);
+		} else {
+		    ActionUtil.moveToPosition(allianceUnitInfo, marine, attackTilePositon);
+		}
+
 	    }
 	    System.out.println("입구에서 버티기");
 	    return;

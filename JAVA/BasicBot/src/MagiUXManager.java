@@ -60,6 +60,11 @@ public class MagiUXManager extends Manager {
 	tilePositionList = locationManager.getExtentionPosition();
 	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Command_Center, "Expansion Point");
 
+	if (locationManager.getEnemyStartLocation() != null) {
+	    tilePositionList = locationManager.getEnemyBaseSearchSequence();
+	    drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "EnemyBase");
+	}
+
 	//베이스 초크포인트 위치
 	TilePosition tilePos = locationManager.getBaseEntranceChokePoint();
 	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 30, Color.Red);
@@ -78,7 +83,7 @@ public class MagiUXManager extends Manager {
 	    int x = commandCenter.getPosition().getX() - 64;
 	    int y = commandCenter.getPosition().getY() - 32;
 
-	    MyBotModule.Broodwar.drawBoxMap(x - 2, y - 1, x + 75, y + 14, Color.Black, true);
+	    MyBotModule.Broodwar.drawBoxMap(x - 2, y - 1, x + 85, y + 14, Color.Black, true);
 	    MyBotModule.Broodwar.drawTextMap(x, y, white + "Gas Workers: " + gasWorker);
 	}
 

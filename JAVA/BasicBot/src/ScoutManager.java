@@ -250,13 +250,13 @@ public class ScoutManager extends Manager {
 	TilePosition nextTilePosition = null;
 	List<TilePosition> enemyBaseEdge = locationManager.getEnemyBaseSearchSequence();
 
-	if (currentTilePosition.getDistance(enemyBaseEdge.get(0)) <= 2) {
+	if (currentTilePosition.getDistance(enemyBaseEdge.get(0)) <= 3) {
 	    searchFlag = 1;
-	} else if (currentTilePosition.getDistance(enemyBaseEdge.get(1)) <= 2) {
+	} else if (currentTilePosition.getDistance(enemyBaseEdge.get(1)) <= 3) {
 	    searchFlag = 2;
-	} else if (currentTilePosition.getDistance(enemyBaseEdge.get(2)) <= 2) {
+	} else if (currentTilePosition.getDistance(enemyBaseEdge.get(2)) <= 3) {
 	    searchFlag = 3;
-	} else if (currentTilePosition.getDistance(enemyBaseEdge.get(3)) <= 2) {
+	} else if (currentTilePosition.getDistance(enemyBaseEdge.get(3)) <= 3) {
 	    searchFlag = 0;
 	}
 

@@ -1,5 +1,6 @@
 import java.util.Set;
 
+import bwapi.Color;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
@@ -176,7 +177,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	Unit2 academy = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Academy);
 	int goliathCount = allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath).size();
 	if (null == academy) {
-	    if (gameStatus.getMineral() > 150 && 0 == buildManager.getQueueSize() && goliathCount >= 12) {
+	    if (gameStatus.getMineral() > 150 && 0 == buildManager.getQueueSize() && goliathCount >= 8) {
 		if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Academy).size() == 0) {
 		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
 		}
@@ -256,6 +257,16 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    } else {
 		//배럭이 떠있을 경우 다시 착지시킨다.
 		if (entranceBarrack.isLifted()) {
+
+		    TilePosition landPosition = locationManager.getBlockingEntranceBuilding().get(0);
+		    TilePosition checkTile = new TilePosition(landPosition.getX() + 2, landPosition.getY() + 1);
+		    MyBotModule.Broodwar.drawCircleMap(checkTile.getX() * 32, checkTile.getY() * 32, 50, Color.Green);
+		    for (Unit2 unit2 : allianceUnitInfo.getUnitsInRange(checkTile.toPosition(), UnitKind.Combat_Unit, 100)) {
+			System.out.println(unit2.getType().toString());
+			unit2.move(locationManager.allianceBaseLocation.toPosition());
+			ActionUtil.moveToPosition(allianceUnitInfo, unit2, locationManager.allianceBaseLocation.toPosition());
+		    }
+
 		    entranceBarrack
 			    .land(new TilePosition(locationManager.getBlockingEntranceBuilding().get(0).getX(), locationManager.getBlockingEntranceBuilding().get(0).getY()));
 		}

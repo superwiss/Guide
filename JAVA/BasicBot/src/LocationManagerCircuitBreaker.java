@@ -398,7 +398,7 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
 	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
-		result = new TilePosition(124, 106);
+		result = new TilePosition(124, 105);
 	    } else {
 		result = new TilePosition(123, 101);
 	    }
@@ -406,7 +406,7 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
 	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
-		result = new TilePosition(1, 104);
+		result = new TilePosition(2, 102);
 	    } else {
 		result = new TilePosition(6, 101);
 	    }
@@ -414,7 +414,7 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
 	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
-		result = new TilePosition(12, 23);
+		result = new TilePosition(8, 21);
 	    } else {
 		result = new TilePosition(4, 25);
 	    }
@@ -566,12 +566,12 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 		result.add(new TilePosition(125, 104));
 		result.add(new TilePosition(125, 124));
 		result.add(new TilePosition(102, 124));
-		result.add(new TilePosition(104, 103));
+		result.add(new TilePosition(108, 103));
 	    } else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 		result.add(new TilePosition(20, 124));
-		result.add(new TilePosition(1, 124));
+		result.add(new TilePosition(0, 124));
 		result.add(new TilePosition(0, 102));
-		result.add(new TilePosition(20, 105));
+		result.add(new TilePosition(19, 106));
 	    } else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 		result.add(new TilePosition(1, 20));
 		result.add(new TilePosition(1, 1));

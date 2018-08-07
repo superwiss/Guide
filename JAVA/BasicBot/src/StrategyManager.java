@@ -96,6 +96,27 @@ public class StrategyManager extends Manager {
 	    }
 	}
 
+	if (strategyItems.contains(StrategyItem.BLOCK_ENTRANCE_ZERG) && gameStatus.getFrameCount() < 10000) {
+
+	    if (enemyUnitInfo.getUnitsInRange(locationManager.getExtentionPosition().get(0).toPosition(), UnitKind.ALL, 500).size() == 0) {
+		return;
+	    }
+
+	    if (locationManager.getAllianceBaseLocation().equals(locationManager.getBaseLocations(0))
+		    || locationManager.getAllianceBaseLocation().equals(locationManager.getBaseLocations(3))) {
+		if (unit.getType() == UnitType.Terran_Marine || unit.getType() == UnitType.Terran_Vulture) {
+		    allianceUnitInfo.getAnyUnit(UnitKind.Terran_Barracks).lift();
+		}
+	    }
+
+	    TilePosition entrance = locationManager.getBaseEntranceChokePoint();
+	    if (unit.getDistance(entrance.toPosition()) < 100) {
+		if (unit.getType() == UnitType.Terran_Factory || unit.getType() == UnitType.Terran_Supply_Depot) {
+		    allianceUnitInfo.getAnyUnit(UnitKind.Terran_Barracks).lift();
+		}
+	    }
+	}
+
 	strategy.onUnitComplete(unit);
     }
 
@@ -372,6 +393,11 @@ public class StrategyManager extends Manager {
 	if (!gameStatus.isMatchedInterval(1)) {
 	    return;
 	}
+
+	if (strategy.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && gameStatus.getFrameCount() < 10000) {
+	    return;
+	}
+
 	removeStrategyStatus(StrategyStatus.BACK_TO_BASE);
 	if (hasStrategyItem(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE)) {
 	    // 커맨드 센터를 가져온다.
