@@ -320,7 +320,7 @@ public class WorkerManager extends Manager {
 	if (strategyManager.hasStrategyItem(StrategyItem.AUTO_REFINERY_JOB)) {
 
 	    //5초에 한번만 시행한다. 
-	    if (!gameStatus.isMatchedInterval(5)) {
+	    if (!gameStatus.isMatchedInterval(3)) {
 		return;
 	    }
 
@@ -329,6 +329,8 @@ public class WorkerManager extends Manager {
 
 		//대상 커맨드 센터에 할당된 가스 일꾼이 3기 미만일 경우,
 		if (allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Worker_Gather_Gas, 320).size() < 3) {
+
+		    System.out.println(allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Worker_Gather_Gas, 320).size());
 
 		    //대상 커맨드 센터에 할당된 리파이너리를 가져온다.
 		    Unit2 refinery = allianceUnitInfo.getAnyUnitInRange(commandCenter.getPosition(), UnitKind.Terran_Refinery, 320);

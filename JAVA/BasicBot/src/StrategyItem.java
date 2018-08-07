@@ -28,5 +28,6 @@ public enum StrategyItem {
     AGGRESSIVE_MOVE_ATTACK, // 공격 후 쿨 타임 차는 동안 Move로 적 방향으로 이동한다.
     SET_BARRACKS_RALLY, // 자동으로 배럭의 랠리 포인트가 아군의 FirstChokePoint로 찍한다.
 
-    BLOCK_ENTRANCE_ZERG // 저글링도 지나가지 못하도록 입구를 막는다.
+    BLOCK_ENTRANCE_ZERG, // 저글링도 지나가지 못하도록 입구를 막는다.
+    ENEMY_BASE_EDGE_SCOUT // 적 기지의 가장자리를 따라서 정찰한다.
 }

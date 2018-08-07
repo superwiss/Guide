@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
@@ -11,6 +12,8 @@ public class ScoutManager extends Manager {
 
     private LocationManager locationManager;
     private StrategyManager strategyManager;
+    private boolean searchEdege;
+    private int searchFlag;
 
     // TODO 정찰은 1개만 가능하도록 구현됨. 다중 유닛 정찰 구현하기.
     @Override
@@ -34,12 +37,20 @@ public class ScoutManager extends Manager {
 	// 정찰을 완료했으면, 정찰 유닛을 릴리즈 한다.
 	if (true == searchQueue.isEmpty()) {
 	    if (scoutUnit.exists()) {
-		allianceUnitInfo.releaseScoutUnit(scoutUnit);
-		scoutUnit.stop();
+		if (strategyManager.hasStrategyItem(StrategyItem.ENEMY_BASE_EDGE_SCOUT)) {
+		    if (searchEdege == true && locationManager.enemyStartLocation != null) {
+			searchEnemyBase(scoutUnit);
+		    }
+		} else {
+		    allianceUnitInfo.releaseScoutUnit(scoutUnit);
+		    scoutUnit.stop();
+		}
 	    }
 	    Log.info("정찰을 완료했다.");
 	} else {
 	    TilePosition target = searchQueue.peek();
+	    searchEdege = false;
+	    searchFlag = 1;
 
 	    if (gameStatus.isVisible(target)) {
 		// 정찰 위치의 fog of war가 사라지면 Queue에서 제거하고 다음 위치로 이동한다.
@@ -203,6 +214,7 @@ public class ScoutManager extends Manager {
     private void foundEnemyBaseLocation(LocationManager locationManager, TilePosition tilePosition) {
 	Log.info("적 본진을 찾았습니다. 적 본진의 Tile Position=%s", tilePosition);
 	locationManager.setEnemyStartLocation(tilePosition);
+	searchEdege = true;
 	searchQueue.clear();
 	if (strategyManager.hasStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE)) {
 	    strategyManager.removeStrategyStatus(StrategyStatus.SEARCH_FOR_ELIMINATE);
@@ -226,5 +238,39 @@ public class ScoutManager extends Manager {
 	    result = false;
 	}
 	return result;
+    }
+
+    private void searchEnemyBase(Unit2 scout) {
+
+	if (scout == null) {
+	    return;
+	}
+
+	TilePosition currentTilePosition = scout.getTilePosition();
+	TilePosition nextTilePosition = null;
+	List<TilePosition> enemyBaseEdge = locationManager.getEnemyBaseSearchSequence();
+
+	if (currentTilePosition.getDistance(enemyBaseEdge.get(0)) <= 2) {
+	    searchFlag = 1;
+	} else if (currentTilePosition.getDistance(enemyBaseEdge.get(1)) <= 2) {
+	    searchFlag = 2;
+	} else if (currentTilePosition.getDistance(enemyBaseEdge.get(2)) <= 2) {
+	    searchFlag = 3;
+	} else if (currentTilePosition.getDistance(enemyBaseEdge.get(3)) <= 2) {
+	    searchFlag = 0;
+	}
+
+	if (searchFlag == 1) {
+	    nextTilePosition = enemyBaseEdge.get(1);
+	} else if (searchFlag == 2) {
+	    nextTilePosition = enemyBaseEdge.get(2);
+	} else if (searchFlag == 3) {
+	    nextTilePosition = enemyBaseEdge.get(3);
+	} else if (searchFlag == 0) {
+	    nextTilePosition = enemyBaseEdge.get(0);
+	}
+
+	ActionUtil.moveToPosition(allianceUnitInfo, scout, nextTilePosition);
+	Log.debug("%s 정찰 SCV(%s)을 타일(%s)로 이동.", scout, scout.getTilePosition(), nextTilePosition);
     }
 }

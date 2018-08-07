@@ -391,7 +391,7 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
 	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
-		result = new TilePosition(125, 22);
+		result = new TilePosition(125, 23);
 	    } else {
 		result = new TilePosition(122, 26);
 	    }
@@ -550,5 +550,37 @@ public class LocationManagerCircuitBreaker extends LocationManager {
 	    result.add(new TilePosition(16, 31));
 	}
 	return result;
+    }
+
+    // 적 기지의 외곽을 따라 정찰하기 위한 위치를 리턴한다.
+    @Override
+    public List<TilePosition> getEnemyBaseSearchSequence() {
+	if (enemyStartLocation != null) {
+	    List<TilePosition> result = new ArrayList<>();
+	    if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
+		result.add(new TilePosition(104, 0));
+		result.add(new TilePosition(125, 1));
+		result.add(new TilePosition(125, 24));
+		result.add(new TilePosition(105, 18));
+	    } else if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+		result.add(new TilePosition(125, 104));
+		result.add(new TilePosition(125, 124));
+		result.add(new TilePosition(102, 124));
+		result.add(new TilePosition(104, 103));
+	    } else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+		result.add(new TilePosition(20, 124));
+		result.add(new TilePosition(1, 124));
+		result.add(new TilePosition(0, 102));
+		result.add(new TilePosition(20, 105));
+	    } else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+		result.add(new TilePosition(1, 20));
+		result.add(new TilePosition(1, 1));
+		result.add(new TilePosition(20, 1));
+		result.add(new TilePosition(20, 20));
+	    }
+	    return result;
+	} else {
+	    return null;
+	}
     }
 }

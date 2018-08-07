@@ -627,4 +627,10 @@ public class LocationManagerSprit extends LocationManager {
 	// TODO Auto-generated method stub
 	return null;
     }
+
+    @Override
+    public List<TilePosition> getEnemyBaseSearchSequence() {
+	// TODO Auto-generated method stub
+	return null;
+    }
 }

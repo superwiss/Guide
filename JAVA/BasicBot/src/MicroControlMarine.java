@@ -16,6 +16,7 @@ import bwapi.UnitType;
 public class MicroControlMarine extends Manager {
     private final Set<UnitType> medicUnitTypeSet = new HashSet<>();
     private StrategyManager strategyManager = null;
+    private LocationManager locationManager = null;
 
     public MicroControlMarine() {
 	medicUnitTypeSet.add(UnitType.Terran_Medic);
@@ -26,6 +27,7 @@ public class MicroControlMarine extends Manager {
 	super.onStart(gameStatus);
 
 	strategyManager = gameStatus.getStrategyManager();
+	locationManager = gameStatus.getLocationManager();
     }
 
     @Override
@@ -153,6 +155,15 @@ public class MicroControlMarine extends Manager {
 	}
 
 	if (strategyManager.hasStrategyStatus(StrategyStatus.BACK_TO_BASE)) {
+	    return;
+	}
+
+	if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && strategyManager.getAttackTilePositon() == locationManager.getBaseEntranceChokePoint()) {
+	    for (Unit2 unit : allianceUnitInfo.getUnitSet(UnitKind.Terran_Marine)) {
+		TilePosition attackTilePositon = strategyManager.getAttackTilePositon();
+		ActionUtil.moveToPosition(allianceUnitInfo, unit, attackTilePositon);
+	    }
+	    System.out.println("입구에서 버티기");
 	    return;
 	}
 

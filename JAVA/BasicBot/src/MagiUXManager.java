@@ -12,7 +12,7 @@ import bwapi.UnitType;
 public class MagiUXManager extends Manager {
     private StrategyManager strategyManager = null;
     private UnitInfo allianceUnitInfo = null;
-    
+
     private final char white = '';
     private final char teal = '';
 
@@ -69,6 +69,18 @@ public class MagiUXManager extends Manager {
 	tilePos = locationManager.getFirstExtensionChokePoint();
 	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 30, Color.Red);
 	MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "first ex choke point");
+
+	//아군의 모든 완성된 커맨드 센터를 대상으로 한다.
+	for (Unit2 commandCenter : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center)) {
+
+	    int gasWorker = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Worker_Gather_Gas, 320).size();
+
+	    int x = commandCenter.getPosition().getX() - 64;
+	    int y = commandCenter.getPosition().getY() - 32;
+
+	    MyBotModule.Broodwar.drawBoxMap(x - 2, y - 1, x + 75, y + 14, Color.Black, true);
+	    MyBotModule.Broodwar.drawTextMap(x, y, white + "Gas Workers: " + gasWorker);
+	}
 
 	//게임정보를 맵에 표시합니다.
 	drawCurrentMultiInfoOnScreen(40, 60);

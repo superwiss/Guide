@@ -341,13 +341,14 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 8
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 9
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 10
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 11
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 12
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 13
-	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
+	//	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 14
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
@@ -383,6 +384,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_ADDON_COMSAT_STATION);
 	strategyItems.add(StrategyItem.AUTO_USING_SCAN);
 	strategyItems.add(StrategyItem.BLOCK_ENTRANCE_ZERG);
+	strategyItems.add(StrategyItem.ENEMY_BASE_EDGE_SCOUT);
     }
 
 }
