@@ -75,7 +75,8 @@ public class GameCommander implements EventDispatcher {
 	String mapFileName = gameStatus.getGame().mapFileName();
 	if (mapFileName.contains("ircuit")) {
 	    // 서킷 브레이커
-	    locationManager = new LocationManagerCircuitBreaker();
+	    //	    locationManager = new LocationManagerCircuitBreaker(); 
+	    locationManager = new LocationManagerCircuitBreaker_FiveFactoryGoliath();
 	    locationManager.setMapName("CircuitBreaker");
 	} else if (mapFileName.contains("atch")) {
 	    // 오버워치

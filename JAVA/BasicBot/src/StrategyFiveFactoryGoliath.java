@@ -1,6 +1,5 @@
 import java.util.Set;
 
-import bwapi.Color;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
@@ -73,8 +72,11 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	// 입구에 있는 배럭을 자동으로 열고 닫는다.
 	doAutoLiftBarracks();
 
+	// 입구의 건물을 자동으로 수리한다.
+	doBlockEntrance();
+
 	// 본진의 커맨드 센터를 확장으로 옮긴다.
-	doAutoLiftCommandCenter();
+	//	doAutoLiftCommandCenter();
     }
 
     private void checkAttackTimingAndPosition() {
@@ -111,12 +113,12 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		strategyManager.removeStrategyStatus(StrategyStatus.FULLY_ATTACK);
 		Log.info("총 공격이 실패했다. 병력을 모아서 다시 공격가자.");
 	    }
-	} else if (goliathCount < 2) {
-	    strategyManager.setAttackTilePosition(locationManager.getBaseEntranceChokePoint());
-	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-	} else if (goliathCount >= 2 && goliathCount < 24) {
-	    // 공격 유닛 인구수가 7 ~ 50이면 본진 앞마당 입구로 나온다.
+	} else if (goliathCount < 4) {
 	    strategyManager.setAttackTilePosition(locationManager.getFirstExtensionChokePoint());
+	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	} else if (goliathCount >= 4 && goliathCount < 24) {
+	    // 공격 유닛 인구수가 7 ~ 50이면 본진 앞마당 입구로 나온다.
+	    strategyManager.setAttackTilePosition(locationManager.getBaseEntranceChokePoint());
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
 	    Log.info("본진 앞마당으로 내려온다. 인구수: %d. 위치: %s", goliathCount, strategyManager.getAttackTilePositon());
 
@@ -246,11 +248,18 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    Unit2 entranceBarrack = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Barracks);
 
 	    //확장기지 근처에 아군 scv가 있을 경우 배럭을 띄운다.
-	    if (allianceUnitInfo.getUnitsInRange(locationManager.getExtentionPosition().get(0).toPosition(), UnitKind.ALL, 250).size() > 0) {
+	    Unit2 scv = allianceUnitInfo.getAnyUnitInRange(locationManager.getBaseEntranceChokePoint().toPosition(), UnitKind.Terran_SCV, 100);
+	    if (scv != null) {
+
+		//scv가 건설중이면 띄우지 않는다.
+		if (scv.isConstructing()) {
+		    return;
+		}
+
 		//착지 상태의 배럭에 대해
 		if (!entranceBarrack.isLifted()) {
 		    //적 유닛이 근처에 없을 경우에만 띄운다.
-		    if (enemyUnitInfo.getUnitsInRange(locationManager.getExtentionPosition().get(0).toPosition(), UnitKind.ALL, 500).size() == 0) {
+		    if (enemyUnitInfo.getUnitsInRange(locationManager.getBaseEntranceChokePoint().toPosition(), UnitKind.Terran_SCV, 500).size() == 0) {
 			entranceBarrack.lift();
 		    }
 		}
@@ -260,9 +269,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 
 		    TilePosition landPosition = locationManager.getBlockingEntranceBuilding().get(0);
 		    TilePosition checkTile = new TilePosition(landPosition.getX() + 2, landPosition.getY() + 1);
-		    MyBotModule.Broodwar.drawCircleMap(checkTile.getX() * 32, checkTile.getY() * 32, 50, Color.Green);
 		    for (Unit2 unit2 : allianceUnitInfo.getUnitsInRange(checkTile.toPosition(), UnitKind.Combat_Unit, 100)) {
-			System.out.println(unit2.getType().toString());
 			unit2.move(locationManager.allianceBaseLocation.toPosition());
 			ActionUtil.moveToPosition(allianceUnitInfo, unit2, locationManager.allianceBaseLocation.toPosition());
 		    }
@@ -274,26 +281,50 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	}
 
 	//멀티가 지어진 경우
-	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center).size() == 2) {
+	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath).size() >= 4) {
 
 	    Unit2 entranceBarrack = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Barracks);
-	    TilePosition firstExpansionBarrackLocation = locationManager.getSecondEntranceBuilding().get(0);
 
 	    if (entranceBarrack != null) {
 		//착지 상태의 배럭이 확장 위치가 아닐경우 띄운다
 		if (!entranceBarrack.isLifted()) {
-		    if (entranceBarrack.getTilePosition().getX() != firstExpansionBarrackLocation.getX()
-			    || entranceBarrack.getTilePosition().getY() != firstExpansionBarrackLocation.getY()) {
-			entranceBarrack.lift();
+		    entranceBarrack.lift();
+		}
+	    }
+	}
+    }
+
+    private void doBlockEntrance() {
+
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+
+	    TilePosition blockPosition = locationManager.getBaseEntranceChokePoint();
+	    Set<Unit2> buildingSet = allianceUnitInfo.getUnitsInRange(blockPosition.toPosition(), UnitKind.Building, 320);
+
+	    for (Unit2 buidling : buildingSet) {
+		if (gameStatus.getMineral() > 0) {
+		    if (buidling.getType().maxHitPoints() > buidling.getHitPoints()) {
+			repairBuilding(allianceUnitInfo, buidling);
+		    } else {
+			repairCount = 3;
 		    }
-		} else {
-		    //떠있을 경우 확장 위치로 배럭을 착지시킨다. 
-		    entranceBarrack.land(new TilePosition(firstExpansionBarrackLocation.getX(), firstExpansionBarrackLocation.getY()));
 		}
-		if (entranceBarrack.isLifted() == false && entranceBarrack.getTilePosition().getX() == firstExpansionBarrackLocation.getX()
-			&& entranceBarrack.getTilePosition().getY() == firstExpansionBarrackLocation.getY()) {
-		    return;
-		}
+	    }
+	}
+    }
+
+    // 벙거를 수리한다.
+    private void repairBuilding(UnitInfo allianceUnitInfo, Unit2 building) {
+	WorkerManager workerManager = gameStatus.getWorkerManager();
+	Unit2 repairWorker = workerManager.getInterruptableWorker(building.getTilePosition());
+	if (repairCount > 0) {
+	    if (null != repairWorker) {
+		ActionUtil.repair(allianceUnitInfo, repairWorker, building);
+		--repairCount;
 	    }
 	}
     }

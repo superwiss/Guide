@@ -115,11 +115,9 @@ public class BuildManager extends Manager {
 	    }
 
 	}
+
 	Log.info("%s BuildOrder Execute finish", TAG);
-
-	if (gameStatus.isMatchedInterval(1))
-
-	{
+	if (gameStatus.isMatchedInterval(1)) {
 	    rebalanceFactoryTrainingQueue();
 	}
     }
@@ -586,11 +584,7 @@ public class BuildManager extends Manager {
 	} else if (UnitType.Terran_Bunker.equals(buildingType)) {
 	    result = locationManager.getBaseEntranceBunker();
 	} else if (UnitType.Terran_Command_Center.equals(buildingType)) {
-	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() == 1) {
-		result = locationManager.getTrainingBuildings();
-	    } else {
-		result = locationManager.getExtentionPosition();
-	    }
+	    result = locationManager.getExtentionPosition();
 	} else {
 	    Log.error("%s 정의되지 않는 건물 타입입니다: %s", TAG, buildingType);
 	    result = new LinkedList<>();

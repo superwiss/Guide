@@ -45,6 +45,9 @@ public class MagiUXManager extends Manager {
 	tilePositionList = locationManager.getTrainingBuildings();
 	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Barracks, "Barracks");
 
+	tilePositionList = locationManager.getBlockingEntranceBuilding();
+	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Barracks, "Block Building");
+
 	tilePositionList = locationManager.get3by2SizeBuildings();
 	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Supply_Depot, "Supply");
 
@@ -67,7 +70,7 @@ public class MagiUXManager extends Manager {
 
 	//베이스 초크포인트 위치
 	TilePosition tilePos = locationManager.getBaseEntranceChokePoint();
-	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 30, Color.Red);
+	MyBotModule.Broodwar.drawCircleMap(tilePos.getX() * 32, tilePos.getY() * 32, 100, Color.Red);
 	MyBotModule.Broodwar.drawTextMap(tilePos.getX() * 32 - 40, tilePos.getY() * 32 - 7, "base ent choke point");
 
 	//확장 초크포인트 위치
@@ -91,8 +94,7 @@ public class MagiUXManager extends Manager {
 	drawCurrentMultiInfoOnScreen(40, 60);
     }
 
-    // Unit의 ID를 표시한다.
-    // Unit의 ID를 표시한다.
+    // Unit의 ID와 일꾼의 역할을 표시한다.
     public void drawUnitId() {
 	Game game = gameStatus.getGame();
 	for (Unit2 unit : Unit2.get(game.self().getUnits())) {
