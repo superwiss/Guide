@@ -75,6 +75,9 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	// 입구의 건물을 자동으로 수리한다.
 	doBlockEntrance();
 
+	// 스캔 사용 여부에 따라 본진의 움직임을 결정한다.
+	checkComsat();
+
 	// 본진의 커맨드 센터를 확장으로 옮긴다.
 	//	doAutoLiftCommandCenter();
     }
@@ -259,7 +262,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		//착지 상태의 배럭에 대해
 		if (!entranceBarrack.isLifted()) {
 		    //적 유닛이 근처에 없을 경우에만 띄운다.
-		    if (enemyUnitInfo.getUnitsInRange(locationManager.getBaseEntranceChokePoint().toPosition(), UnitKind.Terran_SCV, 500).size() == 0) {
+		    if (enemyUnitInfo.getUnitsInRange(locationManager.getBaseEntranceChokePoint().toPosition(), UnitKind.ALL, 500).size() == 0) {
 			entranceBarrack.lift();
 		    }
 		}
@@ -329,45 +332,45 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	}
     }
 
-    private void doAutoLiftCommandCenter() {
+    private void checkComsat() {
 
-	if (!gameStatus.isMatchedInterval(1)) {
-	    return;
+	Set<Unit2> comsats = allianceUnitInfo.getUnitSet(UnitKind.Terran_Comsat_Station);
+	boolean backToBase = true;
+
+	for (Unit2 comsat : comsats) {
+	    if (comsat.getEnergy() >= 100) {
+		backToBase = false;
+	    }
 	}
 
-	//멀티가 지어져 있지 않은 상황
-	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center).size() == 2) {
+	// 적 클로킹 유닛을 찾는다.
+	Set<Unit2> clockedUnitSet = enemyUnitInfo.getUnitSet(UnitKind.Clocked);
+	if (clockedUnitSet.size() > 0) {
+	    Log.trace("Clocked Unit Size: %d", clockedUnitSet.size());
+	    for (Unit2 clockedUnit : clockedUnitSet) {
+		if (null != clockedUnit && clockedUnit.exists()) {
 
-	    Set<Unit2> commandCenterUnitSet = allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center);
-
-	    if (commandCenterUnitSet.size() == 2) {
-
-		Unit2 firstExpansionCommandCenter = null;
-		TilePosition baseLocation = locationManager.getAllianceBaseLocation();
-		TilePosition firstExpansionLocation = locationManager.getExtentionPosition().get(0);
-
-		for (Unit2 unit : commandCenterUnitSet) {
-		    //본진의 커맨드 센터는 무시
-		    if (unit.getTilePosition().getX() == baseLocation.getX() && unit.getTilePosition().getY() == baseLocation.getY()) {
-			continue;
+		    //클로킹 유닛이 존재할 때 컴셋이 없거나, 마나가 부족하면 기지로 복귀한다.
+		    if (comsats.size() == 0) {
+			backToBase = true;
 		    } else {
-			firstExpansionCommandCenter = unit;
-			break;
-		    }
-		}
-
-		if (firstExpansionCommandCenter != null) {
-		    //멀티용 커맨드가 멀티 위치에 있지 않다면 띄운다
-		    if (firstExpansionCommandCenter.isLifted() == false) {
-			if (firstExpansionCommandCenter.getTilePosition().getX() != firstExpansionLocation.getX()
-				|| firstExpansionCommandCenter.getTilePosition().getY() != firstExpansionLocation.getY()) {
-			    firstExpansionCommandCenter.lift();
+			for (Unit2 comsat : comsats) {
+			    if (comsat.getEnergy() >= 50) {
+				backToBase = false;
+			    }
 			}
-		    } else {
-			//떠있을 경우 멀티 위치에 착지시킨다.
-			firstExpansionCommandCenter.land(new TilePosition(firstExpansionLocation.getX(), firstExpansionLocation.getY()));
 		    }
 		}
+	    }
+
+	    if (backToBase) {
+		strategyManager.addStrategyStatus(StrategyStatus.BACK_TO_BASE);
+		strategyManager.removeStrategyStatus(StrategyStatus.FULLY_ATTACK);
+		strategyManager.removeStrategyStatus(StrategyStatus.ATTACK);
+		for (Unit2 goliath : allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath)) {
+		    ActionUtil.attackPosition(allianceUnitInfo, goliath, locationManager.getBaseEntranceChokePoint());
+		}
+		Log.info("스캔을 사용할 수 없으니 기지로 복귀");
 	    }
 	}
     }
@@ -383,20 +386,20 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 8
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 9
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
+	//	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 10
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 11
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 12
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 13
-	//	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
+	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 14
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 15
+	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
-	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine)); // 16
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 17
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine)); // 18

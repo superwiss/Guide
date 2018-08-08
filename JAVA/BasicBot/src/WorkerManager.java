@@ -266,6 +266,10 @@ public class WorkerManager extends Manager {
 		    break;
 		}
 
+		if (allianceUnitInfo.isKindOf(worker, UnitKind.Worker_Gather_Gas)) {
+		    continue;
+		}
+
 		Log.info("autoRebalanceWorker: 일꾼을 데려온다: %s -> %s", worker, commandCenter);
 		ActionUtil.moveToPosition(allianceUnitInfo, worker, commandCenter.getPosition());
 		rebalanceWorkerSize -= 1;
