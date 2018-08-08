@@ -297,7 +297,11 @@ public class GameStatus {
     }
 
     public void drawCircleMap(Unit2 unit, int radius, Color color) {
-	game.drawCircleMap(unit.getPosition().getX(), unit.getPosition().getY(), radius, color);
+	drawCircleMap(unit, radius, color, false);
+    }
+
+    public void drawCircleMap(Unit2 unit, int radius, Color color, boolean isSolid) {
+	game.drawCircleMap(unit.getPosition().getX(), unit.getPosition().getY(), radius, color, isSolid);
     }
 
     public Position getMousePosition() {

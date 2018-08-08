@@ -92,13 +92,28 @@ public class MagiUXManager extends Manager {
     }
 
     // Unit의 ID를 표시한다.
+    // Unit의 ID를 표시한다.
     public void drawUnitId() {
 	Game game = gameStatus.getGame();
 	for (Unit2 unit : Unit2.get(game.self().getUnits())) {
 	    gameStatus.drawTextMap(unit.getPosition(), "" + unit.getID());
+
+	    if (unit.getType() == UnitType.Terran_SCV) {
+		if (allianceUnitInfo.isKindOf(unit, UnitKind.Worker_Gather_Gas)) {
+		    gameStatus.drawCircleMap(unit, 5, Color.Green, true);
+		} else if (allianceUnitInfo.isKindOf(unit, UnitKind.Worker_Construct)) {
+		    gameStatus.drawCircleMap(unit, 5, Color.Yellow, true);
+		} else if (allianceUnitInfo.isKindOf(unit, UnitKind.Scouting_Unit)) {
+		    gameStatus.drawCircleMap(unit, 5, Color.Purple, true);
+		} else {
+		    gameStatus.drawCircleMap(unit, 5, Color.Cyan, true);
+		}
+	    }
 	}
+
 	for (Unit2 unit : Unit2.get(game.enemy().getUnits())) {
 	    gameStatus.drawTextMap(unit.getPosition(), "" + unit.getID());
+
 	}
     }
 

@@ -100,12 +100,26 @@ public class BuildManager extends Manager {
 		Log.trace("%s 빌드 오더 실행 중: %s", TAG, buildOrderItem);
 	    } else {
 		Log.trace("%s 빌드 오더 Skip: %s", TAG, buildOrderItem);
+
+		//빌드오더 아이템에 일꾼정보가 있으나, 그 일꾼이 존재하지 않는다면 죽었다고 가정
+		if (buildOrderItem.getWorker() != null) {
+		    if (!buildOrderItem.getWorker().exists()) {
+			Unit2 worker = workerManager.getInterruptableWorker(buildOrderItem.getTilePosition());
+			// 일꾼을 다시 할당한다.
+			if (null != worker) {
+			    Log.warn("%s 건물을 건설할 일꾼이 사라져서 다시 할당합니다. buildOrderItem: %s", TAG, buildOrderItem);
+			    buildOrderItem.setWorker(worker);
+			}
+		    }
+		}
 	    }
 
 	}
 	Log.info("%s BuildOrder Execute finish", TAG);
 
-	if (gameStatus.isMatchedInterval(1)) {
+	if (gameStatus.isMatchedInterval(1))
+
+	{
 	    rebalanceFactoryTrainingQueue();
 	}
     }
