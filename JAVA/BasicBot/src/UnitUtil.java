@@ -790,7 +790,39 @@ public class UnitUtil {
 		result = unit1;
 	    }
 	}
+	return result;
+    }
 
+    //가까운 유닛을 선택해줌과 동시에, 근처에 적이 없는 유닛으로 선택해준다. (입구막기 로직 관련 버그를 해결하기 위한 메소드)
+    public static Unit2 getCloseAndSafeUnit(Unit2 unit1, Unit2 unit2, TilePosition tilePosition, int minDiff, int maxDistance, UnitInfo enemyUnit) {
+	Unit2 result = null;
+
+	if (null != unit1 && null == unit2) {
+	    result = unit1;
+	} else if (null == unit1 && null != unit2) {
+	    result = unit2;
+	} else {
+	    int distanceUnit1 = getDistance(unit1, tilePosition);
+	    int distanceUnit2 = getDistance(unit2, tilePosition);
+	    if (distanceUnit1 <= distanceUnit2) {
+		result = unit1;
+	    } else {
+		result = unit2;
+	    }
+	    if (result.equals(unit2) && (distanceUnit1 - distanceUnit2) <= minDiff) {
+		result = unit1;
+	    }
+	    if (distanceUnit1 >= maxDistance || distanceUnit1 >= maxDistance) {
+		result = unit1;
+	    }
+
+	    if (enemyUnit.getAnyUnitInRange(unit1.getPosition(), UnitKind.Combat_Unit, 200) != null) {
+		result = unit2;
+	    }
+	    if (enemyUnit.getAnyUnitInRange(unit2.getPosition(), UnitKind.Combat_Unit, 200) != null) {
+		result = unit1;
+	    }
+	}
 	return result;
     }
 }

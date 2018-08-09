@@ -469,7 +469,7 @@ public class BuildManager extends Manager {
 		}
 
 		// 둘 중 더 가까운 일꾼을 다시 선택한다. 거리 차이가 16 이하라면, 조금 멀더라도 기존 일꾼이 계속 건설하는 것이 효율적이다.
-		worker = UnitUtil.getCloseUnit(oldWorker, newWorker, tilePosition, 16, 500);
+		worker = UnitUtil.getCloseAndSafeUnit(oldWorker, newWorker, tilePosition, 16, 500, enemyUnitInfo);
 
 		// 건설용 일꾼이 교체되었다면, 이에 대한 처리를 한다.
 		if (null != worker && !worker.equals(oldWorker)) {
@@ -539,8 +539,12 @@ public class BuildManager extends Manager {
 		}
 		// 건물이나 유닛에 막혀 있다면, 포기하고 다음 위치에 건물을 짓는다.
 		if (unit.getTilePosition().equals(tilePosition)) {
-		    result = true;
-		    break;
+		    if (UnitUtil.isAllianceUnit(unit) && unit.getType() == UnitType.Terran_SCV) {
+			continue;
+		    } else {
+			result = true;
+			break;
+		    }
 		}
 	    }
 	}

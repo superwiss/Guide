@@ -175,7 +175,6 @@ public class MicroControlMarine extends Manager {
 		}
 
 	    }
-	    System.out.println("입구에서 버티기");
 	    return;
 	}
 

@@ -47,6 +47,7 @@ public class WorkerManager extends Manager {
 	}
 
 	autoRebalanceWorker();
+	autoTrainWorker();
 	doRefineryJob();
 
 	//loggingDetailSCVInfo();
@@ -234,7 +235,7 @@ public class WorkerManager extends Manager {
 	    Set<Unit2> workerSet = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Worker, 200);
 
 	    // 미네랄 개수 * 2 보다 일꾼이 많으면, 초과 일꾼을 옮길 준비한다.
-	    int rebalanceWorkerSize = workerSet.size() - mineralSet.size() * 2;
+	    int rebalanceWorkerSize = workerSet.size() - mineralSet.size() * 1;
 	    Log.info("autoRebalanceWorker (빼기): CommandCenter(%s)의 미네랄 수: %d, 일꾼 수: %d, rebalanceWorkerSize: %d", commandCenter, mineralSet.size(), workerSet.size(),
 		    rebalanceWorkerSize);
 	    for (Unit2 worker : workerSet) {
@@ -252,13 +253,18 @@ public class WorkerManager extends Manager {
 		continue;
 	    }
 
+	    //이미 적정 숫자의 일꾼이 있는 커맨드 센터는 제외한다.
+	    if (findMineralWorkerSetNear(commandCenter, UnitKind.Terran_SCV, 320).size() > 10) {
+		continue;
+	    }
+
 	    // 커맨드 센터 주변의 미네랄 개수를 구한다.
 	    Set<Unit2> mineralSet = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Resource_Mineral_Field, 200);
 	    // 커맨드 센터 주변의 일꾼 개수를 구한다.
 	    Set<Unit2> workerSet = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Worker, 200);
 
 	    // 미네랄 개수 * 2 보다 일꾼이 적으면, 초과 일꾼을 붙인다.
-	    int rebalanceWorkerSize = workerSet.size() - mineralSet.size() * 2;
+	    int rebalanceWorkerSize = workerSet.size() - mineralSet.size() * 1;
 	    Log.info("autoRebalanceWorker (더하기): CommandCenter(%s)의 미네랄 수: %d, 일꾼 수: %d, rebalanceWorkerSize: %d", commandCenter, mineralSet.size(), workerSet.size(),
 		    rebalanceWorkerSize);
 	    for (Unit2 worker : rebalanceWorkerSet) {
@@ -282,25 +288,25 @@ public class WorkerManager extends Manager {
 	Log.info("최종 부족한 일꾼 개수: %d, 생산되어 있는 일꾼 수: %d", lackWorkerCount, totalWorkerSize);
 
 	// 부족한 일꾼 개수만큼 유닛을 훈련한다. (일꾼 최대 개수는 60)
-	if (totalWorkerSize < 60) {
-	    Set<Unit2> CommandCenterSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center);
-	    for (Unit2 commandCenter : CommandCenterSet) {
-		if (!commandCenter.exists() || !commandCenter.isCompleted()) {
-		    continue;
-		}
-		if (lackWorkerCount <= 0) {
-		    break;
-		}
-		if (0 == commandCenter.getTrainingQueue().size()) {
-		    int trainingRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV);
-		    if (1 > trainingRemainSize) {
-			Log.info("일꾼 생산. 남은 훈련시간: %d, 커맨드 센터: %s", commandCenter.getRemainingTrainTime(), commandCenter);
-			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
-			lackWorkerCount -= 1;
-		    }
-		}
-	    }
-	}
+	//	if (totalWorkerSize < 60) {
+	//	    Set<Unit2> CommandCenterSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center);
+	//	    for (Unit2 commandCenter : CommandCenterSet) {
+	//		if (!commandCenter.exists() || !commandCenter.isCompleted()) {
+	//		    continue;
+	//		}
+	//		if (lackWorkerCount <= 0) {
+	//		    break;
+	//		}
+	//		if (0 == commandCenter.getTrainingQueue().size()) {
+	//		    int trainingRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV);
+	//		    if (1 > trainingRemainSize) {
+	//			Log.info("일꾼 생산. 남은 훈련시간: %d, 커맨드 센터: %s", commandCenter.getRemainingTrainTime(), commandCenter);
+	//			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV));
+	//			lackWorkerCount -= 1;
+	//		    }
+	//		}
+	//	    }
+	//	}
 
 	/*
 	Log.info("autoRebalanceWorker: 부족한 일꾼 수=%d", lackWorkerCount);
@@ -316,6 +322,56 @@ public class WorkerManager extends Manager {
 	    }
 	}
 	*/
+    }
+
+    // 자동으로 SCV를 훈련하는 작업을 수행한다
+    private void autoTrainWorker() {
+
+	// 1초에 한 번만 수행된다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	if (buildManager.isInitialBuildFinished()) {
+
+	    if (gameStatus.getSupplyTotal() - gameStatus.getSupplyUsed() < 2) {
+		return;
+	    }
+
+	    //커맨드 센터 주변의 총 미네랄 갯수를 가져온다.
+	    int mineral_count = 0;
+	    Set<Unit2> commandCenters = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center);
+	    for (Unit2 commandCenter : commandCenters) {
+		int minerals = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Resource_Mineral_Field, 320).size();
+		if (minerals > 0) {
+		    mineral_count += minerals;
+		}
+	    }
+
+	    if (0 == buildManager.getQueueSize()) {
+
+		if (gameStatus.getMineral() >= 50) {
+
+		    //최대 일꾼 갯수는 미네랄 덩이 *2 + 커맨드 센터 갯수 *4(여유분) 이다. 
+		    int maxworkerCount = mineral_count * 2 + 4 * commandCenters.size();
+
+		    Set<Unit2> scvSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_SCV);
+		    int scvCount = scvSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Command_Center, UnitType.Terran_SCV);
+		    int maxscv = 60;
+
+		    if (scvCount < maxscv && scvCount < maxworkerCount) {
+			Unit2 commandCenter = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Command_Center, UnitType.Terran_SCV);
+			if (null != commandCenter) {
+			    if (allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Resource_Mineral_Field, 320).size() > 4
+				    && allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Resource_Vespene_Geyser, 300).size() > 0) {
+				Log.info("SCV 생산. SCV 수: %d,", scvCount);
+				commandCenter.train(UnitType.Terran_SCV);
+			    }
+			}
+		    }
+		}
+	    }
+	}
     }
 
     //가스 일꾼이 3기 미만인 경우, 자동으로 일꾼 3마리를 할당시켜준다. 확장 주변에 베스핀이 있을 경우 리파이너리를 지어준다.

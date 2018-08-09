@@ -4,6 +4,7 @@ import java.util.Set;
 
 import bwapi.Player;
 import bwapi.Position;
+import bwapi.Race;
 import bwapi.UnitType;
 
 /// 실제 봇프로그램의 본체가 되는 class<br>
@@ -75,8 +76,11 @@ public class GameCommander implements EventDispatcher {
 	String mapFileName = gameStatus.getGame().mapFileName();
 	if (mapFileName.contains("ircuit")) {
 	    // 서킷 브레이커
-	    //	    locationManager = new LocationManagerCircuitBreaker(); 
-	    locationManager = new LocationManagerCircuitBreaker_FiveFactoryGoliath();
+	    if (gameStatus.getEnemyRace().equals(Race.Zerg)) {
+		locationManager = new LocationManagerCircuitBreaker_FiveFactoryGoliath();
+	    } else {
+		locationManager = new LocationManagerCircuitBreaker();
+	    }
 	    locationManager.setMapName("CircuitBreaker");
 	} else if (mapFileName.contains("atch")) {
 	    // 오버워치

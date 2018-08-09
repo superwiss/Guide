@@ -173,10 +173,11 @@ public class MagiUXManager extends Manager {
 	MyBotModule.Broodwar.drawTextScreen(x, y, white + " <Current Strategy>");
 	MyBotModule.Broodwar.drawTextScreen(x, y + 10, teal + "CombatUnit Count = " + allianceUnitInfo.getSupplyUsedExceptWorker());
 	MyBotModule.Broodwar.drawTextScreen(x, y + 20, teal + "Goliath Count = " + allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath).size());
+	MyBotModule.Broodwar.drawTextScreen(x, y + 30, teal + "SCV Count = " + allianceUnitInfo.getUnitSet(UnitKind.Worker).size());
 
 	int seq = 1;
 	for (StrategyStatus status : strategyManager.getStrategyStatus()) {
-	    MyBotModule.Broodwar.drawTextScreen(x, y + 20 + seq * 10, teal + "Strategy Status = " + status);
+	    MyBotModule.Broodwar.drawTextScreen(x, y + 30 + seq * 10, teal + "Strategy Status = " + status);
 	    seq++;
 	}
     }

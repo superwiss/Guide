@@ -1,5 +1,6 @@
 import java.util.Set;
 
+import bwapi.Order;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
@@ -147,6 +148,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
 	    strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
 	    // 공격과 동시에 추가 확장을 시도한다.
+	    strategyManager.addStrategyItem(StrategyItem.AUTO_EXTENSION);
 
 	    Log.info("총 공격을 간다. 인구수: %d, 위치: %s", goliathCount, attackTilePosition);
 	}
@@ -178,11 +180,9 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    return;
 	}
 
-	//골리앗이 한부대 정도 되었을 때 아카데미를 건설한다.
 	Unit2 academy = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Academy);
-	int goliathCount = allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath).size();
 	if (null == academy) {
-	    if (gameStatus.getMineral() > 150 && 0 == buildManager.getQueueSize() && goliathCount >= 8) {
+	    if (gameStatus.getMineral() > 150 && 0 == buildManager.getQueueSize()) {
 		if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Academy).size() == 0) {
 		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
 		}
@@ -334,43 +334,43 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 
     private void checkComsat() {
 
-	Set<Unit2> comsats = allianceUnitInfo.getUnitSet(UnitKind.Terran_Comsat_Station);
-	boolean backToBase = true;
-
-	for (Unit2 comsat : comsats) {
-	    if (comsat.getEnergy() >= 100) {
-		backToBase = false;
-	    }
-	}
-
-	// 적 클로킹 유닛을 찾는다.
-	Set<Unit2> clockedUnitSet = enemyUnitInfo.getUnitSet(UnitKind.Clocked);
-	if (clockedUnitSet.size() > 0) {
-	    Log.trace("Clocked Unit Size: %d", clockedUnitSet.size());
-	    for (Unit2 clockedUnit : clockedUnitSet) {
-		if (null != clockedUnit && clockedUnit.exists()) {
-
-		    //클로킹 유닛이 존재할 때 컴셋이 없거나, 마나가 부족하면 기지로 복귀한다.
-		    if (comsats.size() == 0) {
-			backToBase = true;
-		    } else {
-			for (Unit2 comsat : comsats) {
-			    if (comsat.getEnergy() >= 50) {
-				backToBase = false;
-			    }
-			}
+	if (allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Science_Vessel).size() == 0
+		&& (allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Comsat_Station).size() == 0)) {
+	    for (Unit2 unit : enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit)) {
+		if (unit.isVisible() && (!unit.isDetected() || unit.getOrder() == Order.Burrowing) && unit.getPosition().isValid() && unit.isFlying() == false) {
+		    strategyManager.addStrategyStatus(StrategyStatus.BACK_TO_BASE);
+		    strategyManager.removeStrategyStatus(StrategyStatus.FULLY_ATTACK);
+		    strategyManager.removeStrategyStatus(StrategyStatus.ATTACK);
+		    for (Unit2 goliath : allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath)) {
+			ActionUtil.attackPosition(allianceUnitInfo, goliath, locationManager.getBaseEntranceChokePoint());
 		    }
 		}
 	    }
+	} else if (allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Comsat_Station).size() > 0) {
 
-	    if (backToBase) {
-		strategyManager.addStrategyStatus(StrategyStatus.BACK_TO_BASE);
-		strategyManager.removeStrategyStatus(StrategyStatus.FULLY_ATTACK);
-		strategyManager.removeStrategyStatus(StrategyStatus.ATTACK);
-		for (Unit2 goliath : allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath)) {
-		    ActionUtil.attackPosition(allianceUnitInfo, goliath, locationManager.getBaseEntranceChokePoint());
+	    boolean canUseScan = false;
+	    boolean isCloakUnit = false;
+
+	    for (Unit2 unit : enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit)) {
+		if (unit.isVisible() && (!unit.isDetected() || unit.getOrder() == Order.Burrowing) && unit.getPosition().isValid() && unit.isFlying() == false) {
+		    isCloakUnit = true;
 		}
-		Log.info("스캔을 사용할 수 없으니 기지로 복귀");
+	    }
+
+	    if (isCloakUnit) {
+		for (Unit2 comsat : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Comsat_Station)) {
+		    if (comsat.getEnergy() > 50) {
+			canUseScan = true;
+		    }
+		}
+		if (canUseScan == false) {
+		    strategyManager.addStrategyStatus(StrategyStatus.BACK_TO_BASE);
+		    strategyManager.removeStrategyStatus(StrategyStatus.FULLY_ATTACK);
+		    strategyManager.removeStrategyStatus(StrategyStatus.ATTACK);
+		    for (Unit2 goliath : allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath)) {
+			ActionUtil.attackPosition(allianceUnitInfo, goliath, locationManager.getBaseEntranceChokePoint());
+		    }
+		}
 	    }
 	}
     }
@@ -419,6 +419,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.ADD_ON, UnitType.Terran_Machine_Shop));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SET_STRATEGY_ITEM, StrategyItem.AUTO_BUILD_SUPPLY));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SET_STRATEGY_ITEM, StrategyItem.AUTO_TRAIN_GOLIATH));
+	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
     }
 
     @Override
