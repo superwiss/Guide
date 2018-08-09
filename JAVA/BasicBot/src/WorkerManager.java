@@ -209,7 +209,7 @@ public class WorkerManager extends Manager {
     }
 
     private void autoRebalanceWorker() {
-	if (!gameStatus.isMatchedInterval(5)) {
+	if (!gameStatus.isMatchedInterval(10)) {
 	    // 5초에 한 번만 수행한다.
 	    return;
 	}
@@ -234,12 +234,17 @@ public class WorkerManager extends Manager {
 	    // 커맨드 센터 주변의 일꾼 개수를 구한다.
 	    Set<Unit2> workerSet = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Worker, 200);
 
-	    // 미네랄 개수 * 2 보다 일꾼이 많으면, 초과 일꾼을 옮길 준비한다.
+	    // 미네랄 개수 * 2 보다 일꾼이 많으면, 초과 일꾼을 옮길 준비한다. -> 1로 수정
 	    int rebalanceWorkerSize = workerSet.size() - mineralSet.size() * 1;
 	    Log.info("autoRebalanceWorker (빼기): CommandCenter(%s)의 미네랄 수: %d, 일꾼 수: %d, rebalanceWorkerSize: %d", commandCenter, mineralSet.size(), workerSet.size(),
 		    rebalanceWorkerSize);
+	    int maxseq = 0;
 	    for (Unit2 worker : workerSet) {
 		if (rebalanceWorkerSize <= 0) {
+		    break;
+		}
+		maxseq++;
+		if (maxseq == 5) {
 		    break;
 		}
 		rebalanceWorkerSet.add(worker);

@@ -48,8 +48,15 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		} else {
 		    strategyManager.removeStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
 		}
+	    } else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() >= 5
+		    && allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < locationManager.getTrainingBuildings().size()) {
+		if (gameStatus.getMineral() >= 400 && gameStatus.getGas() >= 200) {
+		    strategyManager.addStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
+		} else {
+		    strategyManager.removeStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
+		}
 	    } else {
-		strategyManager.removeStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
+
 	    }
 	}
 
@@ -79,8 +86,21 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	// 스캔 사용 여부에 따라 본진의 움직임을 결정한다.
 	checkComsat();
 
+	autoBuildSupply();
+
 	// 본진의 커맨드 센터를 확장으로 옮긴다.
 	//	doAutoLiftCommandCenter();
+    }
+
+    private void autoBuildSupply() {
+
+	if (true == buildManager.isInitialBuildFinished() && 1 >= buildManager.getQueueSize()) {
+	    // 서플 여유가 8개 이하면 서플을 짓는다. (최대 2개를 동시에 지을 수 있음) 
+	    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 8 * 2 && gameStatus.getSupplyTotal() < 400) {
+		buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+	    }
+	}
+
     }
 
     private void checkAttackTimingAndPosition() {
