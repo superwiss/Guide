@@ -46,7 +46,9 @@ public class MagiUXManager extends Manager {
 	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Barracks, "Barracks");
 
 	tilePositionList = locationManager.getBlockingEntranceBuilding();
-	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Barracks, "Block Building");
+	if (tilePositionList != null) {
+	    drawBuildingBoxMap(tilePositionList, UnitType.Terran_Barracks, "Block Building");
+	}
 
 	tilePositionList = locationManager.get3by2SizeBuildings();
 	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Supply_Depot, "Supply");
@@ -65,7 +67,9 @@ public class MagiUXManager extends Manager {
 
 	if (locationManager.getEnemyStartLocation() != null) {
 	    tilePositionList = locationManager.getEnemyBaseSearchSequence();
-	    drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "EnemyBase");
+	    if (tilePositionList != null) {
+		drawBuildingBoxMap(tilePositionList, UnitType.Terran_Missile_Turret, "EnemyBase");
+	    }
 	}
 
 	//베이스 초크포인트 위치

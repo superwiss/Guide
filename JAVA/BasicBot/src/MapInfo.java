@@ -106,4 +106,6 @@ public interface MapInfo {
 
     // 적 기지의 외곽을 따라 정찰하기 위한 위치를 리턴한다.
     abstract List<TilePosition> getEnemyBaseSearchSequence();
+
+    abstract List<TilePosition> getMineralExpansion();
 }

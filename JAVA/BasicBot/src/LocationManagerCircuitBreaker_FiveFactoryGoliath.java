@@ -357,16 +357,16 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result = new TilePosition(106, 35);
+	    result = new TilePosition(99, 33);
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result = new TilePosition(107, 94);
+	    result = new TilePosition(99, 92);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result = new TilePosition(22, 94);
+	    result = new TilePosition(26, 92);
 
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
-	    result = new TilePosition(21, 35);
+	    result = new TilePosition(24, 34);
 	}
 
 	return result;
@@ -513,5 +513,27 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	} else {
 	    return null;
 	}
+    }
+
+    @Override
+    public List<TilePosition> getMineralExpansion() {
+
+	List<TilePosition> result = new ArrayList<>();
+
+	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+	    // 1시
+	    result.add(new TilePosition(89, 15));
+	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+	    // 5시
+	    result.add(new TilePosition(89, 110));
+	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+	    // 7시
+	    result.add(new TilePosition(35, 110));
+	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+	    // 11시
+	    result.add(new TilePosition(35, 15));
+	}
+
+	return result;
     }
 }

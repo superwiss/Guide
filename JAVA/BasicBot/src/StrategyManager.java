@@ -7,6 +7,8 @@ import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import bwta.BWTA;
+import bwta.BaseLocation;
 
 public class StrategyManager extends Manager {
 
@@ -459,6 +461,11 @@ public class StrategyManager extends Manager {
     // 골리앗을 자동으로 생성해준다.
     private void doAutoTrainGoliath() {
 	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_GOLIATH)) {
+
+	    if (gameStatus.getSupplyTotal() - gameStatus.getSupplyUsed() < 2) {
+		return;
+	    }
+
 	    Set<Unit2> factorySet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory);
 	    for (Unit2 factory : factorySet) {
 		if (!factory.isCompleted()) {
@@ -534,6 +541,64 @@ public class StrategyManager extends Manager {
 
 	// 서플라이를 짓기 위해서 빌드 오더 큐 재배열.
 	buildManager.rearrangeForSupply();
+    }
+
+    public TilePosition getNextExpansionPoint() {
+
+	int expansionPoint = 0;
+	int tempExpansionPoint = 0;
+	TilePosition nextExpansionLocation = null;
+
+	for (BaseLocation targetBaseLocation : BWTA.getBaseLocations()) {
+
+	    //아군 본진의 경우 제외한다.
+	    if (targetBaseLocation.getTilePosition().equals(locationManager.allianceBaseLocation)) {
+		continue;
+	    }
+
+	    //이미 아군의 커맨드 센터가 지어져 있을 경우 제외한다.
+	    if (allianceUnitInfo.getUnitsInRange(targetBaseLocation.getPosition(), UnitKind.Terran_Command_Center, 100).size() > 0) {
+		continue;
+	    }
+
+	    //이미 적군의 생산기지 지어져 있을 경우 제외한다.
+	    if (enemyUnitInfo.getUnitsInRange(targetBaseLocation.getPosition(), UnitKind.MAIN_BUILDING, 100).size() > 0) {
+		continue;
+	    }
+
+	    //적기지 및 앞마당은 제외한다.
+	    if (locationManager.enemyStartLocation.getDistance(targetBaseLocation.getTilePosition()) < 35) {
+		continue;
+	    }
+
+	    //미네랄 멀티는 제외한다.(일꾼 버그)
+	    if (targetBaseLocation.getTilePosition().equals(locationManager.getMineralExpansion().get(0))) {
+		continue;
+	    }
+
+	    //중앙의 멀티는 가져가지 않는다?
+	    if ((targetBaseLocation.getTilePosition().getX() > 60 && targetBaseLocation.getTilePosition().getX() < 70)
+		    && (targetBaseLocation.getTilePosition().getY() > 60 && targetBaseLocation.getTilePosition().getY() < 70)) {
+		continue;
+	    }
+
+	    //아군 기지에서 가장 가까운 확장부터 하나씩 가져간다
+	    //각 포인트에 대해 확장 점수를 부여하여, 가장 중요도가 높은 확장부터 가져간다
+	    //아군 기지로부터의 거리 
+	    //주변에 적 전투 유닛들이 있을 경우 
+	    //적 본진과의 거리
+	    int baseDistance = (int) BWTA.getGroundDistance(locationManager.allianceBaseLocation, targetBaseLocation.getTilePosition());
+	    int enemyUnitCount = enemyUnitInfo.getUnitsInRange(targetBaseLocation.getPosition(), UnitKind.Combat_Unit, 100).size();
+	    int enemyBaseDistance = (int) targetBaseLocation.getDistance(locationManager.enemyStartLocation.toPosition());
+
+	    tempExpansionPoint = (10000 - baseDistance) + enemyUnitCount * 1000 + enemyBaseDistance;
+
+	    if (tempExpansionPoint > expansionPoint) {
+		expansionPoint = tempExpansionPoint;
+		nextExpansionLocation = targetBaseLocation.getTilePosition();
+	    }
+	}
+	return nextExpansionLocation;
     }
 
     // ///////////////////////////////////////////////////////////

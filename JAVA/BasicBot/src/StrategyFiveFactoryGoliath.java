@@ -14,6 +14,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
     private WorkerManager workerManager = null;
 
     private static int repairCount = 3; //골리앗을 수리할 scv의 갯수
+    private int liveMultiCount;
 
     public StrategyFiveFactoryGoliath() {
 	strategyName = "TowFactory";
@@ -49,8 +50,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		} else {
 		    strategyManager.removeStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
 		}
-	    } else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() >= 5
-		    && allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < locationManager.getTrainingBuildings().size()) {
+	    } else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() >= 5 && allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < 9) {
 		if (gameStatus.getMineral() >= 400 && gameStatus.getGas() >= 200) {
 		    strategyManager.addStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
 		} else {
@@ -61,10 +61,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    }
 	}
 
-	// 확장은 최대 2곳을 가져간다.
-	if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() >= 3) {
-	    strategyManager.removeStrategyItem(StrategyItem.AUTO_EXTENSION);
-	}
+	doExpansion();
 
 	// 공격 시점과 장소를 체크한다.
 	checkAttackTimingAndPosition();
@@ -90,7 +87,73 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	autoBuildSupply();
 
 	// 본진의 커맨드 센터를 확장으로 옮긴다.
-	//	doAutoLiftCommandCenter();
+	//doAutoLiftCommandCenter();
+    }
+
+    private void doExpansion() {
+
+	if (hasStrategyItem(StrategyItem.AUTO_EXTENSION)) {
+
+	    // 3초에 한 번만 수행된다.
+	    if (!gameStatus.isMatchedInterval(3)) {
+		return;
+	    }
+
+	    int currentMultiCount = 0;
+	    //현재 확장 갯수를 업데이트 한다
+	    for (Unit2 commandCenter : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center)) {
+		//커맨드 센터 주변에 미네랄이 6개 이상 있을 경우 운영중인 확장이라고 생각한다.
+		if (allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Resource_Mineral_Field, 400).size() > 6) {
+		    if (allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Resource_Vespene_Geyser, 400).size() > 0) {
+			currentMultiCount++;
+		    }
+		}
+	    }
+	    liveMultiCount = currentMultiCount;
+
+	    // 현재 건설중인 커맨드 센터가 있다면 취소
+	    if (allianceUnitInfo.getConstructionCount(UnitType.Terran_Command_Center) > 0 || buildManager.getQueueSize() > 0) {
+		return;
+	    }
+
+	    // 최대로 운영하려는 확장의 갯수
+	    int maxExpansion = 3;
+
+	    //현재 운영중인 확장의 갯수가 최대 수치를 넘는다면 더이상 건설하지 않는다.
+	    if (liveMultiCount >= maxExpansion) {
+		return;
+	    }
+
+	    //전체 커맨드 센터 숫자를 가져온다.
+	    int totalCommandCount = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size();
+	    //앞마당까지 지어진 상황에서 추가 확장을 가져가는 메소드
+	    if (totalCommandCount >= 2) {
+
+		//다음확장이 발견되어 있지 않다면 스캔을 뿌려본다.
+		if (allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Comsat_Station).size() > 0) {
+		    TilePosition nextExpansionPoint = strategyManager.getNextExpansionPoint();
+		    if (nextExpansionPoint != null) {
+			if (!gameStatus.isExplored(nextExpansionPoint)) {
+			    allianceUnitInfo.doScan(nextExpansionPoint.toPosition());
+			}
+		    }
+		}
+
+		//TODO 확장을 가져가는 다양한 조건들이 추가될 예정이다.
+		//메카닉 유닛이 여유가 있을 경우 확장을 가져간다.
+		if (gameStatus.getMineral() > 400 && allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath).size() > 25) {
+		    if (0 == buildManager.getQueueSize()) {
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, strategyManager.getNextExpansionPoint()));
+		    }
+		}
+		//미네랄이 과도하게 남을 경우 확장을 시도한다?
+		if (gameStatus.getMineral() > 1000) {
+		    if (0 == buildManager.getQueueSize()) {
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, strategyManager.getNextExpansionPoint()));
+		    }
+		}
+	    }
+	}
     }
 
     private void autoBuildSupply() {
@@ -159,20 +222,22 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    }
 
 	} else if (goliathCount >= 24 && goliathCount < 36) {
-	    // 공격 유닛 인구수가 50 ~ 80이면 적 입구를 조인다.
-	    //	    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
-	    //	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-	    //	    Log.info("적 본진 근처에서 조이기를 한다. 인구수: %d, 위치: %s", goliathCount, strategyManager.getAttackTilePositon());
-	    //	    //	    strategyManager.addStrategyItem(StrategyItem.AUTO_EXTENSION);
-	    //
-	    //	    // 조이기 시점에 적이 5마리 이상 보이면 총 공격을 한다.
-	    //	    if (enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit).size() > 5) {
-	    //		TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
-	    //		strategyManager.setAttackTilePosition(attackTilePosition);
-	    //		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
-	    //		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-	    //		Log.info("총 공격을 간다. 인구수: %d, 위치: %s", goliathCount, attackTilePosition);
-	    //	    }
+
+	    strategyManager.addStrategyItem(StrategyItem.AUTO_EXTENSION);
+
+	    //	    //	     공격 유닛 인구수가 50 ~ 80이면 적 입구를 조인다.
+	    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
+	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    Log.info("적 본진 근처에서 조이기를 한다. 인구수: %d, 위치: %s", goliathCount, strategyManager.getAttackTilePositon());
+
+	    // 조이기 시점에 적이 5마리 이상 보이면 총 공격을 한다.
+	    if (enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit).size() > 5) {
+		TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+		strategyManager.setAttackTilePosition(attackTilePosition);
+		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+		Log.info("총 공격을 간다. 인구수: %d, 위치: %s", goliathCount, attackTilePosition);
+	    }
 	} else if (goliathCount >= 36) {
 	    // 공격 유닛 인구수가 80이 넘으면 총 공격을 한다.
 	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
@@ -283,7 +348,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    Unit2 entranceBarrack = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Barracks);
 
 	    //확장기지 근처에 아군 scv가 있을 경우 배럭을 띄운다.
-	    Unit2 scv = allianceUnitInfo.getAnyUnitInRange(locationManager.getBaseEntranceChokePoint().toPosition(), UnitKind.Terran_SCV, 100);
+	    Unit2 scv = allianceUnitInfo.getAnyUnitInRange(locationManager.getBlockingEntranceBuilding().get(0).toPosition(), UnitKind.Terran_SCV, 100);
 	    if (scv != null) {
 
 		//scv가 건설중이면 띄우지 않는다.

@@ -588,7 +588,11 @@ public class BuildManager extends Manager {
 	} else if (UnitType.Terran_Bunker.equals(buildingType)) {
 	    result = locationManager.getBaseEntranceBunker();
 	} else if (UnitType.Terran_Command_Center.equals(buildingType)) {
-	    result = locationManager.getExtentionPosition();
+	    if (buildOrderItem.getTilePosition() != null) {
+		result.add(buildOrderItem.getTilePosition());
+	    } else {
+		result = locationManager.getExtentionPosition();
+	    }
 	} else {
 	    Log.error("%s 정의되지 않는 건물 타입입니다: %s", TAG, buildingType);
 	    result = new LinkedList<>();

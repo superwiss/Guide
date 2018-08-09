@@ -633,4 +633,10 @@ public class LocationManagerSprit extends LocationManager {
 	// TODO Auto-generated method stub
 	return null;
     }
+
+    @Override
+    public List<TilePosition> getMineralExpansion() {
+	// TODO Auto-generated method stub
+	return null;
+    }
 }
