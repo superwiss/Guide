@@ -486,8 +486,8 @@ public class StrategyManager extends Manager {
 	}
 
 	// 돈과 가스가 남으면 팩토리를 지어본다.
-	if (hasStrategyItem(StrategyItem.AUTO_BUILD_FACTORY)) {
-	    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Factory)) {
+	if (hasStrategyItem(StrategyItem.AUTO_BUILD_FACTORY) && allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < 10) {
+	    if (2 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Factory)) {
 		if (allianceUnitInfo.checkResourceIfCanBuild(UnitType.Terran_Factory)) {
 		    int buildFactoryRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory);
 		    if (1 > buildFactoryRemainSize) {

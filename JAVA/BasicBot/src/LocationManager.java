@@ -36,8 +36,8 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	}
 	//	baseEntranceChokePoint = initBaseEntranceChokePoint();
 	//	firstExtensionChokePoint = initFirstExtensionChokePoint();
-	//	trainingBuildings = initTrainingBuildings();
-	//	size3by2Buildings = init3by2SizeBuildings();
+	trainingBuildings = initTrainingBuildings();
+	//		size3by2Buildings = init3by2SizeBuildings();
     }
 
     // CommandCenter를 기준으로 아군 본진이 위치를 계산한다.

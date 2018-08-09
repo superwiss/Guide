@@ -1,6 +1,7 @@
 import java.util.Set;
 
 import bwapi.Order;
+import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
@@ -43,7 +44,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	// 팩토리는 최초3개 확장 후 5개까지 늘려준다.
 	if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size() >= 2) {
 	    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < 5) {
-		if (gameStatus.getMineral() >= 250 && gameStatus.getGas() >= 150) {
+		if (gameStatus.getMineral() >= 200 && gameStatus.getGas() >= 100) {
 		    strategyManager.addStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
 		} else {
 		    strategyManager.removeStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
@@ -146,22 +147,33 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
 	    Log.info("본진 앞마당으로 내려온다. 인구수: %d. 위치: %s", goliathCount, strategyManager.getAttackTilePositon());
 
+	    Position defencePosition = locationManager.getBaseEntranceChokePoint().toPosition();
+	    Set<Unit2> defenceAllianceUnitSet = allianceUnitInfo.getUnitsInRange(defencePosition, UnitKind.Combat_Unit, 500);
+	    Set<Unit2> enemyUnitSet = enemyUnitInfo.getUnitsInRange(defencePosition, UnitKind.ALL, 500);
+
+	    if (enemyUnitSet.size() > 0) {
+		strategyManager.addStrategyStatus(StrategyStatus.BACK_TO_BASE);
+		for (Unit2 defenceAllianceUnit : defenceAllianceUnitSet) {
+		    ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, locationManager.getBlockingChokePoint());
+		}
+	    }
+
 	} else if (goliathCount >= 24 && goliathCount < 28) {
 	    // 공격 유닛 인구수가 50 ~ 80이면 적 입구를 조인다.
-	    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
-	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-	    Log.info("적 본진 근처에서 조이기를 한다. 인구수: %d, 위치: %s", goliathCount, strategyManager.getAttackTilePositon());
-	    //	    strategyManager.addStrategyItem(StrategyItem.AUTO_EXTENSION);
-
-	    // 조이기 시점에 적이 5마리 이상 보이면 총 공격을 한다.
-	    if (enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit).size() > 5) {
-		TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
-		strategyManager.setAttackTilePosition(attackTilePosition);
-		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
-		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-		Log.info("총 공격을 간다. 인구수: %d, 위치: %s", goliathCount, attackTilePosition);
-	    }
-	} else if (goliathCount >= 28) {
+	    //	    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
+	    //	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    //	    Log.info("적 본진 근처에서 조이기를 한다. 인구수: %d, 위치: %s", goliathCount, strategyManager.getAttackTilePositon());
+	    //	    //	    strategyManager.addStrategyItem(StrategyItem.AUTO_EXTENSION);
+	    //
+	    //	    // 조이기 시점에 적이 5마리 이상 보이면 총 공격을 한다.
+	    //	    if (enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit).size() > 5) {
+	    //		TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+	    //		strategyManager.setAttackTilePosition(attackTilePosition);
+	    //		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+	    //		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    //		Log.info("총 공격을 간다. 인구수: %d, 위치: %s", goliathCount, attackTilePosition);
+	    //	    }
+	} else if (goliathCount >= 60) {
 	    // 공격 유닛 인구수가 80이 넘으면 총 공격을 한다.
 	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
 	    strategyManager.setAttackTilePosition(attackTilePosition);
@@ -323,7 +335,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    return;
 	}
 
-	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
+	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && gameStatus.getFrameCount() < 10000) {
 
 	    TilePosition blockPosition = locationManager.getBaseEntranceChokePoint();
 	    Set<Unit2> buildingSet = allianceUnitInfo.getUnitsInRange(blockPosition.toPosition(), UnitKind.Building, 320);

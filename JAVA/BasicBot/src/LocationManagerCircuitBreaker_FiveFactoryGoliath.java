@@ -69,7 +69,7 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	List<TilePosition> result = new ArrayList<>();
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
-	    // 1시
+	    // 1시 ok
 	    result.add(new TilePosition(108, 33));
 	    result.add(new TilePosition(111, 19));
 	    result.add(new TilePosition(111, 15));
@@ -81,7 +81,7 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	    result.add(new TilePosition(118, 15));
 	    result.add(new TilePosition(118, 19));
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
-	    // 5시
+	    // 5시 
 	    result.add(new TilePosition(110, 92));
 	    result.add(new TilePosition(110, 104));
 	    result.add(new TilePosition(110, 108));
@@ -90,8 +90,12 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	    result.add(new TilePosition(110, 112));
 	    result.add(new TilePosition(110, 116));
 	    result.add(new TilePosition(110, 120));
+	    result.add(new TilePosition(106, 108));
+	    result.add(new TilePosition(106, 112));
+	    result.add(new TilePosition(106, 116));
+	    result.add(new TilePosition(106, 120));
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
-	    // 7시
+	    // 7시 ok
 	    result.add(new TilePosition(16, 92));
 	    result.add(new TilePosition(7, 106));
 	    result.add(new TilePosition(13, 106));
@@ -110,6 +114,10 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	    result.add(new TilePosition(14, 8));
 	    result.add(new TilePosition(8, 12));
 	    result.add(new TilePosition(8, 16));
+	    result.add(new TilePosition(8, 20));
+	    result.add(new TilePosition(14, 20));
+	    result.add(new TilePosition(0, 22));
+	    result.add(new TilePosition(0, 18));
 	}
 	return result;
     }
