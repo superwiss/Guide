@@ -158,7 +158,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		}
 	    }
 
-	} else if (goliathCount >= 24 && goliathCount < 28) {
+	} else if (goliathCount >= 24 && goliathCount < 36) {
 	    // 공격 유닛 인구수가 50 ~ 80이면 적 입구를 조인다.
 	    //	    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
 	    //	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
@@ -173,7 +173,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    //		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
 	    //		Log.info("총 공격을 간다. 인구수: %d, 위치: %s", goliathCount, attackTilePosition);
 	    //	    }
-	} else if (goliathCount >= 60) {
+	} else if (goliathCount >= 36) {
 	    // 공격 유닛 인구수가 80이 넘으면 총 공격을 한다.
 	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
 	    strategyManager.setAttackTilePosition(attackTilePosition);

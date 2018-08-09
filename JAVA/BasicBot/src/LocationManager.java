@@ -36,7 +36,7 @@ public abstract class LocationManager extends Manager implements MapInfo {
 	}
 	//	baseEntranceChokePoint = initBaseEntranceChokePoint();
 	//	firstExtensionChokePoint = initFirstExtensionChokePoint();
-	trainingBuildings = initTrainingBuildings();
+	//	trainingBuildings = initTrainingBuildings();
 	//		size3by2Buildings = init3by2SizeBuildings();
     }
 
