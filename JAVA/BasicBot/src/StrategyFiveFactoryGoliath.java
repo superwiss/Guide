@@ -152,7 +152,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 
 	//건설된 벙커 수만큼 마린을 생산한다
 	Unit2 barracks = allianceUnitInfo.getTrainableBuilding(UnitType.Terran_Barracks, UnitType.Terran_Marine);
-	if (null != barracks) {
+	if (null != barracks && gameStatus.getFrameCount() > 10000) {
 	    Set<Unit2> marineSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Marine);
 	    int marineCount = marineSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Barracks, UnitType.Terran_Marine);
 	    Log.info("마린 생산. 마린 수: %d, 벙커 수: %d", marineCount, bunkerCount);
@@ -168,7 +168,6 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 
     // 마린을 벙커에 넣는다.
     private void marineToBunker(UnitInfo allianceUnitInfo, Unit2 bunker) {
-	System.out.println("벙커에 넣자");
 	Set<Unit2> marineSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Marine);
 	int minDistance = Integer.MAX_VALUE;
 	Unit2 targetMarine = null;
@@ -184,7 +183,6 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    }
 	}
 	if (null != targetMarine) {
-	    System.out.println("벙커에 넣자");
 	    targetMarine.load(bunker);
 	}
     }
@@ -192,7 +190,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
     private void doBuildEngineeringBay() {
 
 	// 2초에 한 번만 수행된다.
-	if (!gameStatus.isMatchedInterval(2)) {
+	if (!gameStatus.isMatchedInterval(1)) {
 	    return;
 	}
 
@@ -633,6 +631,15 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		&& allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Barracks).size() > 0) {
 
 	    Unit2 entranceBarrack = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Barracks);
+	    if (allianceUnitInfo.getAnyUnitInRange(locationManager.getExtentionPosition().get(0).toPosition(), UnitKind.Scouting_Unit, 320) != null) {
+		//착지 상태의 배럭에 대해
+		if (!entranceBarrack.isLifted()) {
+		    //적 유닛이 근처에 없을 경우에만 띄운다.
+		    if (enemyUnitInfo.getUnitsInRange(locationManager.getBaseEntranceChokePoint().toPosition(), UnitKind.ALL, 500).size() == 0) {
+			entranceBarrack.lift();
+		    }
+		}
+	    }
 
 	    //확장기지 근처에 아군 scv가 있을 경우 배럭을 띄운다.
 	    Unit2 scv = allianceUnitInfo.getAnyUnitInRange(locationManager.getBlockingEntranceBuilding().get(0).toPosition(), UnitKind.Terran_SCV, 100);
@@ -707,6 +714,10 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    Set<Unit2> buildingSet = allianceUnitInfo.getUnitsInRange(blockPosition.toPosition(), UnitKind.Building, 320);
 
 	    for (Unit2 buidling : buildingSet) {
+
+		if (buidling.getType() == UnitType.Terran_Machine_Shop) {
+		    continue;
+		}
 		if (gameStatus.getMineral() > 0) {
 		    if (buidling.getType().maxHitPoints() > buidling.getHitPoints()) {
 			repairBuilding(allianceUnitInfo, buidling);
@@ -847,7 +858,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 12
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 13
-	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
+	//	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 14
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
@@ -873,6 +884,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.ADD_ON, UnitType.Terran_Machine_Shop));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SET_STRATEGY_ITEM, StrategyItem.AUTO_BUILD_SUPPLY));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SET_STRATEGY_ITEM, StrategyItem.AUTO_TRAIN_GOLIATH));
+	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
     }
 

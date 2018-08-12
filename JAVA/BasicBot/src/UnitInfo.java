@@ -222,6 +222,20 @@ public class UnitInfo {
 	}
     }
 
+    public void setDefenceUnit(Unit2 unit) {
+
+	//	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
+	//	for (UnitKind unitKind : unitKinds) {
+	//	    unitKindMap.get(unitKind).remove(unit);
+	//	}
+
+	if (getAnyUnit(UnitKind.Defence_Unit1) == null) {
+	    unitKindMap.get(UnitKind.Defence_Unit1).add(unit);
+	} else {
+	    unitKindMap.get(UnitKind.Defence_Unit2).add(unit);
+	}
+    }
+
     public void releaseGasUnit(Unit2 unit) {
 	if (null != unit) {
 	    // 유닛을 Gas 타입에서 원래 타입으로 원복한다.

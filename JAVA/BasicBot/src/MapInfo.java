@@ -89,6 +89,8 @@ public interface MapInfo {
     // 앞마당 입구 방어를 위한 위치를 리턴한다.
     abstract TilePosition getFirstExtensionChokePoint();
 
+    abstract TilePosition getFirstExtensionChokePoint2();
+
     // 언덕의 타일을 리턴한다.
     abstract Set<TilePosition> getHillTilePosition();
 

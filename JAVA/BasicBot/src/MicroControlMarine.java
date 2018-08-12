@@ -158,23 +158,59 @@ public class MicroControlMarine extends Manager {
 	    return;
 	}
 
-	if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && strategyManager.getAttackTilePositon() == locationManager.getBaseEntranceChokePoint()) {
+	if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && strategyManager.getAttackTilePositon() == locationManager.getFirstExtensionChokePoint()) {
 
-	    if (!gameStatus.isMatchedInterval(1)) {
+	    if (gameStatus.isMatchedInterval(1)) {
 		return;
 	    }
 
-	    for (Unit2 marine : allianceUnitInfo.getUnitSet(UnitKind.Terran_Marine)) {
-
-		TilePosition attackTilePositon = strategyManager.getAttackTilePositon();
+	    Unit2 marine1 = allianceUnitInfo.getAnyUnit(UnitKind.Defence_Unit1);
+	    TilePosition attackTilePositon = strategyManager.getAttackTilePositon();
+	    if (marine1 != null) {
 		Unit2 enemy = enemyUnitInfo.getAnyUnitInRange(attackTilePositon.toPosition(), UnitKind.Combat_Unit, 100);
 		if (enemy != null) {
-		    ActionUtil.attackEnemyUnit(allianceUnitInfo, marine, enemy);
+		    //		    ActionUtil.attackEnemyUnit(allianceUnitInfo, marine1, enemy);
+		    ActionUtil.moveToPosition(allianceUnitInfo, marine1, attackTilePositon);
 		} else {
-		    ActionUtil.moveToPosition(allianceUnitInfo, marine, attackTilePositon);
+		    ActionUtil.moveToPosition(allianceUnitInfo, marine1, attackTilePositon);
 		}
-
 	    }
+
+	    Unit2 marine2 = allianceUnitInfo.getAnyUnit(UnitKind.Defence_Unit2);
+	    attackTilePositon = locationManager.getFirstExtensionChokePoint2();
+	    if (marine2 != null) {
+		Unit2 enemy = enemyUnitInfo.getAnyUnitInRange(attackTilePositon.toPosition(), UnitKind.Combat_Unit, 100);
+		if (enemy != null) {
+		    //		    ActionUtil.attackEnemyUnit(allianceUnitInfo, marine2, enemy);
+		    ActionUtil.moveToPosition(allianceUnitInfo, marine2, attackTilePositon);
+		} else {
+		    ActionUtil.moveToPosition(allianceUnitInfo, marine2, attackTilePositon);
+		}
+	    }
+
+	    //	    for (Unit2 marine : allianceUnitInfo.getUnitSet(UnitKind.Terran_Marine)) {
+	    //
+	    //		System.out.println("?");
+	    //		System.out.println("방어마린1" + allianceUnitInfo.getAnyUnit(UnitKind.Defence_Unit1));
+	    //		System.out.println("방어마린2" + allianceUnitInfo.getAnyUnit(UnitKind.Defence_Unit2));
+	    //
+	    //		int marinCount = allianceUnitInfo.getUnitsInRange(attackTilePositon.toPosition(), UnitKind.Terran_Marine, 60).size();
+	    //		if (marinCount >= 1) {
+	    //		    attackTilePositon = locationManager.getFirstExtensionChokePoint2();
+	    //		}
+	    //
+	    //		Unit2 enemy = enemyUnitInfo.getAnyUnitInRange(attackTilePositon.toPosition(), UnitKind.Combat_Unit, 100);
+	    //		if (enemy != null) {
+	    //		    ActionUtil.attackEnemyUnit(allianceUnitInfo, marine, enemy);
+	    //		} else {
+	    //		    ActionUtil.moveToPosition(allianceUnitInfo, marine, attackTilePositon);
+	    //		}
+	    //
+	    //		//		if (marine.getDistance(attackTilePositon.toPosition()) > 50) {
+	    //		//		    ActionUtil.moveToPosition(allianceUnitInfo, marine, attackTilePositon);
+	    //		//		}
+	    //
+	    //	    }
 	    return;
 	}
 

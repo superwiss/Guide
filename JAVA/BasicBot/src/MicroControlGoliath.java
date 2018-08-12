@@ -25,8 +25,34 @@ public class MicroControlGoliath extends Manager {
     @Override
     protected void onFrame() {
 	super.onFrame();
-	//	avoidAttack();
 	fullyAttack();
+    }
+
+    private void aggressiveMoveAttack() {
+	if (!strategyManager.hasStrategyItem(StrategyItem.AGGRESSIVE_MOVE_ATTACK)) {
+	    return;
+	}
+
+	if (false == strategyManager.hasAttackTilePosition()) {
+	    return;
+	}
+
+	//	Set<TilePosition> hillTilePositionSet = gameStatus.getLocationManager().getHillTilePosition();
+
+	TilePosition attackPosition = strategyManager.getAttackTilePositon();
+
+	Set<Unit2> unitSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath);
+	for (Unit2 unit : unitSet) {
+	    if (unit.exists()) {
+		//		if (hillTilePositionSet.contains(unit.getTilePosition())) {
+		if (unit.getGroundWeaponCooldown() < 6) {
+		    ActionUtil.attackPosition(allianceUnitInfo, unit, attackPosition);
+		} else {
+		    ActionUtil.moveToPosition(allianceUnitInfo, unit, attackPosition);
+		}
+		//		}
+	    }
+	}
     }
 
     // 공격 당하는 골리앗을 뒤로 빼준다.

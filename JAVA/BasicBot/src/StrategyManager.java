@@ -206,6 +206,12 @@ public class StrategyManager extends Manager {
 	    }
 	}
 
+	if (!buildManager.isInitialBuildFinished()) {
+	    if (unit.getType() == UnitType.Terran_Marine) {
+		allianceUnitInfo.setDefenceUnit(unit);
+	    }
+	}
+
 	strategy.onUnitComplete(unit);
     }
 
@@ -377,6 +383,14 @@ public class StrategyManager extends Manager {
 		    machineShop.upgrade(UpgradeType.Charon_Boosters);
 		}
 	    }
+	} else {
+
+	    if (gameStatus.getMineral() > 50 && gameStatus.getGas() > 50 && 0 == buildManager.getQueueSize()) {
+		if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Machine_Shop).size() == 0) {
+		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.ADD_ON, UnitType.Terran_Machine_Shop));
+		}
+	    }
+
 	}
     }
 
@@ -527,7 +541,6 @@ public class StrategyManager extends Manager {
 
 		// 멀티 예정지 반경 500 이내의 적 유닛 정보를 가져온다.
 		Set<Unit2> enemyUnitSet = enemyUnitInfo.getUnitsInRange(nextExpansionPosition.toPosition(), UnitKind.ALL, 500);
-		System.out.println("멀티 예정지 적 발견 " + enemyUnitSet);
 
 		// 쳐들어온 적 병력이 없으면 skip한다.
 		if (enemyUnitSet.isEmpty()) {
@@ -705,15 +718,17 @@ public class StrategyManager extends Manager {
 	    }
 
 	    //적기지 및 앞마당은 제외한다.
-	    if (locationManager.enemyStartLocation.getDistance(targetBaseLocation.getTilePosition()) < 35) {
-		continue;
-	    }
-
-	    //적군 점령 지역및 근처는 제외한다.
-	    for (BaseLocation occupiedBase : occupiedBaseLocations) {
-		TilePosition occupiedBaseTile = occupiedBase.getTilePosition();
-		if (occupiedBaseTile.getDistance(targetBaseLocation.getTilePosition()) < 35) {
+	    if (locationManager.enemyStartLocation != null) {
+		if (locationManager.enemyStartLocation.getDistance(targetBaseLocation.getTilePosition()) < 35) {
 		    continue;
+		}
+
+		//적군 점령 지역및 근처는 제외한다.
+		for (BaseLocation occupiedBase : occupiedBaseLocations) {
+		    TilePosition occupiedBaseTile = occupiedBase.getTilePosition();
+		    if (occupiedBaseTile.getDistance(targetBaseLocation.getTilePosition()) < 35) {
+			continue;
+		    }
 		}
 	    }
 
@@ -742,7 +757,12 @@ public class StrategyManager extends Manager {
 	    //적 본진과의 거리
 	    int baseDistance = (int) BWTA.getGroundDistance(locationManager.allianceBaseLocation, targetBaseLocation.getTilePosition());
 	    int enemyUnitCount = enemyUnitInfo.getUnitsInRange(targetBaseLocation.getPosition(), UnitKind.Combat_Unit, 100).size();
-	    int enemyBaseDistance = (int) targetBaseLocation.getDistance(locationManager.enemyStartLocation.toPosition());
+	    int enemyBaseDistance = 0;
+	    if (locationManager.enemyStartLocation != null) {
+		enemyBaseDistance = (int) targetBaseLocation.getDistance(locationManager.enemyStartLocation.toPosition());
+	    } else {
+		enemyBaseDistance = 0;
+	    }
 
 	    tempExpansionPoint = (10000 - baseDistance) + enemyUnitCount * 1000 + enemyBaseDistance;
 

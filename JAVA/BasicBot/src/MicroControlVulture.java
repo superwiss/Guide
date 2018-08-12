@@ -57,6 +57,32 @@ public class MicroControlVulture extends Manager {
 	    return;
 	}
 
+	if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && strategyManager.getAttackTilePositon() == locationManager.getFirstExtensionChokePoint()) {
+
+	    if (!gameStatus.isMatchedInterval(1)) {
+		return;
+	    }
+
+	    for (Unit2 vulture : allianceUnitInfo.getUnitSet(UnitKind.Terran_Vulture)) {
+
+		TilePosition attackTilePositon = strategyManager.getAttackTilePositon();
+
+		int marinCount = allianceUnitInfo.getUnitsInRange(attackTilePositon.toPosition(), UnitKind.Terran_Vulture, 30).size();
+		if (marinCount >= 1) {
+		    attackTilePositon = locationManager.getFirstExtensionChokePoint2();
+		}
+
+		Unit2 enemy = enemyUnitInfo.getAnyUnitInRange(attackTilePositon.toPosition(), UnitKind.Combat_Unit, 100);
+		if (enemy != null) {
+		    ActionUtil.attackEnemyUnit(allianceUnitInfo, vulture, enemy);
+		} else {
+		    ActionUtil.moveToPosition(allianceUnitInfo, vulture, attackTilePositon);
+		}
+
+	    }
+	    return;
+	}
+
 	// 아군 유닛들 목록
 	Set<Unit2> allianceUnitSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Vulture);
 

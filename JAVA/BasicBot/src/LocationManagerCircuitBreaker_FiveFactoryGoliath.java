@@ -386,13 +386,34 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	    result = new TilePosition(111, 32);
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result = new TilePosition(112, 93);
+	    result = new TilePosition(113, 91);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result = new TilePosition(16, 96);
+	    result = new TilePosition(17, 97);
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result = new TilePosition(16, 32);
+	    result = new TilePosition(17, 32);
+	}
+
+	return result;
+    }
+
+    @Override
+    public TilePosition getFirstExtensionChokePoint2() {
+	TilePosition result = null;
+
+	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
+	    // 1시
+	    result = new TilePosition(113, 38);
+	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
+	    // 5시
+	    result = new TilePosition(110, 98);
+	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
+	    // 7시
+	    result = new TilePosition(17, 91);
+	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
+	    // 11시
+	    result = new TilePosition(15, 38);
 	}
 
 	return result;
@@ -551,4 +572,5 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	}
 	return result;
     }
+
 }

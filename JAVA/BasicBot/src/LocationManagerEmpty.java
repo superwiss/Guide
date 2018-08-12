@@ -113,4 +113,10 @@ public class LocationManagerEmpty extends LocationManager {
 	// TODO Auto-generated method stub
 	return null;
     }
+
+    @Override
+    public TilePosition getFirstExtensionChokePoint2() {
+	// TODO Auto-generated method stub
+	return null;
+    }
 }
