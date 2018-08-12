@@ -51,6 +51,11 @@ public class MagiUXManager extends Manager {
 	    drawBuildingBoxMap(tilePositionList, UnitType.Terran_Barracks, "Block Building");
 	}
 
+	tilePositionList = locationManager.getSecondEntranceBuilding();
+	if (tilePositionList != null) {
+	    drawBuildingBoxMap(tilePositionList, UnitType.Terran_Barracks, "Second Block Building");
+	}
+
 	tilePositionList = locationManager.get3by2SizeBuildings();
 	drawBuildingBoxMap(tilePositionList, UnitType.Terran_Supply_Depot, "Supply");
 

@@ -527,7 +527,7 @@ public class StrategyManager extends Manager {
 
 		// 멀티 예정지 반경 500 이내의 적 유닛 정보를 가져온다.
 		Set<Unit2> enemyUnitSet = enemyUnitInfo.getUnitsInRange(nextExpansionPosition.toPosition(), UnitKind.ALL, 500);
-		System.out.println("멀티 예정지 적 발견 ");
+		System.out.println("멀티 예정지 적 발견 " + enemyUnitSet);
 
 		// 쳐들어온 적 병력이 없으면 skip한다.
 		if (enemyUnitSet.isEmpty()) {

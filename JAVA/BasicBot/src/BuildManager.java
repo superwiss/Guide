@@ -577,7 +577,7 @@ public class BuildManager extends Manager {
 	    } else {
 		result = locationManager.getBaseRefinery();
 	    }
-	} else if (UnitType.Terran_Factory.equals(buildingType)) {
+	} else if (UnitType.Terran_Factory.equals(buildingType) || UnitType.Terran_Engineering_Bay.equals(buildingType)) {
 	    result = locationManager.getTrainingBuildings();
 	} else if (UnitType.Terran_Starport.equals(buildingType)) {
 	    result = locationManager.getTrainingBuildings();
@@ -586,7 +586,17 @@ public class BuildManager extends Manager {
 	} else if (UnitType.Terran_Academy.equals(buildingType) || UnitType.Terran_Armory.equals(buildingType)) {
 	    result = locationManager.get3by2SizeBuildings();
 	} else if (UnitType.Terran_Bunker.equals(buildingType)) {
-	    result = locationManager.getBaseEntranceBunker();
+	    if (buildOrderItem.getTilePosition() != null) {
+		result.add(buildOrderItem.getTilePosition());
+	    } else {
+		result = locationManager.getBaseEntranceBunker();
+	    }
+	} else if (UnitType.Terran_Missile_Turret.equals(buildingType)) {
+	    if (buildOrderItem.getTilePosition() != null) {
+		result.add(buildOrderItem.getTilePosition());
+	    } else {
+		result = locationManager.getBaseTurret();
+	    }
 	} else if (UnitType.Terran_Command_Center.equals(buildingType)) {
 	    if (buildOrderItem.getTilePosition() != null) {
 		result.add(buildOrderItem.getTilePosition());

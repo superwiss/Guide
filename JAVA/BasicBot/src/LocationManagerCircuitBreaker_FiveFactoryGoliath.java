@@ -367,10 +367,10 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	    result = new TilePosition(99, 92);
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result = new TilePosition(26, 92);
+	    result = new TilePosition(26, 94);
 
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
-	    result = new TilePosition(24, 34);
+	    result = new TilePosition(27, 34);
 	}
 
 	return result;
@@ -473,16 +473,16 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result.add(new TilePosition(110, 36));
+	    result.add(new TilePosition(104, 31));
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result.add(new TilePosition(110, 90));
+	    result.add(new TilePosition(106, 90));
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result.add(new TilePosition(14, 90));
+	    result.add(new TilePosition(20, 90));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result.add(new TilePosition(16, 31));
+	    result.add(new TilePosition(20, 31));
 	}
 	return result;
     }
