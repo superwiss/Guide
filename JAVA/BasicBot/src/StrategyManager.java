@@ -85,9 +85,9 @@ public class StrategyManager extends Manager {
 	doAttackUnitAutoTrain();
 	doDefenceBase();
 	doAutoBuildSupply();
-	doAutoTrainGoliath();
 	doAutoTrainTank();
 	doAutoTrainVulture();
+	doAutoTrainGoliath();
 	doAutoBuildFactory();
 	doAutoExtension();
 
@@ -383,6 +383,14 @@ public class StrategyManager extends Manager {
 		    machineShop.upgrade(UpgradeType.Charon_Boosters);
 		}
 	    }
+
+	    // 골리앗이 4마리 이상일 때 사거리 업그레이드를 한다.
+	    if (hasStrategyItem(StrategyItem.AUTO_UPGRADE_ION_THRUSTERS)) {
+		int vultureCount = allianceUnitInfo.getUnitSet(UnitKind.Terran_Vulture).size();
+		if (machineShop.canUpgrade(UpgradeType.Ion_Thrusters) && vultureCount > 4) {
+		    machineShop.upgrade(UpgradeType.Ion_Thrusters);
+		}
+	    }
 	} else {
 
 	    if (gameStatus.getMineral() > 50 && gameStatus.getGas() > 50 && 0 == buildManager.getQueueSize()) {
@@ -585,17 +593,52 @@ public class StrategyManager extends Manager {
     // StrategyItem.AUTO_TRAIN_VULTURE 구현부
     // 벌쳐를 자동으로 생성해준다.
     private void doAutoTrainVulture() {
+
 	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_VULTURE)) {
+
+	    if (gameStatus.getSupplyTotal() - gameStatus.getSupplyUsed() < 4) {
+		return;
+	    }
+
+	    if (buildManager.getQueueSize() > 0) {
+		return;
+	    }
+
+	    int maxVulture = 0;
+	    if (hasStrategyItem(StrategyItem.SEARCH_ENEMY_EXPANSION_BY_VULTURE)) {
+
+		Set<Unit2> vultureSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Vulture);
+		Set<Unit2> goliathSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath);
+		int vultureCount = vultureSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Factory, UnitType.Terran_Vulture);
+		int goliathCount = goliathSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Factory, UnitType.Terran_Goliath);
+
+		maxVulture = 0;
+		if (goliathCount < 24) {
+		    maxVulture = 2;
+		} else {
+		    maxVulture = 5;
+		}
+
+		if (vultureCount > maxVulture) {
+		    return;
+		}
+	    }
+
 	    Set<Unit2> factorySet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory);
 	    for (Unit2 factory : factorySet) {
+
 		if (!factory.isCompleted()) {
 		    continue;
 		}
-		if (0 == factory.getTrainingQueue().size()) {
-		    int trainingRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture);
-		    if (1 > trainingRemainSize) {
-			Log.info("벌쳐 생산. 남은 훈련시간: %d, 팩토리: %s", factory.getRemainingTrainTime(), factory);
-			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture));
+		if (gameStatus.getMineral() > 75) {
+		    if (0 == factory.getTrainingQueue().size()) {
+			int trainingRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture);
+			if (1 > trainingRemainSize) {
+			    if (gameStatus.getSupplyUsed() < 392) {
+				Log.info("벌쳐생산. 남은 훈련시간: %d, 팩토리: %s", factory.getRemainingTrainTime(), factory);
+				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture));
+			    }
+			}
 		    }
 		}
 	    }

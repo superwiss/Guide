@@ -224,15 +224,28 @@ public class UnitInfo {
 
     public void setDefenceUnit(Unit2 unit) {
 
-	//	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
-	//	for (UnitKind unitKind : unitKinds) {
-	//	    unitKindMap.get(unitKind).remove(unit);
-	//	}
-
 	if (getAnyUnit(UnitKind.Defence_Unit1) == null) {
 	    unitKindMap.get(UnitKind.Defence_Unit1).add(unit);
 	} else {
 	    unitKindMap.get(UnitKind.Defence_Unit2).add(unit);
+	}
+    }
+
+    public void setScoutVulture(Unit2 unit) {
+
+	Set<UnitKind> unitKinds = UnitUtil.getUnitKinds(unit);
+	for (UnitKind unitKind : unitKinds) {
+	    unitKindMap.get(unitKind).remove(unit);
+	}
+
+	unitKindMap.get(UnitKind.Scouting_Vulture).add(unit);
+    }
+
+    public void releaseScoutVulture(Unit2 unit) {
+	if (null != unit) {
+	    unitKindMap.get(UnitKind.Scouting_Vulture).remove(unit);
+	} else {
+	    Log.trace("유닛이 죽어버렸음..");
 	}
     }
 

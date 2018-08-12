@@ -15,6 +15,7 @@ public enum UnitKind {
     Clocked, // 클로킹 유닛
 
     Scouting_Unit, // 정찰 유닛
+    Scouting_Vulture, //정찰용 벌쳐
 
     Defence_Unit1, Defence_Unit2,
 

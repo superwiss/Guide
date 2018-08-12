@@ -5,6 +5,7 @@ public enum StrategyItem {
     AUTO_UPGRADE_U_238_Shells, // 자동으로 마린 사거리 업그레이드를 한다.
     AUTO_UPGRADE_STIMPACK, // 자동으로 스팀팩 업그레이드를 한다.
     AUTO_UPGRADE_CHARON_BOOSTERS, // 자동으로 골리앗 사거리 업그레이드를 한다.
+    AUTO_UPGRADE_ION_THRUSTERS, // 자동으로 벌쳐 속도 업그레이드를 한다.
 
     AUTO_ADDON_COMSAT_STATION, // 자동으로 컴샛 스테이션 애드온을 단다.
 
@@ -32,5 +33,6 @@ public enum StrategyItem {
     AUTO_SAFE_EXTENSION, // 안전한 위치 우선으로 확장을 한다.
     ENEMY_BASE_EDGE_SCOUT, // 적 기지의 가장자리를 따라서 정찰한다.
     SEARCH_ENEMY_EXPANSION_BY_SCAN, //적의 확장을 스캔으로 탐색한다.
+    SEARCH_ENEMY_EXPANSION_BY_VULTURE, //적의 확장을 벌쳐로 탐색한다.
     AUTO_DEFENCE_EXPANSION
 }

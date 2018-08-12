@@ -16,13 +16,12 @@ public class GameCommander implements EventDispatcher {
     public GameCommander() {
 	gameStatus = new GameStatus();
 
-	//	if (true == gameStatus.getConfig().isReleaseMode()) {
-	//	    // 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생할 수 있으니 주의
-	//	    Log.setLogLevel(Log.Level.WARN);
-	//	} else {
-	//	    Log.setLogLevel(Log.Level.TRACE);
-	//	}
-	Log.setLogLevel(Log.Level.WARN);
+	if (true == gameStatus.getConfig().isReleaseMode()) {
+	    // 로그 레벨 설정. 로그는 stdout으로 출력되는데, 로그 양이 많으면 속도가 느려져서 Timeout 발생할 수 있으니 주의
+	    Log.setLogLevel(Log.Level.WARN);
+	} else {
+	    Log.setLogLevel(Log.Level.TRACE);
+	}
 
 	// GameStatus에 각종 Manager 등록
 	gameStatus.setWorkerManager(new WorkerManager());

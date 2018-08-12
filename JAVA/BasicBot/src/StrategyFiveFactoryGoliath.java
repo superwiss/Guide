@@ -893,13 +893,17 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_REBALANCE_WORKER);
 	strategyItems.add(StrategyItem.AUTO_REFINERY_JOB);
 	strategyItems.add(StrategyItem.AUTO_UPGRADE_CHARON_BOOSTERS);
+	strategyItems.add(StrategyItem.AUTO_UPGRADE_ION_THRUSTERS);
 	strategyItems.add(StrategyItem.AUTO_ADDON_COMSAT_STATION);
 	strategyItems.add(StrategyItem.AUTO_USING_SCAN);
 	strategyItems.add(StrategyItem.BLOCK_ENTRANCE_ZERG);
 	strategyItems.add(StrategyItem.ENEMY_BASE_EDGE_SCOUT);
 	strategyItems.add(StrategyItem.AUTO_SAFE_EXTENSION);
 	strategyItems.add(StrategyItem.SEARCH_ENEMY_EXPANSION_BY_SCAN);
+	strategyItems.add(StrategyItem.SEARCH_ENEMY_EXPANSION_BY_VULTURE);
 	strategyItems.add(StrategyItem.AUTO_DEFENCE_EXPANSION);
+	strategyItems.add(StrategyItem.AUTO_TRAIN_VULTURE);
+
     }
 
 }

@@ -9,12 +9,14 @@ import java.util.Set;
 
 import bwapi.Position;
 import bwapi.TilePosition;
+import bwta.BaseLocation;
 
 // 매딕을 컨트롤 한다.
 public class MicroControlVulture extends Manager {
 
     private StrategyManager strategyManager;
     private LocationManager locationManager;
+    private int searchSequence;
 
     @Override
     protected void onStart(GameStatus gameStatus) {
@@ -29,6 +31,51 @@ public class MicroControlVulture extends Manager {
 	super.onFrame();
 	//avoidAttack();
 	fullyAttack();
+	doScout();
+    }
+
+    private void doScout() {
+
+	if (!strategyManager.hasStrategyItem(StrategyItem.SEARCH_ENEMY_EXPANSION_BY_VULTURE)) {
+	    return;
+	}
+
+	for (Unit2 vulture : allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture)) {
+	    if (!vulture.exists()) {
+		allianceUnitInfo.releaseScoutVulture(vulture);
+		return;
+	    }
+	}
+
+	if (locationManager.enemyStartLocation != null) {
+	    if (allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture).size() < 4) {
+		Unit2 vulture = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Vulture);
+		if (vulture != null) {
+		    allianceUnitInfo.setScoutVulture(vulture);
+		}
+	    }
+	}
+
+	if (allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture).size() > 0) {
+
+	    List<BaseLocation> searchLocation = strategyManager.getScanLocation();
+	    int maxSearch = searchLocation.size();
+	    if (searchSequence >= maxSearch) {
+		searchSequence = 0;
+		return;
+	    }
+
+	    BaseLocation searchTarget = searchLocation.get(searchSequence);
+	    if (searchTarget != null) {
+		for (Unit2 vulture : allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture)) {
+		    ActionUtil.attackPosition(allianceUnitInfo, vulture, searchTarget.getPosition());
+		    if (vulture.getDistance(searchTarget.getPosition()) < 50) {
+			searchSequence++;
+			return;
+		    }
+		}
+	    }
+	}
     }
 
     // 공격 당하는 벌쳐를 뒤로 빼준다.
