@@ -1,4 +1,7 @@
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import bwapi.Position;
@@ -23,6 +26,11 @@ public class StrategyManager extends Manager {
     private static int repairCount = 3; // 벙커를 수리할 SCV 개수
     private int lastScanFrameCount = 0; // 마지막으로 스캔을 뿌린 시각
     private boolean skipMicroControl = false;
+    private int liveMultiCount; //현재 활성화된 멀티 갯수
+    private boolean tryExpansion;
+    private TilePosition nextExpansionPoint;
+    private List<BaseLocation> occupiedBaseLocations = new ArrayList<BaseLocation>();
+    private List<BaseLocation> scanLocations = new ArrayList<BaseLocation>();
 
     @Override
     protected void onStart(GameStatus gameStatus) {
@@ -83,7 +91,107 @@ public class StrategyManager extends Manager {
 	doAutoBuildFactory();
 	doAutoExtension();
 
+	updateEnemyBase();
+
 	strategy.onFrame();
+    }
+
+    private void updateEnemyBase() {
+
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	if (occupiedBaseLocations != null) {
+	    occupiedBaseLocations.clear();
+	}
+
+	if (scanLocations != null) {
+	    scanLocations.clear();
+	}
+
+	for (BaseLocation baseLocation : BWTA.getBaseLocations()) {
+	    if (hasBuildingAroundBaseLocation(baseLocation)) {
+		occupiedBaseLocations.add(baseLocation);
+	    }
+	    if (isScanLocation(baseLocation)) {
+		scanLocations.add(baseLocation);
+	    }
+	}
+    }
+
+    private boolean isScanLocation(BaseLocation baseLocation) {
+
+	if (baseLocation == null) {
+	    return false;
+	}
+
+	//적기지 및 앞마당은 제외한다.
+	if (locationManager.enemyStartLocation != null) {
+	    if (locationManager.enemyStartLocation.getDistance(baseLocation.getTilePosition()) < 35) {
+		return false;
+	    }
+	}
+
+	//이미 아군의 커맨드 센터가 지어져 있을 경우 제외한다.
+	if (allianceUnitInfo.getUnitsInRange(baseLocation.getPosition(), UnitKind.Terran_Command_Center, 100).size() > 0) {
+	    return false;
+	}
+
+	Map<Unit2, TilePosition> test = enemyUnitInfo.getLastTilePosition();
+
+	//적 빌딩 정보를 가져온다.
+	Set<Unit2> enemyMainBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.MAIN_BUILDING);
+	if (enemyMainBuildingSet.size() == 0) {
+	    return false;
+	}
+
+	//빌딩정보에서 해당 로케이션과 가장 가까운 건물을 가져온다.
+	Unit2 closestMainBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyMainBuildingSet, baseLocation.getPosition());
+	TilePosition buildingPosition = test.get(closestMainBuilding);
+
+	if (buildingPosition.getX() >= baseLocation.getTilePosition().getX() - 10 && buildingPosition.getX() <= baseLocation.getTilePosition().getX() + 10
+		&& buildingPosition.getY() >= baseLocation.getTilePosition().getY() - 10 && buildingPosition.getY() <= baseLocation.getTilePosition().getY() + 10) {
+	    //	    return true;
+	} else {
+	    return true;
+	}
+
+	return false;
+    }
+
+    public boolean hasBuildingAroundBaseLocation(BaseLocation baseLocation) {
+
+	int radious = 10;
+	if (baseLocation == null) {
+	    return false;
+	}
+
+	//적기지 및 앞마당은 제외한다.
+	if (locationManager.enemyStartLocation != null) {
+	    if (locationManager.enemyStartLocation.getDistance(baseLocation.getTilePosition()) < 35) {
+		return false;
+	    }
+	}
+
+	Map<Unit2, TilePosition> test = enemyUnitInfo.getLastTilePosition();
+
+	//적 빌딩 정보를 가져온다.
+	Set<Unit2> enemyMainBuildingSet = enemyUnitInfo.getUnitSet(UnitKind.MAIN_BUILDING);
+	if (enemyMainBuildingSet.size() == 0) {
+	    return false;
+	}
+
+	//빌딩정보에서 해당 로케이션과 가장 가까운 건물을 가져온다.
+	Unit2 closestMainBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyMainBuildingSet, baseLocation.getPosition());
+	TilePosition buildingPosition = test.get(closestMainBuilding);
+
+	if (buildingPosition.getX() >= baseLocation.getTilePosition().getX() - radious && buildingPosition.getX() <= baseLocation.getTilePosition().getX() + radious
+		&& buildingPosition.getY() >= baseLocation.getTilePosition().getY() - radious && buildingPosition.getY() <= baseLocation.getTilePosition().getY() + radious) {
+	    return true;
+	}
+
+	return false;
     }
 
     @Override
@@ -375,10 +483,6 @@ public class StrategyManager extends Manager {
 	    return;
 	}
 
-	if (strategy.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && gameStatus.getFrameCount() < 10000) {
-	    return;
-	}
-
 	removeStrategyStatus(StrategyStatus.BACK_TO_BASE);
 	if (hasStrategyItem(StrategyItem.AUTO_DEFENCE_ALLIANCE_BASE)) {
 	    // 커맨드 센터를 가져온다.
@@ -394,22 +498,50 @@ public class StrategyManager extends Manager {
 		Position defencePosition = enemyUnitSet.iterator().next().getPosition();
 		Set<Unit2> defenceAllianceUnitSet = allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Combat_Unit, 800);
 		if (enemyUnitSet.size() < defenceAllianceUnitSet.size()) {
-		    Log.info("본진(%s)에 침입한 적(%d) 발견함. 방어하자.", commandCenter, enemyUnitSet.size());
+		    Log.warn("본진(%s)에 침입한 적(%d) 발견함. 방어하자.", commandCenter, enemyUnitSet.size());
 		    addStrategyStatus(StrategyStatus.BACK_TO_BASE);
 		    // 커맨드 센터 반경 800 이내의 아군 유닛으로 방어한다.
 		    for (Unit2 defenceAllianceUnit : defenceAllianceUnitSet) {
 			ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, defencePosition);
 		    }
 		} else {
-		    Log.info("본진(%s)에 침입한 적(%d)이 아군(%d)보다 많다. 주 병력을 모두 회군시키자.", commandCenter, enemyUnitSet.size(), defenceAllianceUnitSet.size());
+		    Log.warn("본진(%s)에 침입한 적(%d)이 아군(%d)보다 많다. 주 병력을 모두 회군시키자.", commandCenter, enemyUnitSet.size(), defenceAllianceUnitSet.size());
 		    addStrategyStatus(StrategyStatus.BACK_TO_BASE);
 		    for (Unit2 allianceUnit : allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit)) {
 			ActionUtil.attackPosition(allianceUnitInfo, allianceUnit, defencePosition);
 		    }
 		}
+	    }
 
+	    if (hasStrategyItem(StrategyItem.AUTO_DEFENCE_EXPANSION) && getTryExpansion() == true) {
+
+		if (locationManager.enemyStartLocation == null) {
+		    return;
+		}
+
+		// 다음 멀티 예정지의 정보를 가져온다.
+		TilePosition nextExpansionPosition = nextExpansionPoint;
+		if (nextExpansionPosition == null) {
+		    return;
+		}
+
+		// 멀티 예정지 반경 500 이내의 적 유닛 정보를 가져온다.
+		Set<Unit2> enemyUnitSet = enemyUnitInfo.getUnitsInRange(nextExpansionPosition.toPosition(), UnitKind.ALL, 500);
+		System.out.println("멀티 예정지 적 발견 ");
+
+		// 쳐들어온 적 병력이 없으면 skip한다.
+		if (enemyUnitSet.isEmpty()) {
+		    return;
+		}
+
+		Position defencePosition = enemyUnitSet.iterator().next().getPosition();
+		addStrategyStatus(StrategyStatus.BACK_TO_BASE);
+		for (Unit2 allianceUnit : allianceUnitInfo.getUnitSet(UnitKind.Combat_Unit)) {
+		    ActionUtil.attackPosition(allianceUnitInfo, allianceUnit, defencePosition);
+		}
 	    }
 	}
+
     }
 
     // StrategyItem.AUTO_TANK 구현부
@@ -462,7 +594,11 @@ public class StrategyManager extends Manager {
     private void doAutoTrainGoliath() {
 	if (hasStrategyItem(StrategyItem.AUTO_TRAIN_GOLIATH)) {
 
-	    if (gameStatus.getSupplyTotal() - gameStatus.getSupplyUsed() < 2) {
+	    if (gameStatus.getSupplyTotal() - gameStatus.getSupplyUsed() < 4) {
+		return;
+	    }
+
+	    if (buildManager.getQueueSize() > 0) {
 		return;
 	    }
 
@@ -475,8 +611,10 @@ public class StrategyManager extends Manager {
 		    if (0 == factory.getTrainingQueue().size()) {
 			int trainingRemainSize = buildManager.getBuildOrderQueueItemCount(BuildOrderItem.Order.TRAINING, UnitType.Terran_Goliath);
 			if (1 > trainingRemainSize) {
-			    Log.info("골리앗 생산. 남은 훈련시간: %d, 팩토리: %s", factory.getRemainingTrainTime(), factory);
-			    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Goliath));
+			    if (gameStatus.getSupplyUsed() < 392) {
+				Log.info("골리앗 생산. 남은 훈련시간: %d, 팩토리: %s", factory.getRemainingTrainTime(), factory);
+				buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Goliath));
+			    }
 			}
 		    }
 		}
@@ -571,8 +709,23 @@ public class StrategyManager extends Manager {
 		continue;
 	    }
 
+	    //적군 점령 지역및 근처는 제외한다.
+	    for (BaseLocation occupiedBase : occupiedBaseLocations) {
+		TilePosition occupiedBaseTile = occupiedBase.getTilePosition();
+		if (occupiedBaseTile.getDistance(targetBaseLocation.getTilePosition()) < 35) {
+		    continue;
+		}
+	    }
+
 	    //미네랄 멀티는 제외한다.(일꾼 버그)
-	    if (targetBaseLocation.getTilePosition().equals(locationManager.getMineralExpansion().get(0))) {
+	    boolean isMineral = false;
+	    for (TilePosition tileposition : locationManager.getMineralExpansion()) {
+		if (targetBaseLocation.getTilePosition().equals(tileposition)) {
+		    isMineral = true;
+		}
+	    }
+
+	    if (isMineral) {
 		continue;
 	    }
 
@@ -685,5 +838,33 @@ public class StrategyManager extends Manager {
 
     public void setSkipMicroControl(boolean skipMicroControl) {
 	this.skipMicroControl = skipMicroControl;
+    }
+
+    public int getLiveMultiCount() {
+	return liveMultiCount;
+    }
+
+    public void setLiveMultiCount(int liveMultiCount) {
+	this.liveMultiCount = liveMultiCount;
+    }
+
+    public List<BaseLocation> getOccupiedBaseLocation() {
+	return occupiedBaseLocations;
+    }
+
+    public List<BaseLocation> getScanLocation() {
+	return scanLocations;
+    }
+
+    public boolean getTryExpansion() {
+	return tryExpansion;
+    }
+
+    public void setTryExpansion(boolean tryExpansion) {
+	this.tryExpansion = tryExpansion;
+    }
+
+    public void setNextExpansionPosition(TilePosition nextExpansionPoint) {
+	this.nextExpansionPoint = nextExpansionPoint;
     }
 }

@@ -6,6 +6,7 @@ import bwapi.Game;
 import bwapi.Position;
 import bwapi.TilePosition;
 import bwapi.UnitType;
+import bwta.BaseLocation;
 
 /// 봇 프로그램 개발의 편의성 향상을 위해 게임 화면에 추가 정보들을 표시하는 class<br>
 /// 여러 Manager 들로부터 정보를 조회하여 Screen 혹은 Map 에 정보를 표시합니다
@@ -177,11 +178,24 @@ public class MagiUXManager extends Manager {
 	MyBotModule.Broodwar.drawTextScreen(x, y, white + " <Current Strategy>");
 	MyBotModule.Broodwar.drawTextScreen(x, y + 10, teal + "CombatUnit Count = " + allianceUnitInfo.getSupplyUsedExceptWorker());
 	MyBotModule.Broodwar.drawTextScreen(x, y + 20, teal + "Goliath Count = " + allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath).size());
-	MyBotModule.Broodwar.drawTextScreen(x, y + 30, teal + "SCV Count = " + allianceUnitInfo.getUnitSet(UnitKind.Worker).size());
+	MyBotModule.Broodwar.drawTextScreen(x, y + 30, teal + "SCV Count = " + allianceUnitInfo.getUnitSet(UnitKind.Terran_SCV).size());
+	MyBotModule.Broodwar.drawTextScreen(x, y + 40, teal + "Multi Count = " + strategyManager.getLiveMultiCount());
 
 	int seq = 1;
 	for (StrategyStatus status : strategyManager.getStrategyStatus()) {
-	    MyBotModule.Broodwar.drawTextScreen(x, y + 30 + seq * 10, teal + "Strategy Status = " + status);
+	    MyBotModule.Broodwar.drawTextScreen(x, y + 40 + seq * 10, teal + "Strategy Status = " + status);
+	    seq++;
+	}
+
+	seq = 1;
+	for (BaseLocation baselocation : strategyManager.getOccupiedBaseLocation()) {
+	    MyBotModule.Broodwar.drawTextScreen(x + 340, y + seq * 10, teal + "Enemy Base List = " + baselocation.getTilePosition());
+	    seq++;
+	}
+
+	seq = 1;
+	for (BaseLocation baselocation : strategyManager.getScanLocation()) {
+	    MyBotModule.Broodwar.drawTextScreen(x + 340, y + 100 + seq * 10, teal + "Scan List = " + baselocation.getTilePosition());
 	    seq++;
 	}
     }

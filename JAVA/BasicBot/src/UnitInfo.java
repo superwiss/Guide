@@ -282,6 +282,10 @@ public class UnitInfo {
 	return lastTilePositoin.get(unit);
     }
 
+    public Map<Unit2, TilePosition> getLastTilePosition() {
+	return lastTilePositoin;
+    }
+
     // 건물이 지어진 위치에 시야가 밝혀져 있지만, 실제 건물이 없는 경우, lastTilePosition에서 삭제해준다.
     // 예를 들면 적 건물이 보이지 않는 상태에서 건물이 불타서 스스로 파괴되었거나, 건물을 띄워서 이동했을 경우...)
     public void updateLastTilePosition() {
@@ -366,6 +370,31 @@ public class UnitInfo {
     // unitManager 소속의 unitSet 중에서 position에 가장 가까운 유닛 하나를 리턴한다. (exclude 없는 버전)
     public Unit2 getClosestUnit(Set<Unit2> unitSet, Position position) {
 	return getClosestUnit(unitSet, position, null);
+    }
+
+    public Unit2 getClosestValidCommandCenter(Set<Unit2> unitSet, Position position) {
+	Unit2 result = null;
+
+	if (null != unitSet && null != position) {
+	    int minDistance = Integer.MAX_VALUE;
+	    for (Unit2 unit : unitSet) {
+
+		Unit2 mineralField = getAnyUnitInRange(unit.getPosition(), UnitKind.Resource_Mineral_Field, 320);
+		if (mineralField == null) {
+		    continue;
+		}
+
+		int distance = unit.getPoint().getApproxDistance(position);
+		if (distance < minDistance) {
+		    minDistance = distance;
+		    result = unit;
+		}
+	    }
+	} else {
+	    Log.warn("Invalid Parameter: unitset= %s, position=%s", unitSet, position);
+	}
+
+	return result;
     }
 
     // buildingType 건물에서 훈련 중인 unitType의 개수를 리턴한다.

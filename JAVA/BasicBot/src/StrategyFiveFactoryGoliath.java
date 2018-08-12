@@ -1,10 +1,13 @@
+import java.util.List;
 import java.util.Set;
 
 import bwapi.Order;
 import bwapi.Position;
+import bwapi.TechType;
 import bwapi.TilePosition;
 import bwapi.UnitType;
 import bwapi.UpgradeType;
+import bwta.BaseLocation;
 
 public class StrategyFiveFactoryGoliath extends StrategyBase {
 
@@ -12,9 +15,11 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
     private LocationManager locationManager = null;
     private BuildManager buildManager = null;
     private WorkerManager workerManager = null;
+    private boolean isAttackReady;
+    private int scanCount = 0;
+    private TilePosition currentExpandPosition = null;
 
     private static int repairCount = 3; //골리앗을 수리할 scv의 갯수
-    private int liveMultiCount;
 
     public StrategyFiveFactoryGoliath() {
 	strategyName = "TowFactory";
@@ -28,6 +33,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	locationManager = gameStatus.getLocationManager();
 	buildManager = gameStatus.getBuildManager();
 	workerManager = gameStatus.getWorkerManager();
+	isAttackReady = false;
     }
 
     @Override
@@ -61,15 +67,16 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    }
 	}
 
-	doExpansion();
-
 	// 공격 시점과 장소를 체크한다.
 	checkAttackTimingAndPosition();
+
+	//확장을 시도한다.
+	doExpansion();
 
 	// 골리앗의 방어력과 공격력을 업그레이드 한다.
 	doArmoryJob();
 
-	// 적절한 타이밍에 컴셋을 건설한다.
+	// 아카데미를 건설한다.
 	doBuildAcademy();
 
 	// 본진에 있는 골리앗을 수리한다.
@@ -84,87 +91,17 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	// 스캔 사용 여부에 따라 본진의 움직임을 결정한다.
 	checkComsat();
 
+	//멀티 예정지에 적군이 있다면 공격한다.
+	autoDefenceExpansion();
+
+	//적의 확장기지를 찾아낸다.
+	searchEnemyExpansion();
+
+	//서플라이가 따라가지 못해 임시로 추가한 메소드
 	autoBuildSupply();
 
 	// 본진의 커맨드 센터를 확장으로 옮긴다.
 	//doAutoLiftCommandCenter();
-    }
-
-    private void doExpansion() {
-
-	if (hasStrategyItem(StrategyItem.AUTO_EXTENSION)) {
-
-	    // 3초에 한 번만 수행된다.
-	    if (!gameStatus.isMatchedInterval(3)) {
-		return;
-	    }
-
-	    int currentMultiCount = 0;
-	    //현재 확장 갯수를 업데이트 한다
-	    for (Unit2 commandCenter : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center)) {
-		//커맨드 센터 주변에 미네랄이 6개 이상 있을 경우 운영중인 확장이라고 생각한다.
-		if (allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Resource_Mineral_Field, 400).size() > 6) {
-		    if (allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Resource_Vespene_Geyser, 400).size() > 0) {
-			currentMultiCount++;
-		    }
-		}
-	    }
-	    liveMultiCount = currentMultiCount;
-
-	    // 현재 건설중인 커맨드 센터가 있다면 취소
-	    if (allianceUnitInfo.getConstructionCount(UnitType.Terran_Command_Center) > 0 || buildManager.getQueueSize() > 0) {
-		return;
-	    }
-
-	    // 최대로 운영하려는 확장의 갯수
-	    int maxExpansion = 3;
-
-	    //현재 운영중인 확장의 갯수가 최대 수치를 넘는다면 더이상 건설하지 않는다.
-	    if (liveMultiCount >= maxExpansion) {
-		return;
-	    }
-
-	    //전체 커맨드 센터 숫자를 가져온다.
-	    int totalCommandCount = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size();
-	    //앞마당까지 지어진 상황에서 추가 확장을 가져가는 메소드
-	    if (totalCommandCount >= 2) {
-
-		//다음확장이 발견되어 있지 않다면 스캔을 뿌려본다.
-		if (allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Comsat_Station).size() > 0) {
-		    TilePosition nextExpansionPoint = strategyManager.getNextExpansionPoint();
-		    if (nextExpansionPoint != null) {
-			if (!gameStatus.isExplored(nextExpansionPoint)) {
-			    allianceUnitInfo.doScan(nextExpansionPoint.toPosition());
-			}
-		    }
-		}
-
-		//TODO 확장을 가져가는 다양한 조건들이 추가될 예정이다.
-		//메카닉 유닛이 여유가 있을 경우 확장을 가져간다.
-		if (gameStatus.getMineral() > 400 && allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath).size() > 25) {
-		    if (0 == buildManager.getQueueSize()) {
-			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, strategyManager.getNextExpansionPoint()));
-		    }
-		}
-		//미네랄이 과도하게 남을 경우 확장을 시도한다?
-		if (gameStatus.getMineral() > 1000) {
-		    if (0 == buildManager.getQueueSize()) {
-			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, strategyManager.getNextExpansionPoint()));
-		    }
-		}
-	    }
-	}
-    }
-
-    private void autoBuildSupply() {
-
-	if (true == buildManager.isInitialBuildFinished() && 1 >= buildManager.getQueueSize()) {
-	    // 서플 여유가 8개 이하면 서플을 짓는다. (최대 2개를 동시에 지을 수 있음) 
-	    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 8 * 2 && gameStatus.getSupplyTotal() < 400) {
-		buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
-	    }
-	}
-
     }
 
     private void checkAttackTimingAndPosition() {
@@ -221,33 +158,137 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		}
 	    }
 
-	} else if (goliathCount >= 24 && goliathCount < 36) {
+	} else if (goliathCount >= 24 && goliathCount < 70) {
 
-	    strategyManager.addStrategyItem(StrategyItem.AUTO_EXTENSION);
+	    //	     공격 유닛 인구수가 50 ~ 80이면 적 입구를 조인다.
 
-	    //	    //	     공격 유닛 인구수가 50 ~ 80이면 적 입구를 조인다.
-	    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
-	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-	    Log.info("적 본진 근처에서 조이기를 한다. 인구수: %d, 위치: %s", goliathCount, strategyManager.getAttackTilePositon());
-
-	    // 조이기 시점에 적이 5마리 이상 보이면 총 공격을 한다.
-	    if (enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit).size() > 5) {
-		TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
-		strategyManager.setAttackTilePosition(attackTilePosition);
-		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
-		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-		Log.info("총 공격을 간다. 인구수: %d, 위치: %s", goliathCount, attackTilePosition);
-	    }
-	} else if (goliathCount >= 36) {
-	    // 공격 유닛 인구수가 80이 넘으면 총 공격을 한다.
 	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
-	    strategyManager.setAttackTilePosition(attackTilePosition);
-	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-	    strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
-	    // 공격과 동시에 추가 확장을 시도한다.
-	    strategyManager.addStrategyItem(StrategyItem.AUTO_EXTENSION);
+	    if (!isAttackReady) {
+		List<BaseLocation> enemyBase = strategyManager.getOccupiedBaseLocation();
+		if (enemyBase.size() != 0) {
+		    for (BaseLocation target : enemyBase) {
+			attackTilePosition = target.getTilePosition();
+		    }
+		    strategyManager.setAttackTilePosition(attackTilePosition);
+		    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+		} else {
+		    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
+		    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+		}
+	    } else {
+		strategyManager.setAttackTilePosition(strategyManager.calcAndGetAttackTilePosition());
+		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+	    }
+	    // 조이기 시점에 적이 5마리 이상 보이면 총 공격을 한다.
+	    //	    if (enemyUnitInfo.getUnitSet(UnitKind.Combat_Unit).size() > 5) {
+	    //		TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+	    //		strategyManager.setAttackTilePosition(attackTilePosition);
+	    //		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+	    //		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+	    //		Log.info("총 공격을 간다. 인구수: %d, 위치: %s", goliathCount, attackTilePosition);
+	    //	    }
+	} else if (goliathCount >= 70) {
+	    //	    	     공격 유닛 인구수가 80이 넘으면 총 공격을 한다.
+	    TilePosition attackTilePosition = strategyManager.calcAndGetAttackTilePosition();
+	    if (!isAttackReady) {
+		List<BaseLocation> enemyBase = strategyManager.getOccupiedBaseLocation();
+		if (enemyBase.size() != 0) {
+		    for (BaseLocation target : enemyBase) {
+			attackTilePosition = target.getTilePosition();
+		    }
+		    strategyManager.setAttackTilePosition(attackTilePosition);
+		    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+		} else {
+		    strategyManager.setAttackTilePosition(locationManager.getBlockingChokePoint());
+		    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+		}
+	    } else {
+		strategyManager.setAttackTilePosition(strategyManager.calcAndGetAttackTilePosition());
+		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+	    }
 
-	    Log.info("총 공격을 간다. 인구수: %d, 위치: %s", goliathCount, attackTilePosition);
+	    //	    // 공격과 동시에 추가 확장을 시도한다.
+	    //	    Log.info("총 공격을 간다. 인구수: %d, 위치: %s", goliathCount, attackTilePosition);
+	}
+    }
+
+    private void doExpansion() {
+
+	if (hasStrategyItem(StrategyItem.AUTO_SAFE_EXTENSION)) {
+
+	    // 3초에 한 번만 수행된다.
+	    if (!gameStatus.isMatchedInterval(3)) {
+		return;
+	    }
+
+	    int currentMultiCount = 0;
+	    //현재 확장 갯수를 업데이트 한다
+	    for (Unit2 commandCenter : allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center)) {
+		//커맨드 센터 주변에 미네랄이 6개 이상 있을 경우 운영중인 확장이라고 생각한다.
+		if (allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Resource_Mineral_Field, 400).size() > 6) {
+		    if (allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Resource_Vespene_Geyser, 400).size() > 0) {
+			currentMultiCount++;
+		    }
+		}
+	    }
+	    strategyManager.setLiveMultiCount(currentMultiCount);
+
+	    // 현재 건설중인 커맨드 센터가 있다면 취소
+	    if (allianceUnitInfo.getConstructionCount(UnitType.Terran_Command_Center) > 0 || buildManager.getQueueSize() > 0) {
+		return;
+	    }
+
+	    // 최대로 운영하려는 확장의 갯수
+	    int maxExpansion = 3;
+
+	    //현재 운영중인 확장의 갯수가 최대 수치를 넘는다면 더이상 건설하지 않는다.
+	    if (currentMultiCount >= maxExpansion) {
+		strategyManager.setTryExpansion(false);
+		return;
+	    }
+
+	    //전체 커맨드 센터 숫자를 가져온다.
+	    int totalCommandCount = allianceUnitInfo.getUnitSet(UnitKind.Terran_Command_Center).size();
+	    //앞마당까지 지어진 상황에서 추가 확장을 가져가는 메소드
+	    if (totalCommandCount >= 2) {
+
+		TilePosition nextExpansionPoint = strategyManager.getNextExpansionPoint();
+		if (nextExpansionPoint == null) {
+		    Log.warn("더이상 지을 확장 기지가 없습니다");
+		    isAttackReady = true;
+		    return;
+		}
+
+		//다음확장이 발견되어 있지 않다면 스캔을 뿌려본다.
+		if (allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Comsat_Station).size() > 0) {
+		    if (nextExpansionPoint != null) {
+			if (!gameStatus.isExplored(nextExpansionPoint)) {
+			    allianceUnitInfo.doScan(nextExpansionPoint.toPosition());
+			}
+		    }
+		}
+
+		//TODO 확장을 가져가는 다양한 조건들이 추가될 예정이다.
+		//메카닉 유닛이 여유가 있을 경우 확장을 가져간다.
+		if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath).size() > 25) {
+		    if (0 == buildManager.getQueueSize()) {
+			strategyManager.setTryExpansion(true);
+			strategyManager.setNextExpansionPosition(nextExpansionPoint);
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, nextExpansionPoint));
+		    }
+		}
+		//미네랄이 과도하게 남을 경우 확장을 시도한다?
+		if (gameStatus.getMineral() > 1000) {
+		    if (0 == buildManager.getQueueSize()) {
+			strategyManager.setTryExpansion(true);
+			currentExpandPosition = nextExpansionPoint;
+			strategyManager.setNextExpansionPosition(nextExpansionPoint);
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, nextExpansionPoint));
+		    }
+		}
+	    }
 	}
     }
 
@@ -279,7 +320,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 
 	Unit2 academy = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Academy);
 	if (null == academy) {
-	    if (gameStatus.getMineral() > 150 && 0 == buildManager.getQueueSize()) {
+	    if (gameStatus.getMineral() > 100 && 0 == buildManager.getQueueSize()) {
 		if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Academy).size() == 0) {
 		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
 		}
@@ -292,6 +333,10 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 
 	// 1초에 한 번만 수행된다.
 	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+	if (gameStatus.getFrameCount() > 15000) {
 	    return;
 	}
 
@@ -352,7 +397,8 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    if (scv != null) {
 
 		//scv가 건설중이면 띄우지 않는다.
-		if (scv.isConstructing()) {
+		Unit2 factory = allianceUnitInfo.getAnyUnitInRange(locationManager.getBlockingEntranceBuilding().get(0).toPosition(), UnitKind.Terran_Factory, 100);
+		if (factory != null && !factory.isCompleted()) {
 		    return;
 		}
 
@@ -391,6 +437,15 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		    entranceBarrack.lift();
 		}
 	    }
+
+	    //배럭이 없다면 배럭을 건설한다.
+	    if (entranceBarrack == null) {
+		if (gameStatus.getMineral() > 150 && 0 == buildManager.getQueueSize()) {
+		    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Barracks).size() == 0) {
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
+		    }
+		}
+	    }
 	}
     }
 
@@ -417,7 +472,6 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	}
     }
 
-    // 벙거를 수리한다.
     private void repairBuilding(UnitInfo allianceUnitInfo, Unit2 building) {
 	WorkerManager workerManager = gameStatus.getWorkerManager();
 	Unit2 repairWorker = workerManager.getInterruptableWorker(building.getTilePosition());
@@ -430,6 +484,10 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
     }
 
     private void checkComsat() {
+
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
 
 	if (allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Science_Vessel).size() == 0
 		&& (allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Comsat_Station).size() == 0)) {
@@ -470,6 +528,59 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		}
 	    }
 	}
+    }
+
+    private void autoDefenceExpansion() {
+
+	// 1초에 한 번만 실행한다.
+	if (!gameStatus.isMatchedInterval(1)) {
+	    return;
+	}
+
+    }
+
+    private void searchEnemyExpansion() {
+
+	if (hasStrategyItem(StrategyItem.SEARCH_ENEMY_EXPANSION_BY_SCAN)) {
+
+	    Unit2 targetComsat = null;
+	    Set<Unit2> comsatSet = allianceUnitInfo.getUnitSet(UnitType.Terran_Comsat_Station);
+
+	    //컴셋의 마나가 200일 경우에 서칭을 시작한다.
+	    for (Unit2 comsat : comsatSet) {
+		if (comsat.getEnergy() == 200) {
+		    targetComsat = comsat;
+		}
+	    }
+
+	    if (targetComsat == null) {
+		return;
+	    }
+
+	    List<BaseLocation> scanLocation = strategyManager.getScanLocation();
+	    int maxScan = scanLocation.size();
+	    if (scanCount >= maxScan) {
+		scanCount = 0;
+		return;
+	    }
+
+	    BaseLocation scanTarget = scanLocation.get(scanCount);
+	    if (scanTarget != null && targetComsat.canUseTechPosition(TechType.Scanner_Sweep)) {
+		targetComsat.useTech(TechType.Scanner_Sweep, scanTarget.getPosition());
+		scanCount++;
+	    }
+	}
+    }
+
+    private void autoBuildSupply() {
+
+	if (true == buildManager.isInitialBuildFinished() && 1 >= buildManager.getQueueSize()) {
+	    // 서플 여유가 8개 이하면 서플을 짓는다. (최대 2개를 동시에 지을 수 있음) 
+	    if (1 > allianceUnitInfo.getConstructionCount(UnitType.Terran_Supply_Depot) && gameStatus.getSupplyRemain() <= 8 * 2 && gameStatus.getSupplyTotal() < 400) {
+		buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
+	    }
+	}
+
     }
 
     @Override
@@ -528,6 +639,8 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	strategyItems.add(StrategyItem.AUTO_USING_SCAN);
 	strategyItems.add(StrategyItem.BLOCK_ENTRANCE_ZERG);
 	strategyItems.add(StrategyItem.ENEMY_BASE_EDGE_SCOUT);
+	strategyItems.add(StrategyItem.AUTO_SAFE_EXTENSION);
+	strategyItems.add(StrategyItem.SEARCH_ENEMY_EXPANSION_BY_SCAN);
     }
 
 }

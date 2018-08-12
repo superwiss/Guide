@@ -30,6 +30,7 @@ public class GameCommander implements EventDispatcher {
 	gameStatus.setStrategyManager(new StrategyManager());
 	gameStatus.setMicroControlManager(new MicroControlManager());
 	gameStatus.setEliminateManager(new EliminateManager());
+
 	if (true != gameStatus.getConfig().isReleaseMode()) {
 	    gameStatus.setTrainingManager(new TrainingManager());
 	    gameStatus.setUxManager(new MagiUXManager());

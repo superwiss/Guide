@@ -755,6 +755,11 @@ public class UnitUtil {
     }
 
     // 둘 중 tilePosition에 더 가까운 유닛을 리턴한다.
+    public static Unit2 getClosestCommandCenter(Unit2 unit1, Unit2 unit2, TilePosition tilePosition) {
+	return getCloseUnit(unit1, unit2, tilePosition, 0, Integer.MAX_VALUE);
+    }
+
+    // 둘 중 tilePosition에 더 가까운 유닛을 리턴한다.
     public static Unit2 getCloseUnit(Unit2 unit1, Unit2 unit2, TilePosition tilePosition) {
 	return getCloseUnit(unit1, unit2, tilePosition, 0, Integer.MAX_VALUE);
     }

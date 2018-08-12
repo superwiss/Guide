@@ -104,8 +104,8 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	    result.add(new TilePosition(0, 109));
 	    result.add(new TilePosition(0, 106));
 	    result.add(new TilePosition(13, 113));
-	    result.add(new TilePosition(12, 117));
-	    result.add(new TilePosition(12, 121));
+	    result.add(new TilePosition(13, 117));
+	    result.add(new TilePosition(13, 121));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
 	    result.add(new TilePosition(14, 33));
@@ -304,6 +304,10 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	    result.add(new TilePosition(24, 2));
 	    result.add(new TilePosition(23, 4));
 	    result.add(new TilePosition(20, 6));
+	    result.add(new TilePosition(20, 8));
+	    result.add(new TilePosition(20, 10));
+	    result.add(new TilePosition(20, 12));
+	    result.add(new TilePosition(20, 14));
 	}
 
 	return result;
@@ -417,13 +421,13 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	TilePosition result = null;
 
 	if (enemyStartLocation.equals(getBaseLocations(ONE_CLOCK))) {
-	    result = new TilePosition(96, 32);
+	    result = new TilePosition(66, 66);
 	} else if (enemyStartLocation.equals(getBaseLocations(FIVE_CLOCK))) {
-	    result = new TilePosition(94, 97);
+	    result = new TilePosition(66, 66);
 	} else if (enemyStartLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
-	    result = new TilePosition(32, 96);
+	    result = new TilePosition(66, 66);
 	} else if (enemyStartLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
-	    result = new TilePosition(28, 33);
+	    result = new TilePosition(66, 66);
 	}
 
 	return result;
@@ -523,17 +527,28 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
 	    result.add(new TilePosition(89, 15));
+	    result.add(new TilePosition(89, 110));
+	    result.add(new TilePosition(35, 110));
+	    result.add(new TilePosition(35, 15));
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
+	    result.add(new TilePosition(89, 15));
 	    result.add(new TilePosition(89, 110));
+	    result.add(new TilePosition(35, 110));
+	    result.add(new TilePosition(35, 15));
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
+	    result.add(new TilePosition(89, 15));
+	    result.add(new TilePosition(89, 110));
 	    result.add(new TilePosition(35, 110));
+	    result.add(new TilePosition(35, 15));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
+	    result.add(new TilePosition(89, 15));
+	    result.add(new TilePosition(89, 110));
+	    result.add(new TilePosition(35, 110));
 	    result.add(new TilePosition(35, 15));
 	}
-
 	return result;
     }
 }

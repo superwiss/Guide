@@ -120,7 +120,6 @@ public class WorkerManager extends Manager {
     private void idleWorkerCheck() {
 	Set<Unit2> workerSet = allianceUnitInfo.getUnitSet(UnitType.Terran_SCV); // 전체 일꾼 목록
 	Set<Unit2> commandCenterSet = allianceUnitInfo.getUnitSet(UnitType.Terran_Command_Center); // 전체 SCV 목록
-
 	// Key: Command Center ID, Value: Command Center로 자원을 캐러 갈 일꾼 ID 목록
 	Map<Unit2, List<Unit2>> commandCenterWorksListMap = new HashMap<>();
 
@@ -128,12 +127,14 @@ public class WorkerManager extends Manager {
 	    // 놀고 있는 일꾼을 대상으로 미네랄을 캔다.
 	    if (null != worker && worker.isCompleted() && worker.isIdle()) {
 		Log.info("Found idle worker: %d", worker.getID());
-		// 일꾼에서 가장 가까운 커맨드 센터를 가져온다.
-		Unit2 commandCenter = allianceUnitInfo.getClosestUnit(commandCenterSet, worker.getPosition());
+		// 일꾼에서 가장 가까우면서 미네랄이 있는 커맨드 센터를 가져온다.
+		Unit2 commandCenter = allianceUnitInfo.getClosestValidCommandCenter(commandCenterSet, worker.getPosition());
+
 		if (null != commandCenter) {
 		    if (!commandCenterWorksListMap.containsKey(commandCenter)) {
 			commandCenterWorksListMap.put(commandCenter, new LinkedList<>());
 		    }
+
 		    List<Unit2> workerList = commandCenterWorksListMap.get(commandCenter);
 		    workerList.add(worker);
 		    commandCenterWorksListMap.put(commandCenter, workerList);
@@ -394,8 +395,6 @@ public class WorkerManager extends Manager {
 
 		//대상 커맨드 센터에 할당된 가스 일꾼이 3기 미만일 경우,
 		if (allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Worker_Gather_Gas, 320).size() < 3) {
-
-		    System.out.println(allianceUnitInfo.getUnitsInRange(commandCenter.getPosition(), UnitKind.Worker_Gather_Gas, 320).size());
 
 		    //대상 커맨드 센터에 할당된 리파이너리를 가져온다.
 		    Unit2 refinery = allianceUnitInfo.getAnyUnitInRange(commandCenter.getPosition(), UnitKind.Terran_Refinery, 320);

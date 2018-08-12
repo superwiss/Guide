@@ -29,5 +29,8 @@ public enum StrategyItem {
     SET_BARRACKS_RALLY, // 자동으로 배럭의 랠리 포인트가 아군의 FirstChokePoint로 찍한다.
 
     BLOCK_ENTRANCE_ZERG, // 저글링도 지나가지 못하도록 입구를 막는다.
-    ENEMY_BASE_EDGE_SCOUT // 적 기지의 가장자리를 따라서 정찰한다.
+    AUTO_SAFE_EXTENSION, // 안전한 위치 우선으로 확장을 한다.
+    ENEMY_BASE_EDGE_SCOUT, // 적 기지의 가장자리를 따라서 정찰한다.
+    SEARCH_ENEMY_EXPANSION_BY_SCAN, //적의 확장을 스캔으로 탐색한다.
+    AUTO_DEFENCE_EXPANSION
 }
