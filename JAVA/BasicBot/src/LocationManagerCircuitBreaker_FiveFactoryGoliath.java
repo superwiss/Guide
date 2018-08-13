@@ -147,18 +147,17 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
-	    result.add(new TilePosition(122, 25));
+	    result.add(new TilePosition(108, 31));
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
-	    result.add(new TilePosition(122, 102));
+	    result.add(new TilePosition(110, 90));
 	} else if (allianceBaseLocation.equals(getBaseLocations(SEVEN_CLOCK))) {
 	    // 7시
-	    result.add(new TilePosition(4, 102));
+	    result.add(new TilePosition(17, 90));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result.add(new TilePosition(4, 24));
+	    result.add(new TilePosition(17, 31));
 	}
-
 	return result;
     }
 
@@ -169,7 +168,7 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	if (allianceBaseLocation.equals(getBaseLocations(ONE_CLOCK))) {
 	    // 1시
 	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
-		result.add(new TilePosition(108, 31));
+		//		result.add(new TilePosition(108, 31));
 		result.add(new TilePosition(125, 20));
 		result.add(new TilePosition(125, 18));
 		result.add(new TilePosition(125, 16));
@@ -206,7 +205,7 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	} else if (allianceBaseLocation.equals(getBaseLocations(FIVE_CLOCK))) {
 	    // 5시
 	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
-		result.add(new TilePosition(110, 90));
+		//		result.add(new TilePosition(110, 90));
 		result.add(new TilePosition(125, 100));
 	    } else {
 		result.add(new TilePosition(125, 102));
@@ -244,7 +243,7 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	    // 7시
 
 	    if (strategyManager.hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG)) {
-		result.add(new TilePosition(17, 90));
+		//		result.add(new TilePosition(17, 90));
 	    } else {
 		result.add(new TilePosition(7, 102));
 	    }
@@ -278,7 +277,7 @@ public class LocationManagerCircuitBreaker_FiveFactoryGoliath extends LocationMa
 	    result.add(new TilePosition(29, 123));
 	} else if (allianceBaseLocation.equals(getBaseLocations(ELEVEN_CLOCK))) {
 	    // 11시
-	    result.add(new TilePosition(17, 31));
+	    //	    result.add(new TilePosition(17, 31));
 	    result.add(new TilePosition(0, 0));
 	    result.add(new TilePosition(0, 2));
 	    result.add(new TilePosition(0, 4));

@@ -579,7 +579,7 @@ public class BuildManager extends Manager {
 	    }
 	} else if (UnitType.Terran_Factory.equals(buildingType) || UnitType.Terran_Engineering_Bay.equals(buildingType)) {
 	    result = locationManager.getTrainingBuildings();
-	} else if (UnitType.Terran_Starport.equals(buildingType)) {
+	} else if (UnitType.Terran_Starport.equals(buildingType) || UnitType.Terran_Science_Facility.equals(buildingType)) {
 	    result = locationManager.getTrainingBuildings();
 	} else if (UnitType.Terran_Supply_Depot.equals(buildingType)) {
 	    result = locationManager.get3by2SizeBuildings();

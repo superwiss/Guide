@@ -9,6 +9,7 @@ import java.util.Set;
 
 import bwapi.Position;
 import bwapi.TilePosition;
+import bwapi.UnitType;
 import bwta.BaseLocation;
 
 // 매딕을 컨트롤 한다.
@@ -40,38 +41,43 @@ public class MicroControlVulture extends Manager {
 	    return;
 	}
 
-	for (Unit2 vulture : allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture)) {
-	    if (!vulture.exists()) {
-		allianceUnitInfo.releaseScoutVulture(vulture);
-		return;
-	    }
-	}
+	Set<Unit2> goliathSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath);
+	int goliathCount = goliathSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Factory, UnitType.Terran_Goliath);
 
-	if (locationManager.enemyStartLocation != null) {
-	    if (allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture).size() < 4) {
-		Unit2 vulture = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Vulture);
-		if (vulture != null) {
-		    allianceUnitInfo.setScoutVulture(vulture);
+	if (goliathCount > 12) {
+	    for (Unit2 vulture : allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture)) {
+		if (!vulture.exists()) {
+		    allianceUnitInfo.releaseScoutVulture(vulture);
+		    return;
 		}
 	    }
-	}
 
-	if (allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture).size() > 0) {
-
-	    List<BaseLocation> searchLocation = strategyManager.getScanLocation();
-	    int maxSearch = searchLocation.size();
-	    if (searchSequence >= maxSearch) {
-		searchSequence = 0;
-		return;
+	    if (locationManager.enemyStartLocation != null) {
+		if (allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture).size() < 4) {
+		    Unit2 vulture = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Vulture);
+		    if (vulture != null) {
+			allianceUnitInfo.setScoutVulture(vulture);
+		    }
+		}
 	    }
 
-	    BaseLocation searchTarget = searchLocation.get(searchSequence);
-	    if (searchTarget != null) {
-		for (Unit2 vulture : allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture)) {
-		    ActionUtil.attackPosition(allianceUnitInfo, vulture, searchTarget.getPosition());
-		    if (vulture.getDistance(searchTarget.getPosition()) < 50) {
-			searchSequence++;
-			return;
+	    if (allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture).size() > 0) {
+
+		List<BaseLocation> searchLocation = strategyManager.getScanLocation();
+		int maxSearch = searchLocation.size();
+		if (searchSequence >= maxSearch) {
+		    searchSequence = 0;
+		    return;
+		}
+
+		BaseLocation searchTarget = searchLocation.get(searchSequence);
+		if (searchTarget != null) {
+		    for (Unit2 vulture : allianceUnitInfo.getUnitSet(UnitKind.Scouting_Vulture)) {
+			ActionUtil.attackPosition(allianceUnitInfo, vulture, searchTarget.getPosition());
+			if (vulture.getDistance(searchTarget.getPosition()) < 50) {
+			    searchSequence++;
+			    return;
+			}
 		    }
 		}
 	    }
@@ -113,12 +119,6 @@ public class MicroControlVulture extends Manager {
 	    for (Unit2 vulture : allianceUnitInfo.getUnitSet(UnitKind.Terran_Vulture)) {
 
 		TilePosition attackTilePositon = strategyManager.getAttackTilePositon();
-
-		int marinCount = allianceUnitInfo.getUnitsInRange(attackTilePositon.toPosition(), UnitKind.Terran_Vulture, 30).size();
-		if (marinCount >= 1) {
-		    attackTilePositon = locationManager.getFirstExtensionChokePoint2();
-		}
-
 		Unit2 enemy = enemyUnitInfo.getAnyUnitInRange(attackTilePositon.toPosition(), UnitKind.Combat_Unit, 100);
 		if (enemy != null) {
 		    ActionUtil.attackEnemyUnit(allianceUnitInfo, vulture, enemy);

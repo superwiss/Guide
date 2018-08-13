@@ -186,6 +186,7 @@ public class StrategyManager extends Manager {
 	Unit2 closestMainBuilding = enemyUnitInfo.getClosestUnitWithLastTilePosition(enemyMainBuildingSet, baseLocation.getPosition());
 	TilePosition buildingPosition = test.get(closestMainBuilding);
 
+	System.out.println(buildingPosition);
 	if (buildingPosition.getX() >= baseLocation.getTilePosition().getX() - radious && buildingPosition.getX() <= baseLocation.getTilePosition().getX() + radious
 		&& buildingPosition.getY() >= baseLocation.getTilePosition().getY() - radious && buildingPosition.getY() <= baseLocation.getTilePosition().getY() + radious) {
 	    return true;
@@ -393,12 +394,13 @@ public class StrategyManager extends Manager {
 	    }
 	} else {
 
-	    if (gameStatus.getMineral() > 50 && gameStatus.getGas() > 50 && 0 == buildManager.getQueueSize()) {
-		if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Machine_Shop).size() == 0) {
-		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.ADD_ON, UnitType.Terran_Machine_Shop));
+	    if (hasStrategyItem(StrategyItem.AUTO_BUILD_FACTORY) && allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Factory).size() > 1) {
+		if (gameStatus.getMineral() > 50 && gameStatus.getGas() > 50 && 0 == buildManager.getQueueSize()) {
+		    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Machine_Shop).size() < 1) {
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.ADD_ON, UnitType.Terran_Machine_Shop));
+		    }
 		}
 	    }
-
 	}
     }
 
@@ -486,8 +488,9 @@ public class StrategyManager extends Manager {
 		    }
 		    // 적 클로킹 유닛 distance 거리 미만에 존재하는 아군 유닛이 5기 이상이면 스캔을 뿌린다.
 		    Set<Unit2> allianceUnitSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Combat_Unit, distance);
+		    Set<Unit2> goliathSet = allianceUnitInfo.getUnitsInRange(clockedUnit.getPosition(), UnitKind.Terran_Goliath, distance);
 		    Log.info("적 클로킹 유닛 발견: %s. 주변의 마린 수: %d, 거리: %d", clockedUnit, allianceUnitSet.size(), distance);
-		    if (5 <= allianceUnitSet.size()) {
+		    if (5 <= allianceUnitSet.size() || 2 <= goliathSet.size()) {
 			allianceUnitInfo.doScan(clockedUnit.getPosition());
 			lastScanFrameCount = gameStatus.getFrameCount();
 			break;
@@ -777,9 +780,11 @@ public class StrategyManager extends Manager {
 
 	    //미네랄 멀티는 제외한다.(일꾼 버그)
 	    boolean isMineral = false;
-	    for (TilePosition tileposition : locationManager.getMineralExpansion()) {
-		if (targetBaseLocation.getTilePosition().equals(tileposition)) {
-		    isMineral = true;
+	    if (locationManager.getMineralExpansion() != null) {
+		for (TilePosition tileposition : locationManager.getMineralExpansion()) {
+		    if (targetBaseLocation.getTilePosition().equals(tileposition)) {
+			isMineral = true;
+		    }
 		}
 	    }
 

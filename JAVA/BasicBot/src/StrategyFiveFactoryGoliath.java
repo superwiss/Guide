@@ -18,7 +18,6 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
     private WorkerManager workerManager = null;
     private boolean isAttackReady;
     private int scanCount = 0;
-    private TilePosition currentExpandPosition = null;
 
     private static int repairCount = 3; //골리앗을 수리할 scv의 갯수
 
@@ -57,7 +56,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		} else {
 		    strategyManager.removeStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
 		}
-	    } else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() >= 5 && allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < 9) {
+	    } else if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() >= 5 && allianceUnitInfo.getUnitSet(UnitKind.Terran_Factory).size() < 8) {
 		if (gameStatus.getMineral() >= 400 && gameStatus.getGas() >= 200) {
 		    strategyManager.addStrategyItem(StrategyItem.AUTO_BUILD_FACTORY);
 		} else {
@@ -123,7 +122,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	for (Unit2 bunker : bunkerSet) {
 
 	    //주변에 미네랄이 없는 벙커는 수리하거나 마린을 넣지 않는다.
-	    if (allianceUnitInfo.getUnitsInRange(bunker.getPosition(), UnitKind.Resource_Mineral_Field, 400).size() == 0) {
+	    if (allianceUnitInfo.getUnitsInRange(bunker.getPosition(), UnitKind.Resource_Mineral_Field, 600).size() == 0) {
 		//미네랄을 다 캔 지역의 마린을 벙커에서 꺼낸다.
 		bunker.unloadAll();
 		continue;
@@ -373,7 +372,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		}
 	    }
 
-	    if (goliathCount < 20) {
+	    if (goliathCount < 15) {
 		strategyManager.addStrategyStatus(StrategyStatus.BACK_TO_BASE);
 		strategyManager.removeStrategyStatus(StrategyStatus.FULLY_ATTACK);
 		Log.info("총 공격이 실패했다. 병력을 모아서 다시 공격가자.");
@@ -381,7 +380,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	} else if (goliathCount < 4) {
 	    strategyManager.setAttackTilePosition(locationManager.getFirstExtensionChokePoint());
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
-	} else if (goliathCount >= 4 && goliathCount < 24) {
+	} else if (goliathCount >= 4 && goliathCount < 30) {
 	    // 공격 유닛 인구수가 7 ~ 50이면 본진 앞마당 입구로 나온다.
 	    strategyManager.setAttackTilePosition(locationManager.getBaseEntranceChokePoint());
 	    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
@@ -394,11 +393,11 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    if (enemyUnitSet.size() > 0) {
 		strategyManager.addStrategyStatus(StrategyStatus.BACK_TO_BASE);
 		for (Unit2 defenceAllianceUnit : defenceAllianceUnitSet) {
-		    ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, locationManager.getBlockingChokePoint());
+		    ActionUtil.attackPosition(allianceUnitInfo, defenceAllianceUnit, strategyManager.getAttackTilePositon());
 		}
 	    }
 
-	} else if (goliathCount >= 24 && goliathCount < 70) {
+	} else if (goliathCount >= 30 && goliathCount < 70) {
 
 	    //	     공격 유닛 인구수가 50 ~ 80이면 적 입구를 조인다.
 
@@ -416,6 +415,12 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		    strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
 		}
 	    } else {
+		strategyManager.setAttackTilePosition(strategyManager.calcAndGetAttackTilePosition());
+		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
+		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
+	    }
+
+	    if (gameStatus.getFrameCount() > 30000) {
 		strategyManager.setAttackTilePosition(strategyManager.calcAndGetAttackTilePosition());
 		strategyManager.addStrategyStatus(StrategyStatus.ATTACK);
 		strategyManager.addStrategyStatus(StrategyStatus.FULLY_ATTACK);
@@ -523,7 +528,6 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		if (gameStatus.getMineral() > 1000) {
 		    if (0 == buildManager.getQueueSize()) {
 			strategyManager.setTryExpansion(true);
-			currentExpandPosition = nextExpansionPoint;
 			strategyManager.setNextExpansionPosition(nextExpansionPoint);
 			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Command_Center, nextExpansionPoint));
 		    }
@@ -548,6 +552,51 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		armory.upgrade(UpgradeType.Terran_Vehicle_Weapons);
 	    }
 	}
+
+	if (strategyManager.getLiveMultiCount() == 3) {
+	    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Armory).size() < 2 && 0 == buildManager.getQueueSize()) {
+		//두번째 아머리는 어느정도 메카닉 유닛이 갖춰졌을 때 짓는다
+		buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Armory));
+	    }
+
+	    Unit2 starPort = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Starport);
+	    if (null == starPort) {
+		if (0 == buildManager.getQueueSize()) {
+		    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Starport).size() == 0) {
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Starport));
+		    }
+		}
+	    } else {
+		if (starPort.canLift()) {
+		    starPort.lift();
+		}
+	    }
+
+	    Unit2 science = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Science_Facility);
+	    if (null == science) {
+		if (0 == buildManager.getQueueSize()) {
+		    if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Science_Facility).size() == 0) {
+			buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Science_Facility));
+		    }
+		}
+	    } else {
+		if (science.canLift()) {
+		    science.lift();
+		}
+	    }
+
+	    // 메카닉 병력이 24마리 이상일 경우 계속해서 공격력 방어력 업그레이드를 한다.
+	    if (null != science) {
+		for (Unit2 armorys : allianceUnitInfo.getUnitSet(UnitKind.Terran_Armory)) {
+		    if (armorys.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Weapons) < 3 && armorys.canUpgrade(UpgradeType.Terran_Vehicle_Weapons)) {
+			armorys.upgrade(UpgradeType.Terran_Vehicle_Weapons);
+		    }
+		    if (armorys.getPlayer().getUpgradeLevel(UpgradeType.Terran_Vehicle_Plating) < 3 && armorys.canUpgrade(UpgradeType.Terran_Vehicle_Plating)) {
+			armorys.upgrade(UpgradeType.Terran_Vehicle_Plating);
+		    }
+		}
+	    }
+	}
     }
 
     // 아카데미 건설과 관련된 작업을 수행한다.
@@ -560,7 +609,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 
 	Unit2 academy = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Academy);
 	if (null == academy) {
-	    if (gameStatus.getMineral() > 100 && 0 == buildManager.getQueueSize()) {
+	    if (0 == buildManager.getQueueSize()) {
 		if (allianceUnitInfo.getUnitSet(UnitKind.Terran_Academy).size() == 0) {
 		    buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Academy));
 		}
@@ -626,12 +675,23 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	    return;
 	}
 
-	//멀티가 아직 지어지지 않았을 경우
-	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Command_Center).size() == 1
-		&& allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Barracks).size() > 0) {
+	Set<Unit2> goliathSet = allianceUnitInfo.getUnitSet(UnitKind.Terran_Goliath);
+	int goliathCount = goliathSet.size() + allianceUnitInfo.getTrainingQueueUnitCount(UnitType.Terran_Factory, UnitType.Terran_Goliath);
+
+	if (hasStrategyItem(StrategyItem.BLOCK_ENTRANCE_ZERG) && allianceUnitInfo.getCompletedUnitSet(UnitKind.Terran_Barracks).size() > 0 && goliathCount < 4) {
 
 	    Unit2 entranceBarrack = allianceUnitInfo.getAnyUnit(UnitKind.Terran_Barracks);
 	    if (allianceUnitInfo.getAnyUnitInRange(locationManager.getExtentionPosition().get(0).toPosition(), UnitKind.Scouting_Unit, 320) != null) {
+		//착지 상태의 배럭에 대해
+		if (!entranceBarrack.isLifted()) {
+		    //적 유닛이 근처에 없을 경우에만 띄운다.
+		    if (enemyUnitInfo.getUnitsInRange(locationManager.getBaseEntranceChokePoint().toPosition(), UnitKind.ALL, 500).size() == 0) {
+			entranceBarrack.lift();
+		    }
+		}
+	    }
+
+	    if (allianceUnitInfo.getAnyUnitInRange(locationManager.getBaseEntranceChokePoint().toPosition(), UnitKind.Combat_Unit, 80) != null) {
 		//착지 상태의 배럭에 대해
 		if (!entranceBarrack.isLifted()) {
 		    //적 유닛이 근처에 없을 경우에만 띄운다.
@@ -648,6 +708,10 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		//scv가 건설중이면 띄우지 않는다.
 		Unit2 factory = allianceUnitInfo.getAnyUnitInRange(locationManager.getBlockingEntranceBuilding().get(0).toPosition(), UnitKind.Terran_Factory, 100);
 		if (factory != null && !factory.isCompleted()) {
+		    return;
+		}
+		Unit2 bunker = allianceUnitInfo.getAnyUnitInRange(locationManager.getBlockingEntranceBuilding().get(0).toPosition(), UnitKind.Terran_Bunker, 100);
+		if (bunker != null && !bunker.isCompleted()) {
 		    return;
 		}
 
@@ -699,6 +763,7 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		    }
 		}
 	    }
+
 	}
     }
 
@@ -814,6 +879,13 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 		return;
 	    }
 
+	    //다음확장이 발견되어 있지 않다면 스캔을 뿌려본다.
+	    if (locationManager.enemyStartLocation != null) {
+		if (!gameStatus.isExplored(locationManager.enemyStartLocation)) {
+		    allianceUnitInfo.doScan(locationManager.enemyStartLocation.toPosition());
+		}
+	    }
+
 	    List<BaseLocation> scanLocation = strategyManager.getScanLocation();
 	    int maxScan = scanLocation.size();
 	    if (scanCount >= maxScan) {
@@ -854,16 +926,17 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	//	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 10
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 11
+	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 12
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Barracks));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Refinery));
-	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 12
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 13
-	//	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
+	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 14
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.GATHER_GAS));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 15
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Marine));
+	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Bunker));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_SCV)); // 17
@@ -881,10 +954,8 @@ public class StrategyFiveFactoryGoliath extends StrategyBase {
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.TRAINING, UnitType.Terran_Vulture)); // 27
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Supply_Depot));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.BUILD, UnitType.Terran_Factory));
-	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.ADD_ON, UnitType.Terran_Machine_Shop));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SET_STRATEGY_ITEM, StrategyItem.AUTO_BUILD_SUPPLY));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SET_STRATEGY_ITEM, StrategyItem.AUTO_TRAIN_GOLIATH));
-	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.SCOUTING));
 	buildManager.addLast(new BuildOrderItem(BuildOrderItem.Order.INITIAL_BUILDORDER_FINISH));
     }
 

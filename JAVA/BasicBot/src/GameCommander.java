@@ -89,7 +89,11 @@ public class GameCommander implements EventDispatcher {
 	    locationManager.setMapName("Overwatch");
 	} else if (mapFileName.contains("pirit")) {
 	    // 투혼
-	    locationManager = new LocationManagerSprit();
+	    if (gameStatus.getEnemyRace().equals(Race.Zerg)) {
+		locationManager = new LocationManagerSprit_FiveFactoryGoliath();
+	    } else {
+		locationManager = new LocationManagerSprit();
+	    }
 	    locationManager.setMapName("Sprit");
 	} else {
 	    locationManager = new LocationManagerEmpty();
